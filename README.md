@@ -11,6 +11,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + build produksi ke dist/
 npm run preview    # melayani dist/
+npm run build:static  # build statis (hash routing) ke dist-static/
 ```
 
 Butuh Node.js 18 atau lebih baru.

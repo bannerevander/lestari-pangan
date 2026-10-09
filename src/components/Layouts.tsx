@@ -5,6 +5,7 @@ import { BottomTabBar } from './BottomTabBar'
 import { IconButton } from './ui'
 import { useApp, useProfile } from '../state/AppState'
 import { DemoPanel } from './DemoPanel'
+import { asset } from '../lib/format'
 
 /** Bingkai aplikasi: konten satu kolom maksimal 480 px, dipusatkan pada layar lebar. */
 export function AppFrame() {
@@ -49,7 +50,7 @@ export function RootHeader({ title, subtitle }: { title?: string; subtitle?: str
         </div>
       ) : (
         <div className="flex min-w-[8rem] flex-1 items-center gap-2">
-          <img src="/img/logo-mark.png" alt="" className="h-9 w-9 rounded-full bg-primary-container p-1" />
+          <img src={asset('img/logo-mark.png')} alt="" className="h-9 w-9 rounded-full bg-primary-container p-1" />
           <span className="min-w-0 break-words text-[1.25rem] font-bold leading-7 text-primary">Lestari Pangan</span>
         </div>
       )}

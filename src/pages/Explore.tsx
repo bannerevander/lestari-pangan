@@ -17,6 +17,7 @@ import {
 import { AppBar, Button, ButtonLink, Chip, Field, inputCls, Notice, Segmented, StatePanel } from '../components/ui'
 import { useApp } from '../state/AppState'
 import { tips } from '../data/mock'
+import { asset } from '../lib/format'
 
 /* ---------- H03 Semua fitur ---------- */
 
@@ -237,12 +238,12 @@ export function Challenges() {
       <main className="flex flex-col gap-4 px-4 pb-10 pt-4">
         <Segmented label="Challenge" value={tab} onChange={setTab} options={[{ value: 'tersedia', label: 'Tersedia' }, { value: 'diikuti', label: 'Diikuti' }]} />
         {tab === 'diikuti' ? (
-          <StatePanel icon={<img src="/illustrations/medali-daun.svg" alt="" className="h-16 w-16" />} title="Belum mengikuti challenge">Pilih challenge di tab Tersedia.</StatePanel>
+          <StatePanel icon={<img src={asset('illustrations/medali-daun.svg')} alt="" className="h-16 w-16" />} title="Belum mengikuti challenge">Pilih challenge di tab Tersedia.</StatePanel>
         ) : (
           items.map(([t, d, p]) => (
             <article key={t} className="card p-4">
               <div className="flex items-start gap-3">
-                <img src="/illustrations/medali-daun.svg" alt="" className="h-12 w-12 shrink-0" />
+                <img src={asset('illustrations/medali-daun.svg')} alt="" className="h-12 w-12 shrink-0" />
                 <div>
                   <h2 className="font-semibold">{t}</h2>
                   <p className="text-meta text-ink-secondary">{d}</p>

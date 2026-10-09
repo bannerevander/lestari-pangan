@@ -4,13 +4,14 @@ import { HandHeart, Storefront, UsersThree } from '@phosphor-icons/react'
 import { Button, Field, inputCls, Notice } from '../components/ui'
 import { useApp } from '../state/AppState'
 import type { Role } from '../data/types'
+import { asset } from '../lib/format'
 
 /* ---------- U02 Pengenalan ---------- */
 
 const slides = [
-  { img: '/illustrations/keranjang.svg', title: 'Surplus pangan sampai ke yang membutuhkan', body: 'Restoran, UMKM, dan rumah tangga menawarkan pangan layak konsumsi kepada panti dan komunitas.' },
-  { img: '/illustrations/tangan-berbagi.svg', title: 'Memberi dan menerima tetap gratis', body: 'Jadwal, jumlah, dan cara penyaluran disepakati bersama. Penerimaan dicatat sesuai hasil nyata.' },
-  { img: '/illustrations/dampak.svg', title: 'Pantau dan kurangi sisa', body: 'Catat pangan, lihat dampak per periode, dan temukan tips serta resep dari bahan yang ada.' },
+  { img: asset('illustrations/keranjang.svg'), title: 'Surplus pangan sampai ke yang membutuhkan', body: 'Restoran, UMKM, dan rumah tangga menawarkan pangan layak konsumsi kepada panti dan komunitas.' },
+  { img: asset('illustrations/tangan-berbagi.svg'), title: 'Memberi dan menerima tetap gratis', body: 'Jadwal, jumlah, dan cara penyaluran disepakati bersama. Penerimaan dicatat sesuai hasil nyata.' },
+  { img: asset('illustrations/dampak.svg'), title: 'Pantau dan kurangi sisa', body: 'Catat pangan, lihat dampak per periode, dan temukan tips serta resep dari bahan yang ada.' },
 ]
 
 export function Onboarding() {
@@ -25,7 +26,7 @@ export function Onboarding() {
   return (
     <main className="flex min-h-screen flex-col bg-surface px-6 pb-[calc(24px+env(safe-area-inset-bottom,0px))] pt-8">
       <div className="flex items-center justify-between">
-        <img src="/img/logo-lestari-pangan.png" alt="Lestari Pangan" className="h-12 w-auto" />
+        <img src={asset('img/logo-lestari-pangan.png')} alt="Lestari Pangan" className="h-12 w-auto" />
         <button type="button" onClick={() => finish('/masuk')} className="tap min-h-12 rounded-control px-3 text-[0.875rem] font-semibold text-primary hover:bg-primary-container">
           Lewati
         </button>
@@ -79,7 +80,7 @@ export function Login() {
   }
   return (
     <main className="flex min-h-screen flex-col bg-surface px-6 pb-8 pt-10">
-      <img src="/img/logo-lestari-pangan.png" alt="Lestari Pangan" className="h-14 w-auto self-start" />
+      <img src={asset('img/logo-lestari-pangan.png')} alt="Lestari Pangan" className="h-14 w-auto self-start" />
       <h1 className="mt-8 text-page-title">Masuk</h1>
       <p className="text-body text-ink-secondary">Lanjutkan berbagi dan menerima pangan.</p>
       <form onSubmit={submit} className="mt-6 flex flex-col gap-4" noValidate>

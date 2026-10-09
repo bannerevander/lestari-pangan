@@ -5,6 +5,7 @@ import { DemoNote, SectionHeader } from '../components/ui'
 import { FoodCardCompact, FoodCardSearch } from '../components/FoodCard'
 import { useApp, useProfile } from '../state/AppState'
 import { tips } from '../data/mock'
+import { asset } from '../lib/format'
 
 /** Daun dekoratif pada modul sapaan (H01 botanical greeting). */
 function LeafDecor() {
@@ -20,7 +21,7 @@ function LeafDecor() {
 function Shortcut({ to, img, label }: { to: string; img: string; label: string }) {
   return (
     <Link to={to} className="tap flex min-h-[96px] flex-col items-center justify-start gap-1 rounded-card px-1 py-2 text-center hover:bg-surface">
-      <img src={img} alt="" className="h-12 w-12" />
+      <img src={asset(img)} alt="" className="h-12 w-12" />
       <span className="text-[0.875rem] font-medium leading-5">{label}</span>
     </Link>
   )
@@ -45,7 +46,7 @@ function InspirationSection() {
         </div>
       </Link>
       <Link to="/tantangan" className="tap flex items-center gap-3 rounded-card border border-accent/60 bg-accent-soft p-4 hover:border-accent">
-        <img src="/illustrations/medali-daun.svg" alt="" className="h-14 w-14 shrink-0" />
+        <img src={asset('illustrations/medali-daun.svg')} alt="" className="h-14 w-14 shrink-0" />
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold">Tantangan</span>
           <span className="block text-meta text-ink-secondary">Temukan langkah kecil untuk mengurangi sisa pangan.</span>
@@ -93,7 +94,7 @@ function DonorHome() {
       <section aria-label="Tawarkan pangan" className="rounded-card border border-primary/20 bg-primary-container/60 p-4">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-card-title">Punya pangan berlebih?</h2>
-          <img src="/illustrations/keranjang.svg" alt="" className="h-12 w-12" />
+          <img src={asset('illustrations/keranjang.svg')} alt="" className="h-12 w-12" />
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => navigate('/donasi/baru')} className="tap inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-control bg-primary px-3 text-[1rem] font-semibold text-white hover:bg-primary-pressed">
@@ -106,10 +107,10 @@ function DonorHome() {
       </section>
 
       <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-[repeat(auto-fit,minmax(5.25rem,1fr))] gap-1">
-        <Shortcut to="/pangan" img="/illustrations/catat-pangan.svg" label="Catat Pangan" />
-        <Shortcut to="/dampak" img="/illustrations/dampak.svg" label="Dampak" />
-        <Shortcut to="/resep" img="/illustrations/resep.svg" label="Resep" />
-        <Shortcut to="/fitur" img="/illustrations/semua-fitur.svg" label="Semua fitur" />
+        <Shortcut to="/pangan" img="illustrations/catat-pangan.svg" label="Catat Pangan" />
+        <Shortcut to="/dampak" img="illustrations/dampak.svg" label="Dampak" />
+        <Shortcut to="/resep" img="illustrations/resep.svg" label="Resep" />
+        <Shortcut to="/fitur" img="illustrations/semua-fitur.svg" label="Semua fitur" />
       </nav>
 
       <section aria-labelledby="penawaran-aktif" className="flex flex-col gap-3">
@@ -132,7 +133,7 @@ function DonorHome() {
             </p>
             <p className="text-meta text-ink-secondary">Sumber: penerimaan terkonfirmasi</p>
           </div>
-          <img src="/illustrations/tangan-berbagi.svg" alt="" className="h-16 w-16 shrink-0" />
+          <img src={asset('illustrations/tangan-berbagi.svg')} alt="" className="h-16 w-16 shrink-0" />
         </div>
       </section>
 
@@ -202,10 +203,10 @@ function RecipientHome() {
       </form>
 
       <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-[repeat(auto-fit,minmax(5.25rem,1fr))] gap-1">
-        <Shortcut to="/pangan" img="/illustrations/catat-pangan.svg" label="Pangan diterima" />
-        <Shortcut to="/dampak" img="/illustrations/dampak.svg" label="Dampak" />
-        <Shortcut to="/resep" img="/illustrations/resep.svg" label="Resep" />
-        <Shortcut to="/fitur" img="/illustrations/semua-fitur.svg" label="Semua fitur" />
+        <Shortcut to="/pangan" img="illustrations/catat-pangan.svg" label="Pangan diterima" />
+        <Shortcut to="/dampak" img="illustrations/dampak.svg" label="Dampak" />
+        <Shortcut to="/resep" img="illustrations/resep.svg" label="Resep" />
+        <Shortcut to="/fitur" img="illustrations/semua-fitur.svg" label="Semua fitur" />
       </nav>
 
       <section aria-labelledby="tersedia" className="flex flex-col gap-3">
@@ -223,7 +224,7 @@ function RecipientHome() {
             <p className="text-[1rem] font-medium">diterima aktual · Oktober 2026</p>
             <p className="text-meta text-ink-secondary">Sumber: konfirmasi penerimaan Anda</p>
           </div>
-          <img src="/illustrations/tangan-berbagi.svg" alt="" className="h-16 w-16 shrink-0" />
+          <img src={asset('illustrations/tangan-berbagi.svg')} alt="" className="h-16 w-16 shrink-0" />
         </div>
       </section>
 

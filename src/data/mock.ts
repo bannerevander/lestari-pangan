@@ -1,4 +1,5 @@
 import type { FoodRecord, FoodRequest, Notification, Offer, Tip, Transfer } from './types'
+import { asset } from '../lib/format'
 
 /**
  * Data demo. Nama, jumlah, dan jadwal adalah contoh untuk prototipe UI,
@@ -34,7 +35,7 @@ export const offers: Offer[] = [
     reserved: 12,
     handedOver: 0,
     estimate: false,
-    photo: '/img/nasi-kotak.png',
+    photo: asset('img/nasi-kotak.png'),
     storage: 'Suhu ruang, tertutup',
     preparedAt: '10 Okt 2026, 11.30 WIB',
     allergens: null,
@@ -198,7 +199,7 @@ export const transfers: Transfer[] = [
     requestId: 'REQ-300',
     offerId: 'PGR-8821',
     foodName: 'Nasi kotak ayam dan sayur',
-    photo: '/img/nasi-kotak.png',
+    photo: asset('img/nasi-kotak.png'),
     donorName: 'Warung Kebun',
     recipientName: 'Komunitas Berbagi',
     agreed: 12,
@@ -270,7 +271,7 @@ export const tips: Tip[] = [
     summary: 'Catat bahan yang ada, lalu rencanakan penggunaannya.',
     category: 'Perencanaan',
     minutes: 3,
-    photo: '/img/tips-sayur.png',
+    photo: asset('img/tips-sayur.png'),
     reviewed: 'Ditinjau tim konten, 1 Okt 2026',
     body: [
       'Sebelum belanja atau memasak, lihat dulu bahan yang masih tersedia. Catatan singkat membantu Anda tahu apa yang perlu dipakai lebih dulu.',

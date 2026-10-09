@@ -22,3 +22,8 @@ export function timeLabel(t: string) {
 export function qty(n: number, unit: string) {
   return `${n.toLocaleString('id-ID')} ${unit}`
 }
+
+/** Path aset publik yang mengikuti base URL build (mendukung build statis). */
+export function asset(path: string) {
+  return `${import.meta.env.BASE_URL}${path}`
+}
