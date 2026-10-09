@@ -1,0 +1,29 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-page text-ink font-sans antialiased; }
+  :focus-visible { outline: 2px solid #2E7D32; outline-offset: 3px; border-radius: 6px; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+}
+
+@layer components {
+  .card { @apply bg-surface rounded-card border border-line shadow-card; }
+  .tap { @apply transition-colors duration-feedback ease-standard; }
+  .gutter { @apply px-4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

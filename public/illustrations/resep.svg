@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" fill="none">
+  <!-- Subtle shadow -->
+  <ellipse cx="40" cy="68" rx="26" ry="6" fill="#BF360C" fill-opacity="0.12" />
+  
+  <!-- Modern ceramic cooking pot in warm apricot / terracotta -->
+  <!-- Pot handles -->
+  <rect x="12" y="42" width="8" height="6" rx="3" fill="#E65100" />
+  <rect x="60" y="42" width="8" height="6" rx="3" fill="#E65100" />
+  
+  <!-- Pot base / body -->
+  <path d="M18 38 L62 38 Q62 65 40 65 Q18 65 18 38 Z" fill="#FF7043" />
+  <!-- 3D body gradient sheen -->
+  <path d="M22 38 Q22 61 40 61 Q58 61 58 38 Q58 39 40 40 Q22 39 22 38 Z" fill="#FF8A65" fill-opacity="0.5" />
+  <!-- Body highlight reflection -->
+  <ellipse cx="30" cy="48" rx="4" ry="7" transform="rotate(-15 30 48)" fill="#FFA280" fill-opacity="0.6" />
+  
+  <!-- Pot rim -->
+  <ellipse cx="40" cy="38" rx="22" ry="5.5" fill="#F4511E" />
+  
+  <!-- Pot lid slightly tilted open with culinary steam -->
+  <path d="M40 34 C25 34 22 28 40 26 C58 24 55 34 40 34 Z" fill="#FFA726" />
+  <ellipse cx="40" cy="30" rx="18" ry="4" fill="#FFB74D" />
+  <ellipse cx="40" cy="27" rx="4" ry="2.5" fill="#E65100" />
+  
+  <!-- Subtle wooden spoon sticking out gracefully -->
+  <path d="M48 34 L59 18 Q62 16 64 19 Q65 22 62 25 L52 38 Z" fill="#D7CCC8" />
+  <ellipse cx="61" cy="20" rx="3" ry="4" fill="#BCAAA4" transform="rotate(35 61 20)" />
+  
+  <!-- Gentle steam puffs -->
+  <path d="M30 22 Q27 17 31 13 Q35 9 32 6" stroke="#FFE082" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8" />
+  <path d="M42 20 Q40 15 44 11 Q48 7 45 4" stroke="#FFE082" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9" />
+</svg>

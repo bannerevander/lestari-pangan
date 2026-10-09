@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" fill="none">
+  <!-- Subtle ground shadow -->
+  <ellipse cx="40" cy="68" rx="25" ry="5.5" fill="#1B5E20" fill-opacity="0.12" />
+  
+  <!-- 3D Bar chart blocks (ascending) -->
+  <!-- Bar 1 (left) -->
+  <path d="M19 50 L27 50 L27 65 L19 65 Z" fill="#81C784" />
+  <path d="M19 50 L23 46 L31 46 L27 50 Z" fill="#A5D6A7" />
+  <path d="M27 50 L31 46 L31 61 L27 65 Z" fill="#66BB6A" />
+  
+  <!-- Bar 2 (middle) -->
+  <path d="M32 40 L40 40 L40 65 L32 65 Z" fill="#4CAF50" />
+  <path d="M32 40 L36 36 L44 36 L40 40 Z" fill="#81C784" />
+  <path d="M40 40 L44 36 L44 61 L40 65 Z" fill="#388E3C" />
+  
+  <!-- Bar 3 (right) -->
+  <path d="M45 28 L53 28 L53 65 L45 65 Z" fill="#2E7D32" />
+  <path d="M45 28 L49 24 L57 24 L53 28 Z" fill="#4CAF50" />
+  <path d="M53 28 L57 24 L57 61 L53 65 Z" fill="#1B5E20" />
+  
+  <!-- Rising green plant / sprout springing from the top bar -->
+  <path d="M51 26 Q51 16 57 12" stroke="#2E7D32" stroke-width="3" stroke-linecap="round" />
+  <!-- Left leaf -->
+  <path d="M53 18 C46 16 46 10 52 11 C57 12 56 16 53 18 Z" fill="#66BB6A" />
+  <path d="M53 18 C48 16 48 12 52 11" stroke="#81C784" stroke-width="1" />
+  <!-- Right leaf -->
+  <path d="M55 14 C62 10 65 14 61 17 C57 20 55 16 55 14 Z" fill="#81C784" />
+  <path d="M55 14 C60 12 62 14 60 16" stroke="#C8E6C9" stroke-width="1" />
+  
+  <!-- Tiny sparkling star impact -->
+  <path d="M25 24 L27 18 L29 24 L35 26 L29 28 L27 34 L25 28 L19 26 Z" fill="#FFB74D" />
+</svg>

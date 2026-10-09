@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" fill="none">
+  <!-- Soft ground shadow -->
+  <ellipse cx="40" cy="71" rx="25" ry="5" fill="#1B5E20" fill-opacity="0.12" />
+  
+  <!-- Gentle supportive sharing hands in warm soft terracotta / ochre tones -->
+  <!-- Left hand cuff/wrist -->
+  <path d="M12 55 C16 52 23 52 29 55 L27 63 C20 62 15 62 10 63 Z" fill="#E09F67" />
+  <!-- Left caring palm cupping bowl -->
+  <path d="M25 54 C30 52 35 55 38 60 C32 63 26 62 23 58 Z" fill="#F0B27A" />
+  
+  <!-- Right hand cuff/wrist -->
+  <path d="M68 55 C64 52 57 52 51 55 L53 63 C60 62 65 62 70 63 Z" fill="#D38C53" />
+  <!-- Right caring palm cupping bowl -->
+  <path d="M55 54 C50 52 45 55 42 60 C48 63 54 62 57 58 Z" fill="#E59866" />
+  
+  <!-- Ceramic warm food bowl in clean cream porcelain with soft 3D volume -->
+  <ellipse cx="40" cy="46" rx="20" ry="8" fill="#FDFEFE" />
+  <path d="M20 46 C20 59 30 63 40 63 C50 63 60 59 60 46 Z" fill="#EAEDED" />
+  <ellipse cx="40" cy="45" rx="18.5" ry="6.5" fill="#F4F6F6" />
+  
+  <!-- Wholesome nourishing food & rice inside bowl -->
+  <ellipse cx="40" cy="44" rx="16" ry="5.5" fill="#FAD7A0" />
+  
+  <!-- Warm fresh produce & green leaf sprout rising from bowl -->
+  <circle cx="34" cy="38" r="5.5" fill="#E74C3C" />
+  <circle cx="45" cy="39" r="4.5" fill="#F39C12" />
+  
+  <!-- Vibrant green sharing sprout / fresh leaf atop nourishing bowl -->
+  <path d="M40 22 C45 22 47 27 46 33 C43 38 40 40 40 40 C40 40 37 38 34 33 C33 27 35 22 40 22 Z" fill="#2ECC71" />
+  <path d="M40 24 C43 25 44 28 43 33 C41 36 40 37 40 37 Z" fill="#27AE60" />
+  <path d="M40 24 L40 38" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.8" />
+  
+  <!-- Soft highlight sheen -->
+  <circle cx="28" cy="48" r="2.5" fill="#FFFFFF" fill-opacity="0.8" />
+</svg>
