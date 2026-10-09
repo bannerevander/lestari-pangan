@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Plus } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { AppBar, Button, ButtonLink, Chip, DemoNote, Field, inputCls, StatePanel, StatusBadge, StickyFooter } from '../components/ui'
+import { AppBar, Button, ButtonLink, Chip, DemoNote, Field, inputCls, StatePanel, StatusBadge, StickyFooter, PhotoUploadPlaceholder } from '../components/ui'
 import { useApp } from '../state/AppState'
 import type { FoodCategory, RecordStatus, Unit } from '../data/types'
 import { isoToLabel } from '../lib/format'
@@ -108,43 +108,84 @@ export function RecordForm() {
     navigate('/pangan', { replace: true })
   }
 
+  const cats: [FoodCategory, string][] = [
+    ['Makanan matang', 'Porsi, kotak'],
+    ['Bahan pangan', 'Beras, sayur'],
+    ['Produk kemasan', 'Roti, botol'],
+  ]
   return (
     <>
-      <AppBar title="Tambah catatan" />
-      <main className="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pb-32 pt-4">
-        <Field label="Nama pangan" error={errors.name}>
-          {(p) => <input {...p} className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="Contoh: Wortel" />}
-        </Field>
-        <fieldset>
-          <legend className="mb-1.5 text-label">Kategori</legend>
-          <div className="flex flex-wrap gap-2">
-            {(['Makanan matang', 'Bahan pangan', 'Produk kemasan'] as FoodCategory[]).map((c) => (
-              <Chip key={c} selected={cat === c} onClick={() => setCat(c)}>{c}</Chip>
-            ))}
-          </div>
-          {errors.cat && <p className="mt-1.5 text-meta font-medium text-danger">{errors.cat}</p>}
-        </fieldset>
-        <div className="grid grid-cols-[1fr_auto] gap-3">
-          <Field label="Jumlah" error={errors.qty}>
-            {(p) => <input {...p} inputMode="decimal" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value)} />}
+      <AppBar title="Tambah catatan pangan" />
+      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
+        <section className="card flex flex-col gap-4 p-4">
+          <Field label="Nama pangan atau bahan" error={errors.name} hint="Tulis nama yang spesifik, misalnya “Beras sisa stok”.">
+            {(p) => <input {...p} className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="Contoh: Wortel" />}
           </Field>
-          <Field label="Satuan">
+          <fieldset>
+            <legend className="mb-1.5 text-label">Kategori</legend>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2">
+              {cats.map(([c, hint]) => (
+                <button
+                  key={c}
+                  type="button"
+                  aria-pressed={cat === c}
+                  onClick={() => setCat(c)}
+                  className={`tap flex min-h-[4.5rem] flex-col items-center justify-center rounded-control border px-2 py-2 text-center ${
+                    cat === c ? 'border-primary bg-primary-container text-primary' : 'border-line bg-surface hover:border-line-control'
+                  }`}
+                >
+                  <span className="font-semibold leading-5">{c}</span>
+                  <span className="text-caption text-ink-secondary">{hint}</span>
+                </button>
+              ))}
+            </div>
+            {errors.cat && <p className="mt-1.5 text-meta font-medium text-danger">{errors.cat}</p>}
+          </fieldset>
+        </section>
+
+        <section className="card flex flex-col gap-3 p-4">
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <Field label="Jumlah" error={errors.qty}>
+              {(p) => <input {...p} inputMode="decimal" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="0" />}
+            </Field>
+            <Field label="Satuan">
+              {(p) => (
+                <select {...p} className={inputCls} value={unit} onChange={(e) => setUnit(e.target.value as Unit)}>
+                  {['porsi', 'kg', 'kemasan', 'bungkus', 'unit'].map((u) => <option key={u}>{u}</option>)}
+                </select>
+              )}
+            </Field>
+          </div>
+          <label className="flex min-h-12 items-start gap-3">
+            <input type="checkbox" checked={estimate} onChange={(e) => setEstimate(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" />
+            <span>
+              Jumlah ini perkiraan
+              <span className="block text-meta text-ink-secondary">Misalnya hasil timbangan sendiri, bukan pengukuran resmi.</span>
+            </span>
+          </label>
+        </section>
+
+        <section className="card flex flex-col gap-4 p-4">
+          <Field label="Tanggal pencatatan">{(p) => <input {...p} type="date" className={inputCls} value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
+          <Field label="Tempat penyimpanan" optional hint="Membantu saat koordinasi atau saat pangan ditawarkan.">
             {(p) => (
-              <select {...p} className={inputCls} value={unit} onChange={(e) => setUnit(e.target.value as Unit)}>
-                {['porsi', 'kg', 'kemasan', 'bungkus', 'unit'].map((u) => <option key={u}>{u}</option>)}
+              <select {...p} className={inputCls} value={storage} onChange={(e) => setStorage(e.target.value)}>
+                <option value="">Pilih tempat penyimpanan</option>
+                {['Suhu ruang / tempat kering', 'Kulkas', 'Freezer', 'Wadah tertutup', 'Rak kering'].map((o) => <option key={o}>{o}</option>)}
               </select>
             )}
           </Field>
-        </div>
-        <label className="-mt-2 flex min-h-12 items-center gap-3">
-          <input type="checkbox" checked={estimate} onChange={(e) => setEstimate(e.target.checked)} className="h-5 w-5 accent-primary" />
-          Jumlah ini perkiraan
-        </label>
-        <Field label="Tanggal">{(p) => <input {...p} type="date" className={inputCls} value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
-        <Field label="Penyimpanan" optional>{(p) => <input {...p} className={inputCls} value={storage} onChange={(e) => setStorage(e.target.value)} placeholder="Contoh: Kulkas" />}</Field>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-label">Foto <span className="font-normal text-ink-secondary">(opsional)</span></p>
+            <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Foto tidak wajib; nanti membantu mengenali stok." />
+          </div>
+        </section>
       </main>
       <StickyFooter>
-        <Button block onClick={save}>Simpan catatan</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => navigate(-1)}>Batal</Button>
+          <Button block onClick={save}>Simpan catatan</Button>
+        </div>
       </StickyFooter>
     </>
   )

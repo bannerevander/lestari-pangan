@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CaretRight, ChatCircleText, Clock, Flag, MapPin, Tray } from '@phosphor-icons/react'
+import { Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { AppBar, Button, ButtonLink, DemoNote, Field, inputCls, KeyValue, Notice, Segmented, StatePanel, StatusBadge, StickyFooter } from '../components/ui'
+import { AppBar, Badge, Button, ButtonLink, Chip, DemoNote, Field, inputCls, MenuRow, Notice, PartiesRow, PhotoUploadPlaceholder, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter } from '../components/ui'
 import { FoodPhoto } from '../components/FoodPhoto'
 import { useApp, useProfile } from '../state/AppState'
 import { NotAvailable } from './Donasi'
@@ -168,6 +168,26 @@ function TransferCard({ t, donor }: { t: Transfer; donor: boolean }) {
 
 /* ---------- L02 Detail penyaluran ---------- */
 
+const STAGES = ['Kesepakatan', 'Persiapan pangan', 'Penyerahan', 'Penerimaan', 'Laporan distribusi'] as const
+
+/** Tahap aktif (0–4); 5 berarti semua tahap selesai. */
+function stageOf(t: Transfer) {
+  if (t.status === 'Terjadwal') return 1
+  if (t.status === 'Diserahkan') return 3
+  if (t.status === 'Ditolak') return 5
+  return t.distributionReported ? 5 : 4
+}
+
+function stageDetails(t: Transfer): string[] {
+  return [
+    `${t.agreed} ${t.unit} disepakati`,
+    t.status === 'Terjadwal' ? `${t.donorName} menyiapkan pangan` : 'Selesai',
+    t.handedOver !== undefined ? `${t.handedOver} ${t.unit} diserahkan` : `${t.date}, ${t.timeStart}–${t.timeEnd} WIB`,
+    t.received !== undefined ? `${t.received} ${t.unit} diterima` : `Dikonfirmasi oleh ${t.recipientName}`,
+    t.distributionReported ? 'Laporan tersimpan' : t.status === 'Ditolak' ? 'Tidak diperlukan' : 'Diisi penerima setelah menerima',
+  ]
+}
+
 export function TransferDetail() {
   const { id } = useParams()
   const { state } = useApp()
@@ -175,21 +195,81 @@ export function TransferDetail() {
   if (!t) return <NotAvailable />
   const donor = state.role === 'pemberi'
   const next = nextAction(t, donor)
+  const stage = stageOf(t)
+  const details = stageDetails(t)
 
   return (
     <>
       <AppBar title="Detail penyaluran" />
       <main className="flex flex-col gap-4 px-4 pb-32 pt-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge status={t.status} />
-          <span className="text-caption text-ink-secondary">{t.id}</span>
-        </div>
-        <h1 className="text-page-title">{t.foodName}</h1>
+        <section className="card flex flex-col gap-3 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <StatusBadge status={t.status} />
+            <span className="text-caption text-ink-secondary">
+              {stage >= STAGES.length ? 'Semua tahap selesai' : `Tahap ${stage + 1} dari ${STAGES.length}`} · {t.id}
+            </span>
+          </div>
+          <div className="flex gap-3">
+            <FoodPhoto src={t.photo} alt="" className="h-16 w-16 shrink-0 rounded-control" iconSize={26} />
+            <div className="min-w-0">
+              <h1 className="text-card-title">{t.foodName}</h1>
+              <p className="text-meta text-ink-secondary">{t.agreed} {t.unit} disepakati</p>
+            </div>
+          </div>
+          <PartiesRow donor={t.donorName} recipient={t.recipientName} />
+        </section>
+
         {next ? (
           <Notice tone="info" title="Langkah berikutnya">{next.label}.</Notice>
         ) : t.status === 'Terjadwal' || t.status === 'Diserahkan' ? (
           <Notice tone="info">Menunggu {donor ? 'penerima mengonfirmasi penerimaan' : 'pemberi mencatat penyerahan'}.</Notice>
         ) : null}
+
+        <section aria-labelledby="jadwal" className="card p-4">
+          <h2 id="jadwal" className="sr-only">Jadwal dan lokasi</h2>
+          <ul className="flex flex-col gap-3">
+            <li className="flex gap-3">
+              <CalendarBlank size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
+              <div>
+                <p className="text-meta text-ink-secondary">Jadwal penyerahan</p>
+                <p className="font-semibold">{t.date}, {t.timeStart}–{t.timeEnd} WIB</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <MapPin size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-meta text-ink-secondary">Lokasi pengambilan</p>
+                <p className="font-semibold">{t.donorName}, Coblong, Kota Bandung</p>
+                <div className="mt-2 rounded-control border border-line bg-page p-3">
+                  <p className="flex items-center gap-1.5 text-caption font-semibold text-ink-secondary">
+                    <LockSimple size={16} aria-hidden="true" /> Alamat lengkap, hanya untuk pihak yang terlibat
+                  </p>
+                  <p className="mt-1">Jl. Contoh No. 12, Coblong</p>
+                  <p className="text-caption text-ink-secondary">Alamat demo</p>
+                </div>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <Truck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
+              <div>
+                <p className="text-meta text-ink-secondary">Cara pengambilan</p>
+                <p className="font-semibold">{t.method}</p>
+                <p className="text-meta text-ink-secondary">
+                  {t.method === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : 'Biaya pengiriman belum tersedia'}
+                </p>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <section className="card p-4">
+          <h2 className="mb-3 text-card-title">Tahapan penyaluran</h2>
+          <StageList
+            label="Tahapan penyaluran"
+            current={stage}
+            stages={STAGES.map((title, i) => ({ title, detail: details[i] }))}
+          />
+        </section>
 
         <section className="card p-4">
           <h2 className="mb-2 text-card-title">Jumlah</h2>
@@ -208,18 +288,6 @@ export function TransferDetail() {
           <p className="mt-2 text-caption text-ink-secondary">Satuan: {t.unit}. “Diterima” berbeda dari “didistribusikan”.</p>
         </section>
 
-        <section className="card p-4">
-          <dl className="divide-y divide-line">
-            <KeyValue label={donor ? 'Penerima' : 'Pemberi'}>{donor ? t.recipientName : t.donorName}</KeyValue>
-            <KeyValue label="Jadwal">{t.date}, {t.timeStart}–{t.timeEnd} WIB</KeyValue>
-            <KeyValue label="Cara">{t.method}</KeyValue>
-            <KeyValue label="Biaya pengiriman">{t.method === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : 'Biaya belum tersedia'}</KeyValue>
-            <KeyValue label="Lokasi">
-              <span className="flex items-start gap-1"><MapPin size={18} aria-hidden="true" className="mt-0.5 shrink-0" />Jl. Contoh No. 12, Coblong (alamat demo)</span>
-            </KeyValue>
-          </dl>
-        </section>
-
         <section aria-labelledby="tl" className="card p-4">
           <h2 id="tl" className="mb-3 text-card-title">Riwayat kegiatan</h2>
           <ol className="relative flex flex-col gap-4 border-l-2 border-line pl-5">
@@ -234,14 +302,15 @@ export function TransferDetail() {
           </ol>
         </section>
 
-        <div className="grid grid-cols-2 gap-2">
-          <ButtonLink to={`/aktivitas/${t.id}/koordinasi`} variant="secondary" icon={<ChatCircleText size={20} />}>
-            Koordinasi
-          </ButtonLink>
-          <ButtonLink to={`/aktivitas/${t.id}/masalah`} variant="secondary" icon={<Flag size={20} />}>
-            Laporkan masalah
-          </ButtonLink>
-        </div>
+        <nav aria-label="Bantuan penyaluran" className="card divide-y divide-line overflow-hidden">
+          <MenuRow
+            to={`/aktivitas/${t.id}/koordinasi`}
+            icon={<ChatCircleText size={20} />}
+            title="Koordinasi"
+            subtitle={`Hubungi ${donor ? t.recipientName : t.donorName}`}
+          />
+          <MenuRow to={`/aktivitas/${t.id}/masalah`} icon={<Flag size={20} />} title="Laporkan masalah" subtitle="Tidak datang, terlambat, atau jumlah berbeda" />
+        </nav>
       </main>
       {next && (
         <StickyFooter>
@@ -254,6 +323,24 @@ export function TransferDetail() {
   )
 }
 
+/** Ringkasan kegiatan yang dipakai di L05/L06/L10. */
+function ActivitySummary({ t, children }: { t: Transfer; children?: React.ReactNode }) {
+  return (
+    <section className="card flex flex-col gap-3 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+        <span className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">Kegiatan</span>
+        <span className="rounded-full bg-primary-container px-2.5 py-0.5 text-caption font-semibold text-primary">{t.id}</span>
+      </div>
+      <div>
+        <p className="text-caption text-ink-secondary">Pangan</p>
+        <p className="font-semibold">{t.foodName}</p>
+      </div>
+      <PartiesRow donor={t.donorName} recipient={t.recipientName} />
+      {children}
+    </section>
+  )
+}
+
 /* ---------- L05 Penyerahan (pemberi) ---------- */
 
 export function Handover() {
@@ -261,33 +348,63 @@ export function Handover() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
-  const [qty, setQty] = useState(String(t?.agreed ?? ''))
+  const [qty, setQty] = useState(t?.agreed ?? 0)
+  const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const qid = useId()
   if (!t) return <NotAvailable />
   const submit = () => {
-    const n = Number(qty)
-    if (!Number.isInteger(n) || n <= 0) return setError('Isi jumlah yang benar-benar diserahkan.')
-    if (n > t.agreed) return setError(`Melebihi jumlah disepakati (${t.agreed} ${t.unit}). Ajukan penyesuaian bila perlu.`)
+    if (qty <= 0) return setError('Isi jumlah yang benar-benar diserahkan.')
+    if (qty > t.agreed) return setError(`Melebihi jumlah disepakati (${t.agreed} ${t.unit}).`)
     setBusy(true)
     window.setTimeout(() => {
-      dispatch({ type: 'handover', id: t.id, quantity: n })
+      dispatch({ type: 'handover', id: t.id, quantity: qty, note: note.trim() || undefined })
       navigate(`/aktivitas/${t.id}`, { replace: true })
     }, 600)
   }
   return (
     <>
-      <AppBar title="Catat penyerahan" />
+      <AppBar title="Catat penyerahan" actions={<span className="mr-3 rounded-full bg-primary-container px-2.5 py-1 text-caption font-semibold text-primary">Tahap 3 dari 5</span>} />
       <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
-        <h1 className="text-card-title">{t.foodName}</h1>
-        <p className="text-body text-ink-secondary">Kepada {t.recipientName} · disepakati {t.agreed} {t.unit}</p>
-        <Field label={`Jumlah diserahkan (${t.unit})`} error={error}>
-          {(p) => <input {...p} inputMode="numeric" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value.replace(/\D/g, ''))} />}
+        <div>
+          <h1 className="text-page-title">Catat penyerahan pangan</h1>
+          <p className="mt-1 text-body text-ink-secondary">Isi jumlah porsi yang benar-benar diserahkan kepada penerima.</p>
+        </div>
+        <ActivitySummary t={t}>
+          <div className="flex items-center justify-between border-t border-line pt-3">
+            <span className="text-ink-secondary">Jumlah disepakati</span>
+            <span className="font-bold">{t.agreed} {t.unit}</span>
+          </div>
+        </ActivitySummary>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={qid} className="text-label">Jumlah diserahkan ({t.unit})</label>
+          <QtyStepper id={qid} value={qty} onChange={(n) => { setQty(n); setError('') }} min={0} max={t.agreed} unit={t.unit} describedBy={`${qid}-h`} />
+          <p id={`${qid}-h`} className={`text-meta ${error ? 'font-medium text-danger' : 'text-ink-secondary'}`}>
+            {error || 'Kurangi angka ini jika ada porsi yang batal diserahkan.'}
+          </p>
+        </div>
+
+        <Field label="Catatan kondisi" optional>
+          {(p) => (
+            <textarea {...p} rows={3} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Contoh: dikemas dalam 1 kardus tertutup, sambal terpisah." />
+          )}
         </Field>
-        <Notice tone="info">Penyerahan belum berarti diterima. Penerima akan mengonfirmasi jumlah yang diterima.</Notice>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 text-label">Cara pencatatan</legend>
+          <RadioCard name="bukti" checked onChange={() => {}} title="Diperiksa bersama di lokasi" description="Kedua pihak melihat jumlah dan kondisi pangan saat serah terima." />
+          <p className="text-caption text-ink-secondary">Kode atau tanda tangan digital belum tersedia di prototipe.</p>
+        </fieldset>
+
+        <Notice tone="info">Penyerahan belum berarti diterima. {t.recipientName} akan mengonfirmasi jumlah yang diterima, dan selisih tidak dikenai sanksi.</Notice>
       </main>
       <StickyFooter>
-        <Button block loading={busy} onClick={submit}>Konfirmasi penyerahan</Button>
+        <div className="flex flex-col gap-2">
+          <Button block loading={busy} onClick={submit}>Konfirmasi penyerahan ({qty} {t.unit})</Button>
+          <Button block variant="ghost" onClick={() => navigate(-1)}>Kembali</Button>
+        </div>
       </StickyFooter>
     </>
   )
@@ -295,76 +412,106 @@ export function Handover() {
 
 /* ---------- L06 Konfirmasi penerimaan (penerima) ---------- */
 
+const RECEIVE_REASONS = [
+  ['Kemasan rusak atau tumpah', 'Kondisi kemasan tidak memungkinkan pangan disalurkan.'],
+  ['Kualitas menurun', 'Aroma, rasa, atau tampilan tidak layak dikonsumsi.'],
+  ['Jumlah fisik kurang', 'Porsi yang datang lebih sedikit dari yang dicatat.'],
+  ['Alasan lain', 'Jelaskan di catatan.'],
+] as const
+
 export function Receive() {
   const { id } = useParams()
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
-  const [choice, setChoice] = useState<'penuh' | 'sebagian' | 'tolak' | ''>('')
-  const [qty, setQty] = useState('')
+  const base = t ? t.handedOver ?? t.agreed : 0
+  const [qty, setQty] = useState(base)
   const [reason, setReason] = useState('')
+  const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const qid = useId()
   if (!t) return <NotAvailable />
-  const base = t.handedOver ?? t.agreed
+  const notReceived = base - qty
 
   const submit = () => {
-    let received = base
-    if (!choice) return setError('Pilih hasil penerimaan.')
-    if (choice === 'sebagian') {
-      const n = Number(qty)
-      if (!Number.isInteger(n) || n <= 0 || n >= base) return setError(`Isi jumlah antara 1 dan ${base - 1} ${t.unit}.`)
-      received = n
-    }
-    if (choice === 'tolak') received = 0
-    if (choice !== 'penuh' && !reason) return setError('Tulis alasan agar pemberi memahami selisihnya.')
+    if (notReceived > 0 && !reason) return setError('Pilih alasan agar pemberi memahami selisihnya.')
+    if (reason === 'Alasan lain' && !note.trim()) return setError('Tulis catatan singkat untuk alasan lain.')
     setBusy(true)
     window.setTimeout(() => {
-      dispatch({ type: 'receive', id: t.id, received, reason })
+      dispatch({ type: 'receive', id: t.id, received: qty, reason: notReceived > 0 ? reason.toLowerCase() : undefined, note: note.trim() || undefined })
       navigate(`/aktivitas/${t.id}`, { replace: true })
     }, 600)
   }
 
   return (
     <>
-      <AppBar title="Konfirmasi penerimaan" />
-      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
-        <section className="card p-4">
-          <h1 className="text-card-title">{t.foodName}</h1>
-          <p className="text-meta text-ink-secondary">Dari {t.donorName} · {t.id}</p>
-          <dl className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-control bg-page p-3"><dt className="text-caption text-ink-secondary">Disepakati</dt><dd className="text-[1.125rem] font-bold">{t.agreed} {t.unit}</dd></div>
-            <div className="rounded-control bg-page p-3"><dt className="text-caption text-ink-secondary">Diserahkan</dt><dd className="text-[1.125rem] font-bold">{t.handedOver !== undefined ? `${t.handedOver} ${t.unit}` : 'Belum dicatat'}</dd></div>
+      <AppBar title="Konfirmasi penerimaan" actions={<span className="mr-3 rounded-full bg-primary-container px-2.5 py-1 text-caption font-semibold text-primary">Tahap 4 dari 5</span>} />
+      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
+        <div>
+          <h1 className="text-page-title">Periksa pangan yang diterima</h1>
+          <p className="mt-1 text-body text-ink-secondary">Cocokkan jumlah dan kondisi pangan dari {t.donorName}. Laporkan apa adanya.</p>
+        </div>
+        <ActivitySummary t={t}>
+          <dl className="grid grid-cols-2 gap-2 border-t border-line pt-3">
+            <div>
+              <dt className="text-caption text-ink-secondary">Disepakati</dt>
+              <dd className="text-[1.125rem] font-bold">{t.agreed} <span className="text-meta font-normal text-ink-secondary">{t.unit}</span></dd>
+            </div>
+            <div>
+              <dt className="text-caption text-ink-secondary">Diserahkan</dt>
+              <dd className={`text-[1.125rem] font-bold ${t.handedOver !== undefined ? 'text-primary' : 'text-ink-secondary'}`}>
+                {t.handedOver !== undefined ? <>{t.handedOver} <span className="text-meta font-normal text-ink-secondary">{t.unit}</span></> : 'Belum dicatat'}
+              </dd>
+            </div>
           </dl>
+        </ActivitySummary>
+
+        <section aria-labelledby="periksa" className="card flex flex-col gap-4 p-4">
+          <h2 id="periksa" className="text-card-title">Hasil pemeriksaan</h2>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={qid} className="text-label">Jumlah diterima dan layak disalurkan ({t.unit})</label>
+            <QtyStepper id={qid} value={qty} onChange={(n) => { setQty(n); setError('') }} min={0} max={base} unit={t.unit} />
+          </div>
+          <dl className="grid grid-cols-2 gap-2" aria-live="polite">
+            <div className="rounded-control bg-primary-container p-3">
+              <dt className="text-caption text-ink-secondary">Diterima</dt>
+              <dd className="font-bold text-primary">{qty} {t.unit}</dd>
+            </div>
+            <div className={`rounded-control p-3 ${notReceived > 0 ? 'bg-warning-container' : 'bg-page'}`}>
+              <dt className="text-caption text-ink-secondary">Tidak diterima</dt>
+              <dd className={`font-bold ${notReceived > 0 ? 'text-warning' : ''}`}>{notReceived} {t.unit}</dd>
+            </div>
+          </dl>
+          <p className="text-caption text-ink-secondary">Total diperiksa: {qty} + {notReceived} = {base} {t.unit}.</p>
+
+          {notReceived > 0 && (
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1.5 text-label">Alasan selisih</legend>
+              {RECEIVE_REASONS.map(([title, desc]) => (
+                <RadioCard key={title} name="alasan" checked={reason === title} onChange={() => { setReason(title); setError('') }} title={title} description={desc} />
+              ))}
+            </fieldset>
+          )}
+          <Field label="Catatan kondisi pangan" optional={reason !== 'Alasan lain'}>
+            {(p) => <textarea {...p} rows={3} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Contoh: 2 kotak kuahnya tumpah, sisanya dalam kondisi baik." />}
+          </Field>
+          {error && <Notice tone="danger">{error}</Notice>}
         </section>
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-label">Hasil penerimaan</legend>
-          {[
-            ['penuh', `Terima penuh (${base} ${t.unit})`],
-            ['sebagian', 'Terima sebagian'],
-            ['tolak', 'Tolak seluruhnya'],
-          ].map(([v, l]) => (
-            <label key={v} className={`tap flex min-h-14 items-center gap-3 rounded-control border px-4 ${choice === v ? 'border-primary bg-primary-container' : 'border-line bg-surface'}`}>
-              <input type="radio" name="hasil" checked={choice === v} onChange={() => { setChoice(v as typeof choice); setError('') }} className="h-5 w-5 accent-primary" />
-              <span className="font-medium">{l}</span>
-            </label>
-          ))}
-        </fieldset>
-        {choice === 'sebagian' && (
-          <Field label={`Jumlah diterima (${t.unit})`}>
-            {(p) => <input {...p} inputMode="numeric" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value.replace(/\D/g, ''))} />}
-          </Field>
+
+        <PolicyNote title="Pelaporan tanpa sanksi">
+          Selisih atau pangan rusak dicatat sebagai data evaluasi. Tidak ada pemotongan poin, denda, atau sanksi bagi penerima maupun pemberi. Foto wajah tidak diperlukan.
+        </PolicyNote>
+        {qty > 0 && (
+          <p className="rounded-control border border-dashed border-line p-3 text-meta text-ink-secondary">
+            Setelah konfirmasi, {qty} {t.unit} masuk ke Catat Pangan Anda, lalu Anda dapat mengisi laporan penggunaan.
+          </p>
         )}
-        {choice && choice !== 'penuh' && (
-          <Field label="Alasan atau kondisi yang dilaporkan">
-            {(p) => <textarea {...p} rows={3} className={inputCls} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Contoh: 2 kemasan rusak" />}
-          </Field>
-        )}
-        {error && <Notice tone="danger">{error}</Notice>}
-        <p className="text-caption text-ink-secondary">Melaporkan penolakan atau selisih secara jujur tidak dikenai sanksi. Foto wajah tidak diperlukan.</p>
       </main>
       <StickyFooter>
-        <Button block loading={busy} onClick={submit}>Konfirmasi penerimaan</Button>
+        <Button block loading={busy} variant={qty === 0 ? 'danger' : 'primary'} onClick={submit}>
+          {qty === 0 ? 'Tolak seluruhnya' : `Konfirmasi penerimaan (${qty} ${t.unit})`}
+        </Button>
       </StickyFooter>
     </>
   )
@@ -384,43 +531,76 @@ export function Distribution() {
   const total = n(v.distributed) + n(v.used) + n(v.wasted)
   const left = t.received - total
   const invalid = left < 0
+  const rows = [
+    { k: 'distributed', label: 'Didistribusikan', hint: 'Dibagikan ke warga atau penerima manfaat' },
+    { k: 'used', label: 'Digunakan sendiri', hint: 'Dimasak atau dikonsumsi di posko' },
+    { k: 'wasted', label: 'Terbuang', hint: 'Dicatat tanpa sanksi' },
+  ] as const
 
   return (
     <>
-      <AppBar title="Penggunaan dan distribusi" />
+      <AppBar title="Laporan penggunaan" />
       <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
-        <section className="rounded-card bg-primary-container p-4">
-          <p className="text-meta">Diterima terkonfirmasi</p>
-          <p className="text-display text-primary">{t.received} {t.unit}</p>
-          <p className="text-meta text-ink-secondary">{t.foodName} · dari {t.donorName}</p>
+        <section className="card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge tone="success">Terkonfirmasi {t.id}</Badge>
+            <span className="text-caption text-ink-secondary">{t.date}</span>
+          </div>
+          <h1 className="mt-2 text-card-title">{t.foodName}</h1>
+          <p className="text-meta text-ink-secondary">Dari {t.donorName}</p>
+          <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
+            <span className="text-ink-secondary">Diterima</span>
+            <span className="text-[1.25rem] font-bold text-primary">{t.received} {t.unit}</span>
+          </div>
         </section>
-        {(['distributed', 'used', 'wasted'] as const).map((k) => (
-          <Field key={k} label={`${k === 'distributed' ? 'Didistribusikan' : k === 'used' ? 'Digunakan sendiri' : 'Terbuang'} (${t.unit})`} hint={k === 'wasted' ? 'Laporan terbuang tetap berguna dan tidak dikenai sanksi.' : undefined}>
-            {(p) => <input {...p} inputMode="numeric" className={inputCls} value={v[k]} onChange={(e) => setV({ ...v, [k]: e.target.value.replace(/\D/g, '') })} placeholder="0" />}
-          </Field>
-        ))}
-        <div className={`rounded-control p-4 ${invalid ? 'bg-danger-container' : 'bg-page'}`} aria-live="polite">
-          <p className="text-meta text-ink-secondary">Sisa setelah laporan</p>
-          <p className={`text-card-title ${invalid ? 'text-danger' : ''}`}>
-            {invalid ? `Total melebihi ${t.received} ${t.unit} yang diterima` : `${left} ${t.unit} masih tersedia`}
+
+        <section aria-labelledby="rincian" className="card flex flex-col gap-4 p-4">
+          <h2 id="rincian" className="text-card-title">Rincian penggunaan</h2>
+          {rows.map((r, i) => (
+            <Field key={r.k} label={`${i + 1}. ${r.label}`} hint={r.hint}>
+              {(p) => (
+                <div className="flex items-stretch gap-2">
+                  <input {...p} inputMode="numeric" className={inputCls} value={v[r.k]} onChange={(e) => setV({ ...v, [r.k]: e.target.value.replace(/\D/g, '') })} placeholder="0" />
+                  <span className="flex min-w-[4.5rem] items-center justify-center rounded-control bg-page px-3 text-meta text-ink-secondary">{t.unit}</span>
+                </div>
+              )}
+            </Field>
+          ))}
+        </section>
+
+        <section aria-live="polite" className={`rounded-card border p-4 ${invalid ? 'border-danger/40 bg-danger-container' : 'border-primary/30 bg-primary-container'}`}>
+          <p className={`text-caption font-semibold uppercase tracking-wide ${invalid ? 'text-danger' : 'text-primary'}`}>Sisa dihitung otomatis</p>
+          {invalid ? (
+            <p className="mt-1 text-card-title text-danger">Total melebihi {t.received} {t.unit} yang diterima</p>
+          ) : (
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-display text-primary">{left} {t.unit}</p>
+              <Badge tone="success" icon={false}>Masih tersedia</Badge>
+            </div>
+          )}
+          <p className="mt-2 border-t border-primary/20 pt-2 text-caption text-ink-secondary">
+            Sisa tidak dianggap habis. Jumlah ini tetap tercatat di Catat Pangan Anda.
           </p>
-        </div>
+        </section>
       </main>
       <StickyFooter>
-        <Button
-          block
-          loading={busy}
-          disabled={invalid || total === 0}
-          onClick={() => {
-            setBusy(true)
-            window.setTimeout(() => {
-              dispatch({ type: 'reportDistribution', id: t.id, distributed: n(v.distributed), used: n(v.used), wasted: n(v.wasted) })
-              navigate(`/aktivitas/${t.id}`, { replace: true })
-            }, 500)
-          }}
-        >
-          Simpan laporan
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => navigate(-1)}>Batal</Button>
+          <Button
+            block
+            loading={busy}
+            disabled={invalid || total === 0}
+            onClick={() => {
+              setBusy(true)
+              window.setTimeout(() => {
+                dispatch({ type: 'reportDistribution', id: t.id, distributed: n(v.distributed), used: n(v.used), wasted: n(v.wasted) })
+                navigate(`/aktivitas/${t.id}`, { replace: true })
+              }, 500)
+            }}
+          >
+            Simpan laporan
+          </Button>
+        </div>
       </StickyFooter>
     </>
   )
@@ -428,42 +608,89 @@ export function Distribution() {
 
 /* ---------- L09 Notifikasi ---------- */
 
+type NotifFilter = 'Semua' | 'Kegiatan' | 'Reward' | 'Sistem'
+
+const notifStyle = {
+  Kegiatan: { icon: <Package size={22} />, cls: 'bg-primary-container text-primary', label: 'Kegiatan penyaluran' },
+  Reward: { icon: <Gift size={22} />, cls: 'bg-accent-soft text-ink', label: 'Apresiasi' },
+  Sistem: { icon: <Info size={22} />, cls: 'bg-info-container text-info', label: 'Info' },
+} as const
+
 export function Notifications() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
-  const list = state.notifications.filter((n) => n.role === state.role)
+  const [filter, setFilter] = useState<NotifFilter>('Semua')
+  const all = state.notifications.filter((n) => n.role === state.role)
+  const list = filter === 'Semua' ? all : all.filter((n) => n.kind === filter)
+  const unread = all.filter((n) => !n.read).length
   return (
     <>
-      <AppBar title="Notifikasi" />
-      <main className="flex flex-col px-4 pb-10 pt-2">
-        {list.length === 0 && <StatePanel title="Belum ada notifikasi" />}
-        <ul className="flex flex-col divide-y divide-line">
-          {list.map((n) => (
-            <li key={n.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  dispatch({ type: 'readNotification', id: n.id })
-                  navigate(n.to)
-                }}
-                className="tap flex w-full gap-3 px-1 py-4 text-left hover:bg-surface"
-              >
-                <span aria-hidden="true" className={`mt-2 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? 'bg-transparent' : 'bg-primary'}`} />
-                <span className="min-w-0 flex-1">
-                  <span className={`block ${n.read ? '' : 'font-semibold'}`}>{n.title}{!n.read && <span className="sr-only"> (belum dibaca)</span>}</span>
-                  <span className="block text-meta text-ink-secondary">{n.body}</span>
-                  <span className="mt-1 block text-caption text-ink-secondary">{n.kind} · {n.at}</span>
-                </span>
-              </button>
-            </li>
-          ))}
+      <AppBar
+        title="Notifikasi"
+        actions={
+          unread > 0 ? (
+            <button type="button" onClick={() => dispatch({ type: 'readAllNotifications' })} className="tap mr-1 min-h-12 rounded-control px-3 text-[0.875rem] font-semibold text-primary hover:bg-primary-container">
+              Tandai dibaca
+            </button>
+          ) : undefined
+        }
+      />
+      <main className="flex flex-col gap-3 pb-10">
+      <div className="flex gap-2 overflow-x-auto border-b border-line bg-surface px-4 py-2" role="group" aria-label="Saring notifikasi">
+        {(['Semua', 'Kegiatan', 'Reward', 'Sistem'] as const).map((f) => (
+          <Chip key={f} selected={filter === f} onClick={() => setFilter(f)}>
+            {f === 'Semua' ? `Semua (${all.length})` : f === 'Reward' ? 'Apresiasi' : f === 'Sistem' ? 'Info' : 'Kegiatan'}
+          </Chip>
+        ))}
+      </div>
+      <div className="flex flex-col gap-3 px-4 pt-1">
+        {list.length === 0 && <StatePanel icon={<Bell size={40} className="text-ink-secondary" />} title="Belum ada notifikasi" />}
+        <ul className="flex flex-col gap-3">
+          {list.map((n) => {
+            const st = notifStyle[n.kind]
+            return (
+              <li key={n.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch({ type: 'readNotification', id: n.id })
+                    navigate(n.to)
+                  }}
+                  className={`tap card flex w-full gap-3 p-4 text-left hover:bg-page ${n.read ? '' : 'border-primary/40 ring-1 ring-primary/20'}`}
+                >
+                  <span aria-hidden="true" className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-control ${st.cls}`}>{st.icon}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">{st.label}</span>
+                      {!n.read && <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />}
+                    </span>
+                    <span className={`mt-0.5 block ${n.read ? 'font-medium' : 'font-semibold'}`}>
+                      {n.title}
+                      {!n.read && <span className="sr-only"> (belum dibaca)</span>}
+                    </span>
+                    <span className="block text-meta text-ink-secondary">{n.body}</span>
+                    <span className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-caption text-ink-secondary">{n.at}</span>
+                      {n.cta && (
+                        <span className="inline-flex items-center gap-1 text-[0.875rem] font-semibold text-primary">
+                          {n.cta} <CaretRight size={14} weight="bold" aria-hidden="true" />
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
+        <p className="pt-4 text-center text-caption text-ink-secondary">Notifikasi tidak menampilkan alamat atau kontak pribadi.</p>
+      </div>
       </main>
     </>
   )
 }
 
-/* ---------- L08 / L10 placeholder berlabel ---------- */
+/* ---------- L08 / L10 ---------- */
 
 export function Coordination() {
   const { id } = useParams()
@@ -479,33 +706,54 @@ export function Coordination() {
   )
 }
 
+const ISSUE_CATEGORIES = [
+  ['Kondisi pangan tidak sesuai', 'Kemasan rusak, kuah tumpah, atau tidak layak konsumsi.'],
+  ['Jumlah berbeda', 'Jumlah fisik berbeda dari yang disepakati.'],
+  ['Tidak datang atau terlambat', 'Salah satu pihak tidak hadir sesuai jadwal.'],
+  ['Kendala pengiriman', 'Kendaraan, rute, atau mitra pengiriman bermasalah.'],
+  ['Lainnya', 'Lokasi sulit ditemukan, kontak tidak aktif, atau hal lain.'],
+] as const
+
 export function ReportIssue() {
   const { id } = useParams()
+  const { state } = useApp()
   const navigate = useNavigate()
+  const t = state.transfers.find((x) => x.id === id)
   const [cat, setCat] = useState('')
   const [desc, setDesc] = useState('')
   const [sent, setSent] = useState(false)
   return (
     <>
       <AppBar title="Laporkan masalah" />
-      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
+      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
         {sent ? (
           <Notice tone="success" title="Laporan terkirim">Status awal: Dikirim. Tim akan meninjau dan memberi kabar lewat notifikasi.</Notice>
         ) : (
           <>
-            <p className="text-meta text-ink-secondary">Kegiatan: {id}</p>
-            <fieldset className="flex flex-col">
-              <legend className="mb-1.5 text-label">Kategori</legend>
-              {['Tidak datang', 'Terlambat', 'Jumlah berbeda', 'Kondisi pangan tidak sesuai', 'Kendala pengiriman', 'Lainnya'].map((c) => (
-                <label key={c} className="flex min-h-12 items-center gap-3">
-                  <input type="radio" name="cat" checked={cat === c} onChange={() => setCat(c)} className="h-5 w-5 accent-primary" />
-                  {c}
-                </label>
+            <section className="card p-4">
+              <p className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">Kegiatan terkait</p>
+              <p className="mt-1 font-semibold">{t ? `${t.foodName} (${t.agreed} ${t.unit})` : id}</p>
+              {t && <p className="text-meta text-ink-secondary">{t.id} · {state.role === 'pemberi' ? `Penerima: ${t.recipientName}` : `Pemberi: ${t.donorName}`}</p>}
+            </section>
+            <fieldset className="card flex flex-col gap-2 p-4">
+              <legend className="sr-only">Kategori masalah</legend>
+              <p aria-hidden="true" className="mb-1 text-card-title">Kategori masalah</p>
+              {ISSUE_CATEGORIES.map(([title, d]) => (
+                <RadioCard key={title} name="cat" checked={cat === title} onChange={() => setCat(title)} title={title} description={d} />
               ))}
             </fieldset>
-            <Field label="Ceritakan yang terjadi">
-              {(p) => <textarea {...p} rows={4} className={inputCls} value={desc} onChange={(e) => setDesc(e.target.value)} />}
-            </Field>
+            <section className="card flex flex-col gap-4 p-4">
+              <Field label="Ceritakan yang terjadi" hint="Tulis fakta di lapangan: jumlah, waktu, dan kondisi.">
+                {(p) => <textarea {...p} rows={4} className={inputCls} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Contoh: 2 kotak kemasan rusak saat diambil, 10 porsi lain dalam kondisi baik." />}
+              </Field>
+              <div className="flex flex-col gap-1.5">
+                <p className="text-label">Foto kondisi <span className="font-normal text-ink-secondary">(opsional)</span></p>
+                <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Nanti cukup foto kemasan atau pangan. Foto wajah tidak diperlukan." />
+              </div>
+            </section>
+            <PolicyNote title="Pelaporan tanpa hukuman">
+              Laporan kendala dipakai untuk memperbaiki koordinasi, bukan untuk menghukum siapa pun.
+            </PolicyNote>
           </>
         )}
       </main>
@@ -513,7 +761,10 @@ export function ReportIssue() {
         {sent ? (
           <Button block variant="secondary" onClick={() => navigate(-1)}>Kembali</Button>
         ) : (
-          <Button block disabled={!cat || !desc} onClick={() => setSent(true)}>Kirim laporan</Button>
+          <div className="flex flex-col gap-2">
+            <Button block disabled={!cat || !desc.trim()} onClick={() => setSent(true)}>Kirim laporan</Button>
+            <Button block variant="ghost" onClick={() => navigate(-1)}>Batal</Button>
+          </div>
         )}
       </StickyFooter>
     </>

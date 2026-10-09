@@ -2,9 +2,9 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppFrame, TabLayout } from './components/Layouts'
 import { useApp } from './state/AppState'
 import Home from './pages/Home'
-import { DonasiTab, OfferDetail, OfferManage } from './pages/Donasi'
+import { DonasiTab, OfferClose, OfferDetail, OfferManage } from './pages/Donasi'
 import OfferForm from './pages/OfferForm'
-import { IncomingRequests, RequestDetail, RequestForm, ReviewRequest } from './pages/Requests'
+import { IncomingRequests, RequestCancel, RequestDetail, RequestForm, ReviewRequest } from './pages/Requests'
 import { ActivitiesTab, Coordination, Distribution, Handover, Notifications, Receive, ReportIssue, TransferDetail } from './pages/Activities'
 import { PanganTab, RecordForm } from './pages/Pangan'
 import { AccountTab } from './pages/Account'
@@ -36,9 +36,12 @@ export default function App() {
 
           <Route path="donasi/baru" element={<OfferForm />} />
           <Route path="donasi/kelola/:id" element={<OfferManage />} />
+          <Route path="donasi/kelola/:id/tutup" element={<OfferClose />} />
+          <Route path="donasi/kelola/:id/ubah" element={<ComingSoon title="Ubah penawaran" />} />
           <Route path="donasi/:id" element={<OfferDetail />} />
           <Route path="donasi/:id/minta" element={<RequestForm />} />
           <Route path="permintaan/:id" element={<RequestDetail />} />
+          <Route path="permintaan/:id/batal" element={<RequestCancel />} />
           <Route path="permintaan/:id/tinjau" element={<ReviewRequest />} />
           <Route path="aktivitas/permintaan" element={<IncomingRequests />} />
           <Route path="aktivitas/:id" element={<TransferDetail />} />

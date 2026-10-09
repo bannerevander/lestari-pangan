@@ -31,6 +31,29 @@ Hasil akhir: axe-core tanpa pelanggaran pada 17 layar; target sentuh ≥ 48 px; 
 | “Donasi pangan 100% gratis” | Kata absolut, padahal pengiriman mitra bisa berbiaya | “Donasi pangan gratis. Biaya pengiriman, jika memakai mitra, ditampilkan terpisah” |
 | Banyak label kapital penuh (“PENGAMBILAN TERDEKAT”) | Lebih sulit dibaca | Dipakai hanya untuk judul kelompok menu yang pendek |
 
+## Pencocokan dengan ekspor Stitch 9 Okt 2026
+
+Ekspor lengkap 126 layar (dari MCP Stitch di komputer Banner) menunjukkan 18 layar yang sudah dibangun punya desain Stitch yang sebelumnya belum terlihat. Layar itu sekarang mengikuti struktur Stitch, dengan beberapa penyesuaian:
+
+| Layar | Yang diambil dari Stitch | Penyesuaian |
+| --- | --- | --- |
+| L02 Detail penyaluran | Tahap “x dari 5”, baris pemberi → penerima, kartu jadwal dan lokasi, alamat privat, 5 tahapan | Tombol utama tetap satu dan menempel di bawah; riwayat kegiatan dipertahankan |
+| L05 Catat penyerahan | Kartu kegiatan, input jumlah dengan tombol − / +, catatan kondisi, cara pencatatan | “Berita Acara Manual” diganti “Diperiksa bersama di lokasi” |
+| L06 Konfirmasi penerimaan | Dokumen penyerahan, jumlah diterima vs tidak diterima, total diperiksa, alasan selisih, kebijakan tanpa sanksi | Pilihan penuh/sebagian/tolak digabung jadi satu input jumlah; jumlah 0 berarti tolak seluruhnya |
+| C06 Laporan penggunaan | Tiga baris bernomor dengan satuan, kartu sisa otomatis | Sisa tidak dianggap habis dan tetap tercatat |
+| L09 Notifikasi | Filter kategori, kartu berikon, tautan aksi, “Tandai dibaca” | Tautan tanpa kode layar (“Tinjau permintaan”, bukan “Tinjau di Q04”) |
+| L10 Laporan masalah | Kegiatan terkait, kategori berpenjelasan, foto opsional, prinsip tanpa hukuman | Unggah foto ditandai belum tersedia |
+| D02-C Tinjauan penawaran | Alamat privat terkunci, pernyataan kelayakan wajib dicentang | — |
+| D03 Kelola penawaran | Alokasi jumlah + bilah proporsi, kartu permintaan, “Tindakan penawaran” | — |
+| D05 Tutup penawaran | Peringatan porsi direservasi, dampak ke sisa vs reservasi, alasan, centang pemahaman | Dibuat sebagai halaman penuh (sebelumnya sheet) |
+| Q01/Q01-B Ajukan permintaan | Dua langkah dengan bilah progres, kartu rincian dan jadwal, komitmen penerima | “Rp0 (Donasi Gratis)” tidak dipakai |
+| Q02 Detail permintaan | Tahapan permintaan, info alamat dibuka setelah disetujui | Label status tetap “Diajukan” sesuai kamus status |
+| Q03 Permintaan masuk | Urutan antrean, peringatan total melebihi sisa, simulasi sisa per antrean | — |
+| Q06 Batalkan permintaan | Halaman penuh, alasan berpenjelasan, pesan untuk pemberi, kebijakan tanpa sanksi | — |
+| H03, C02, R01, I01, U02, U07 | Pengelompokan fitur + ilustrasi, kartu formulir, chip bahan, rincian dampak + grafik sepekan, poin pengenalan, kartu peran + jenis lembaga | I01 tetap tanpa estimasi emisi; R01 suara tetap nonaktif |
+
+Setelah penyesuaian: uji alur lengkap lulus, axe tanpa pelanggaran di 19 layar yang diubah, target sentuh ≥ 44 px, dan tidak ada scroll horizontal pada teks 200%.
+
 ## Rekomendasi berikutnya
 
 1. **Uji singkat dengan 3–5 pengguna nyata** (1 pemilik warung, 1 pengurus panti, 1 rumah tangga) pada tugas: tawarkan pangan, minta pangan, konfirmasi penerimaan sebagian. Ini satu-satunya cara memastikan istilah seperti “direservasi” dan “penyaluran” dipahami.

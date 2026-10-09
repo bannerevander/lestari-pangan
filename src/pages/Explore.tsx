@@ -3,104 +3,240 @@ import { Link, useParams } from 'react-router-dom'
 import {
   BookmarkSimple,
   CaretRight,
-  ChartBar,
-  ChefHat,
   Gift,
   HeartStraight,
   Lightbulb,
   MagnifyingGlass,
   Microphone,
   Notebook,
-  Trophy,
+  Plus,
+  Question,
+  Receipt,
   Wrench,
+  X,
 } from '@phosphor-icons/react'
-import { AppBar, Button, ButtonLink, Chip, Field, inputCls, Notice, Segmented, StatePanel } from '../components/ui'
+import { AppBar, Badge, Button, ButtonLink, Chip, inputCls, Notice, Segmented, StatePanel, StickyFooter } from '../components/ui'
 import { useApp } from '../state/AppState'
 import { tips } from '../data/mock'
 import { asset } from '../lib/format'
 
 /* ---------- H03 Semua fitur ---------- */
 
-const features = [
-  { to: '/pangan', icon: Notebook, title: 'Catat Pangan', desc: 'Persediaan, surplus, dan pangan terbuang' },
-  { to: '/dampak', icon: ChartBar, title: 'Dampak', desc: 'Ringkasan per periode dengan sumber data' },
-  { to: '/resep', icon: ChefHat, title: 'Resep dari Sisa', desc: 'Cari resep dari bahan yang ada, teks atau suara' },
-  { to: '/tips', icon: Lightbulb, title: 'Tips Anti Food Waste', desc: 'Penyimpanan, perencanaan, dan donasi' },
-  { to: '/tantangan', icon: Trophy, title: 'Eco Challenge', desc: 'Langkah kecil untuk kebiasaan baru' },
-  { to: '/reward', icon: Gift, title: 'Reward dan apresiasi', desc: 'Paket Apresiasi Mitra dan Dukungan Penyaluran' },
-  { to: '/dukung', icon: HeartStraight, title: 'Dukung Lestari Pangan', desc: 'Donasi operasional sukarela dan laporan' },
+type Feature = { to: string; img?: string; icon?: typeof Notebook; title: string; desc: string; badge?: string }
+
+const featureGroups: { title: string; note?: string; items: Feature[] }[] = [
+  {
+    title: 'Berbagi dan mencatat',
+    items: [
+      { to: '/donasi', img: 'illustrations/tangan-berbagi.svg', title: 'Donasi Pangan', desc: 'Tawarkan atau cari pangan surplus layak konsumsi', badge: 'Utama' },
+      { to: '/pangan', img: 'illustrations/catat-pangan.svg', title: 'Catat Pangan', desc: 'Persediaan, surplus, dan pangan terbuang' },
+      { to: '/dampak', img: 'illustrations/dampak.svg', title: 'Dampak', desc: 'Ringkasan per periode dengan sumber data' },
+    ],
+  },
+  {
+    title: 'Ide dan kebiasaan',
+    items: [
+      { to: '/resep', img: 'illustrations/resep.svg', title: 'Resep dari Sisa', desc: 'Olahan dari bahan yang masih ada' },
+      { to: '/tips', icon: Lightbulb, title: 'Tips Anti Food Waste', desc: 'Penyimpanan, perencanaan, dan donasi' },
+      { to: '/tantangan', img: 'illustrations/medali-daun.svg', title: 'Eco Challenge', desc: 'Langkah kecil untuk kebiasaan baru' },
+      { to: '/reward', icon: Gift, title: 'Reward dan apresiasi', desc: 'Apresiasi mitra dan dukungan penyaluran' },
+    ],
+  },
+]
+
+const supportLinks: Feature[] = [
+  { to: '/dukung', icon: HeartStraight, title: 'Dukung Lestari Pangan', desc: '' },
+  { to: '/transparansi', icon: Receipt, title: 'Transparansi dana', desc: '' },
+  { to: '/bantuan', icon: Question, title: 'Pusat bantuan dan kebijakan', desc: '' },
 ]
 
 export function Features() {
   return (
     <>
       <AppBar title="Semua fitur" />
-      <main className="grid grid-cols-1 gap-3 px-4 pb-10 pt-4 sm:grid-cols-2">
-        {features.map(({ to, icon: Icon, title, desc }) => (
-          <Link key={to} to={to} className="tap card flex items-center gap-3 p-4 hover:bg-page">
-            <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary-container text-primary">
-              <Icon size={26} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-semibold">{title}</span>
-              <span className="block text-meta text-ink-secondary">{desc}</span>
-            </span>
-            <CaretRight size={20} aria-hidden="true" className="text-ink-secondary" />
-          </Link>
+      <main className="flex flex-col gap-6 px-4 pb-6 pt-4">
+        <div>
+          <h1 className="text-page-title">Semua fitur</h1>
+          <p className="mt-1 text-body text-ink-secondary">Layanan berbagi pangan, pencatatan, dan edukasi dalam satu tempat.</p>
+        </div>
+        {featureGroups.map((g) => (
+          <section key={g.title} aria-labelledby={`fg-${g.title}`} className="flex flex-col gap-3">
+            <h2 id={`fg-${g.title}`} className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">{g.title}</h2>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {g.items.map(({ to, img, icon: Icon, title, desc, badge }) => (
+                <Link key={to} to={to} className="tap card flex items-center gap-4 p-4 hover:bg-page">
+                  <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-control border border-line bg-page text-primary">
+                    {img ? <img src={asset(img)} alt="" className="h-10 w-10" /> : Icon ? <Icon size={28} /> : null}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="text-card-title">{title}</span>
+                      {badge && <span className="rounded-full bg-primary-container px-2 py-0.5 text-[0.75rem] font-semibold text-primary">{badge}</span>}
+                    </span>
+                    <span className="block text-meta text-ink-secondary">{desc}</span>
+                  </span>
+                  <CaretRight size={20} aria-hidden="true" className="shrink-0 text-ink-secondary" />
+                </Link>
+              ))}
+            </div>
+          </section>
         ))}
+        <section aria-labelledby="fg-dukungan" className="flex flex-col gap-3">
+          <h2 id="fg-dukungan" className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">Dukungan dan bantuan</h2>
+          <div className="card divide-y divide-line overflow-hidden">
+            {supportLinks.map(({ to, icon: Icon, title }) => (
+              <Link key={to} to={to} className="tap flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-page">
+                <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-line bg-page text-primary">
+                  {Icon && <Icon size={22} />}
+                </span>
+                <span className="min-w-0 flex-1 font-semibold">{title}</span>
+                <CaretRight size={20} aria-hidden="true" className="shrink-0 text-ink-secondary" />
+              </Link>
+            ))}
+          </div>
+        </section>
+        <DemoNoteLocal />
       </main>
     </>
   )
 }
 
+function DemoNoteLocal() {
+  return <p className="pb-4 text-center text-caption text-ink-secondary">Data demo · Lestari Pangan v0.1</p>
+}
+
 /* ---------- I01 Dashboard dampak ---------- */
+
+type ImpactUnit = 'porsi' | 'kg' | 'unit'
 
 export function Impact() {
   const { state } = useApp()
   const donor = state.role === 'pemberi'
-  const [period, setPeriod] = useState<'okt' | 'sep'>('okt')
-  const done = state.transfers.filter((t) => t.received !== undefined && (donor ? t.donorName === 'Warung Kebun' : t.recipientName === 'Komunitas Berbagi'))
-  const received = period === 'okt' ? done.reduce((s, t) => s + (t.received ?? 0), 0) : 0
-  const rejected = period === 'okt' ? done.reduce((s, t) => s + (t.rejected ?? 0), 0) : 0
-  const offered = period === 'okt' ? state.offers.filter((o) => o.donorName === 'Warung Kebun' && o.status !== 'Draf').reduce((s, o) => s + (o.unit === 'porsi' ? o.initial : 0), 0) : 0
-  const wasted = period === 'okt' ? state.records.filter((r) => r.owner === state.role && r.status === 'Terbuang' && r.unit === 'porsi').reduce((s, r) => s + r.quantity, 0) : 0
-
-  const metrics = donor
+  const [unit, setUnit] = useState<ImpactUnit>('porsi')
+  const done = state.transfers.filter((t) => t.received !== undefined && t.unit === 'porsi' && (donor ? t.donorName === 'Warung Kebun' : t.recipientName === 'Komunitas Berbagi'))
+  const received = done.reduce((s, t) => s + (t.received ?? 0), 0)
+  const rejected = done.reduce((s, t) => s + (t.rejected ?? 0), 0)
+  const offered = state.offers.filter((o) => o.donorName === 'Warung Kebun' && o.status !== 'Draf' && o.unit === 'porsi').reduce((s, o) => s + o.initial, 0)
+  const dist = done.reduce(
+    (acc, t) => {
+      if (t.distribution) {
+        acc.distributed += t.distribution.distributed
+        acc.used += t.distribution.used
+        acc.wasted += t.distribution.wasted
+      } else acc.unreported += t.received ?? 0
+      return acc
+    },
+    { distributed: 0, used: 0, wasted: 0, unreported: 0 },
+  )
+  const remaining = received - dist.distributed - dist.used - dist.wasted - dist.unreported
+  const parts = donor
     ? [
-        ['Surplus ditawarkan', offered, 'Penawaran diterbitkan'],
-        ['Diterima penerima', received, 'Konfirmasi penerima'],
-        ['Tidak diterima', rejected, 'Konfirmasi penerima'],
-        ['Terbuang', wasted, 'Catatan pribadi'],
+        { label: 'Diterima penerima', value: received, cls: 'bg-primary' },
+        { label: 'Tidak diterima saat serah terima', value: rejected, cls: 'bg-accent' },
       ]
     : [
-        ['Diterima aktual', received, 'Konfirmasi Anda'],
-        ['Ditolak saat serah terima', rejected, 'Konfirmasi Anda'],
-        ['Didistribusikan', period === 'okt' ? 9 : 0, 'Laporan distribusi'],
-        ['Digunakan sendiri', period === 'okt' ? 1 : 0, 'Laporan distribusi'],
-      ]
+        { label: 'Didistribusikan ke penerima manfaat', value: dist.distributed, cls: 'bg-primary' },
+        { label: 'Digunakan di posko', value: dist.used, cls: 'bg-[#8BCB91]' },
+        { label: 'Sisa persediaan', value: remaining, cls: 'bg-accent' },
+        { label: 'Belum dilaporkan', value: dist.unreported, cls: 'bg-line-control' },
+        { label: 'Terbuang', value: dist.wasted, cls: 'bg-danger' },
+      ].filter((p) => p.value > 0)
+  const total = parts.reduce((s, p) => s + p.value, 0)
+  const days = [
+    { day: '6 Okt', value: 0 as number | null, note: '0 porsi' },
+    { day: '7 Okt', value: received as number | null, note: 'Terkonfirmasi' },
+    { day: '8 Okt', value: null, note: 'Belum dicatat' },
+    { day: '9 Okt', value: 0, note: '0 porsi' },
+  ]
+  const max = Math.max(1, ...days.map((d) => d.value ?? 0))
 
   return (
     <>
       <AppBar title="Dampak" />
       <main className="flex flex-col gap-4 px-4 pb-10 pt-4">
-        <Segmented label="Periode" value={period} onChange={setPeriod} options={[{ value: 'okt', label: 'Oktober 2026' }, { value: 'sep', label: 'September 2026' }]} />
-        <p className="text-meta text-ink-secondary">Satuan: porsi. Kilogram dan kemasan ditampilkan terpisah, tidak dijumlahkan.</p>
-        {period === 'sep' ? (
-          <StatePanel title="Belum ada data">Tidak ada kegiatan terkonfirmasi pada periode ini. Ini berbeda dengan “nol food waste”.</StatePanel>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="flex items-center gap-2 font-semibold"><span aria-hidden="true" className="h-2 w-2 rounded-full bg-primary" />Periode: Oktober 2026</p>
+          <Badge tone="neutral" icon={false}>Data demo</Badge>
+        </div>
+        <Segmented
+          label="Satuan"
+          value={unit}
+          onChange={setUnit}
+          options={[
+            { value: 'porsi', label: 'Porsi' },
+            { value: 'kg', label: 'Kilogram' },
+            { value: 'unit', label: 'Kemasan' },
+          ]}
+        />
+        {unit !== 'porsi' ? (
+          <StatePanel title={`Belum ada data ${unit === 'kg' ? 'kilogram' : 'kemasan'}`}>
+            Tidak ada kegiatan terkonfirmasi dengan satuan ini pada Oktober 2026. Satuan berbeda tidak dijumlahkan.
+          </StatePanel>
         ) : (
-          <dl className="grid grid-cols-2 gap-3">
-            {metrics.map(([label, value, source]) => (
-              <div key={label as string} className="card p-4">
-                <dt className="text-meta text-ink-secondary">{label}</dt>
-                <dd className="text-display text-primary">{value}</dd>
-                <dd className="text-caption text-ink-secondary">porsi · {source}</dd>
+          <>
+            <section className="card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h2 className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">{donor ? 'Pangan diterima penerima' : 'Pangan diterima posko'}</h2>
+                <Badge tone="success">Terkonfirmasi</Badge>
               </div>
-            ))}
-          </dl>
+              <p className="mt-2"><span className="text-[2.5rem] font-bold leading-none">{received}</span> <span className="text-card-title text-ink-secondary">porsi</span></p>
+              <p className="mt-3 flex items-start gap-2 border-t border-line pt-3 text-meta text-ink-secondary">
+                <Notebook size={18} aria-hidden="true" className="mt-px shrink-0" />
+                Sumber: konfirmasi penerimaan {done.map((t) => t.id).join(', ') || '—'}
+              </p>
+              {donor && <p className="mt-1 text-meta text-ink-secondary">Surplus ditawarkan bulan ini: {offered} porsi (belum dihitung sebagai donasi berhasil).</p>}
+            </section>
+
+            {total > 0 && (
+              <section aria-labelledby="rincian-dampak" className="card p-4">
+                <h2 id="rincian-dampak" className="text-card-title">{donor ? 'Hasil serah terima' : 'Penggunaan dan penyaluran'}</h2>
+                <p className="text-meta text-ink-secondary">{donor ? 'Sumber: konfirmasi penerima' : 'Sumber: laporan penggunaan Anda'}</p>
+                <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-line" aria-hidden="true">
+                  {parts.map((p) => <span key={p.label} className={p.cls} style={{ width: `${(p.value / total) * 100}%` }} />)}
+                </div>
+                <dl className="mt-3 divide-y divide-line">
+                  {parts.map((p) => (
+                    <div key={p.label} className="flex items-center justify-between gap-3 py-2.5">
+                      <dt className="flex min-w-0 flex-1 items-center gap-2 text-meta"><span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${p.cls}`} />{p.label}</dt>
+                      <dd className="shrink-0 font-bold tabular-nums">{p.value} porsi</dd>
+                    </div>
+                  ))}
+                </dl>
+                {!donor && remaining > 0 && (
+                  <p className="mt-2 rounded-control bg-info-container p-3 text-meta">Sisa {remaining} porsi tetap tercatat sebagai persediaan aktif, tidak dianggap habis.</p>
+                )}
+              </section>
+            )}
+
+            <section aria-labelledby="sepekan" className="card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="sepekan" className="text-card-title">Aktivitas sepekan</h2>
+                <span className="text-caption text-ink-secondary">Satuan: porsi</span>
+              </div>
+              <ul className="mt-4 grid grid-cols-4 items-end gap-2" aria-label="Porsi diterima per hari">
+                {days.map((d) => (
+                  <li key={d.day} className="flex flex-col items-center gap-1 text-center">
+                    {d.value === null ? (
+                      <span className="flex h-24 w-full items-center justify-center rounded-control border-2 border-dashed border-line-control bg-page px-1 text-caption text-ink-secondary">Belum dicatat</span>
+                    ) : (
+                      <>
+                        <span className="text-caption font-bold tabular-nums">{d.value}</span>
+                        <span className="w-8 rounded-t-[6px] bg-primary" style={{ height: `${Math.max(4, (d.value / max) * 80)}px` }} aria-hidden="true" />
+                      </>
+                    )}
+                    <span className="text-caption font-semibold">{d.day}</span>
+                    <span className="text-[0.75rem] leading-4 text-ink-secondary">{d.note}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 border-t border-line pt-3 text-caption text-ink-secondary">Hari tanpa catatan dibedakan dari nilai 0, supaya tidak terbaca sebagai “nol food waste”.</p>
+            </section>
+
+            <Notice tone="info" title="Cara membaca data">
+              Penawaran belum dihitung sebagai donasi berhasil. Catatan pemberi dan penerima untuk kegiatan yang sama tidak dihitung dua kali. Estimasi emisi belum ditampilkan sampai metodenya tersedia.
+            </Notice>
+          </>
         )}
-        <Notice tone="info" title="Cara membaca data">
-          Penawaran belum dihitung sebagai donasi berhasil. Catatan pemberi dan penerima untuk kegiatan yang sama tidak dihitung dua kali. Estimasi emisi belum ditampilkan sampai metodenya tersedia.
-        </Notice>
       </main>
     </>
   )
@@ -176,49 +312,113 @@ export function TipDetail() {
 /* ---------- R01 Resep dari Sisa ---------- */
 
 export function Recipes() {
-  const [ingredients, setIngredients] = useState('wortel, nasi putih')
-  const [portions, setPortions] = useState('2')
+  const { state } = useApp()
+  const [items, setItems] = useState<string[]>(['Nasi putih', 'Wortel'])
+  const [draft, setDraft] = useState('')
+  const [portions, setPortions] = useState<'1–2 orang' | '3–4 orang' | 'Komunitas (>5)'>('1–2 orang')
+  const [tools, setTools] = useState<string[]>(['Wajan', 'Panci'])
+  const [limits, setLimits] = useState<string[]>([])
   const [searched, setSearched] = useState(false)
+  const toggle = (list: string[], set: (v: string[]) => void, v: string) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
+  const add = (v: string) => {
+    const t = v.trim()
+    if (t && !items.some((i) => i.toLowerCase() === t.toLowerCase())) setItems([...items, t])
+    setDraft('')
+  }
+  const fromRecords = state.records.filter((r) => r.owner === state.role && r.status === 'Masih tersedia').map((r) => r.name)
+
   return (
     <>
       <AppBar title="Resep dari Sisa" />
-      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-10 pt-4">
-        <section className="rounded-card bg-primary-container p-4">
-          <div className="flex items-center gap-3">
-            <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white"><Microphone size={24} /></span>
-            <div className="flex-1">
-              <p className="font-semibold">Bicara dengan asisten resep</p>
-              <p className="text-meta text-ink-secondary">Sebutkan bahan yang ada, lalu tanya langkah memasak.</p>
-            </div>
+      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
+        <section className="flex items-center gap-3 rounded-card border border-line bg-primary-container p-4">
+          <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface text-primary"><Microphone size={24} /></span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">Bingung mau masak apa?</p>
+            <p className="text-meta text-ink-secondary">Asisten suara belum tersedia. Gunakan isian di bawah.</p>
           </div>
-          <Button variant="secondary" block className="mt-3" disabled>
-            Percakapan suara belum tersedia
-          </Button>
-          <p className="mt-2 text-caption text-ink-secondary">Penyedia API suara belum dipilih. Gunakan pencarian teks di bawah.</p>
+          <Button variant="secondary" className="min-h-12 shrink-0" disabled>Bicara</Button>
         </section>
-        <Field label="Bahan yang tersedia" hint="Pisahkan dengan koma.">
-          {(p) => <input {...p} className={inputCls} value={ingredients} onChange={(e) => setIngredients(e.target.value)} />}
-        </Field>
-        <Field label="Jumlah porsi">{(p) => <input {...p} inputMode="numeric" className={inputCls} value={portions} onChange={(e) => setPortions(e.target.value.replace(/\D/g, ''))} />}</Field>
-        <Button block onClick={() => setSearched(true)}>Cari resep</Button>
+
+        <section aria-labelledby="bahan" className="card flex flex-col gap-3 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="bahan" className="text-card-title">Bahan yang tersedia</h2>
+            {fromRecords.length > 0 && (
+              <button type="button" onClick={() => setItems([...new Set([...items, ...fromRecords])])} className="tap inline-flex min-h-12 items-center gap-1 rounded-control px-2 text-[0.875rem] font-semibold text-primary hover:bg-primary-container">
+                Ambil dari Catat Pangan <CaretRight size={14} weight="bold" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+          <ul className="flex flex-wrap gap-2" aria-label="Bahan terpilih">
+            {items.map((i) => (
+              <li key={i} className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary-container pl-3 text-[0.875rem] font-semibold text-primary">
+                {i}
+                <button type="button" aria-label={`Hapus ${i}`} onClick={() => setItems(items.filter((x) => x !== i))} className="tap flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#D0E9D4]">
+                  <X size={16} weight="bold" aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+            {items.length === 0 && <li className="text-meta text-ink-secondary">Belum ada bahan.</li>}
+          </ul>
+          <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); add(draft) }}>
+            <label htmlFor="bahan-baru" className="sr-only">Tambah bahan</label>
+            <input id="bahan-baru" className={inputCls} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Ketik bahan lain, misal: telur" />
+            <Button type="submit" variant="tonal" className="shrink-0" icon={<Plus size={18} weight="bold" />}>Tambah</Button>
+          </form>
+        </section>
+
+        <section className="card flex flex-col gap-4 p-4">
+          <fieldset>
+            <legend className="mb-2 text-label">Jumlah porsi</legend>
+            <div className="flex flex-wrap gap-2">
+              {(['1–2 orang', '3–4 orang', 'Komunitas (>5)'] as const).map((p) => (
+                <Chip key={p} selected={portions === p} onClick={() => setPortions(p)}>{p}</Chip>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend className="mb-2 text-label">Alat masak yang ada</legend>
+            <div className="flex flex-wrap gap-2">
+              {['Wajan', 'Panci', 'Rice cooker', 'Oven', 'Kukusan'].map((t) => (
+                <Chip key={t} selected={tools.includes(t)} onClick={() => toggle(tools, setTools, t)}>{t}</Chip>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend className="mb-2 text-label">Batasan <span className="font-normal text-ink-secondary">(opsional)</span></legend>
+            <div className="flex flex-wrap gap-2">
+              {['Tanpa pedas', 'Tanpa kacang', 'Tanpa santan'].map((t) => (
+                <Chip key={t} selected={limits.includes(t)} onClick={() => toggle(limits, setLimits, t)}>{t}</Chip>
+              ))}
+            </div>
+          </fieldset>
+        </section>
+
         {searched && (
           <section aria-live="polite" className="flex flex-col gap-3">
             <h2 className="text-section-title">Pilihan resep</h2>
             {[
-              ['Nasi goreng wortel', 'Bahan dimiliki: nasi putih, wortel', 'Tambahan: bawang putih, kecap, telur (opsional)'],
-              ['Perkedel nasi wortel', 'Bahan dimiliki: nasi putih, wortel', 'Tambahan: tepung, daun bawang'],
-            ].map(([t, a, b]) => (
-              <div key={t} className="card p-4">
-                <p className="font-semibold">{t}</p>
-                <p className="text-meta text-primary">{a}</p>
-                <p className="text-meta text-ink-secondary">{b}</p>
-                <p className="mt-1 text-caption text-ink-secondary">Contoh katalog demo · {portions || 1} porsi</p>
-              </div>
-            ))}
+              ['Nasi goreng wortel', ['Nasi putih', 'Wortel'], 'Tambahan: bawang putih, kecap, telur (opsional)', 'Wajan'],
+              ['Perkedel nasi wortel', ['Nasi putih', 'Wortel'], 'Tambahan: tepung, daun bawang', 'Wajan'],
+              ['Bubur sayur', ['Nasi putih', 'Wortel'], 'Tambahan: kaldu, seledri', 'Panci'],
+            ]
+              .filter(([, , , tool]) => tools.includes(tool as string))
+              .map(([t, have, extra]) => (
+                <article key={t as string} className="card p-4">
+                  <h3 className="font-semibold">{t}</h3>
+                  <p className="text-meta text-primary">Bahan dimiliki: {(have as string[]).filter((h) => items.includes(h)).join(', ') || 'belum ada'}</p>
+                  <p className="text-meta text-ink-secondary">{extra}</p>
+                  <p className="mt-1 text-caption text-ink-secondary">Contoh katalog demo · {portions}{limits.length ? ` · ${limits.join(', ')}` : ''}</p>
+                </article>
+              ))}
             <p className="text-caption text-ink-secondary">Asisten resep tidak menilai keamanan pangan dari foto, tanggal, atau percakapan.</p>
           </section>
         )}
+        <p className="rounded-control bg-page p-3 text-caption text-ink-secondary">Saran resep adalah inspirasi. Tetap periksa kesegaran bahan sebelum dimasak.</p>
       </main>
+      <StickyFooter>
+        <Button block disabled={items.length === 0} onClick={() => setSearched(true)}>Cari resep dari bahan ini</Button>
+      </StickyFooter>
     </>
   )
 }

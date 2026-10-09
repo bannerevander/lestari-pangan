@@ -2,8 +2,14 @@ import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } f
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
+  ArrowRight,
   CaretRight,
+  Check,
   CheckCircle,
+  ImageSquare,
+  Minus,
+  Plus,
+  ShieldCheck,
   Clock,
   Info,
   Package,
@@ -394,7 +400,7 @@ export function BottomSheet({ open, onClose, title, children, footer }: { open: 
 /** Area CTA bawah yang menempel (detail/formulir; bottom tab disembunyikan). */
 export function StickyFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 shadow-nav">
+    <div role="region" aria-label="Tindakan utama" className="fixed bottom-0 left-1/2 z-30 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 shadow-nav">
       {children}
     </div>
   )
@@ -402,4 +408,154 @@ export function StickyFooter({ children }: { children: ReactNode }) {
 
 export function DemoNote({ children = 'Data demo' }: { children?: ReactNode }) {
   return <p className="py-6 text-center text-caption text-ink-secondary">{children} · Lestari Pangan v0.1</p>
+}
+
+/* ---------- Pola tambahan dari ekspor Stitch 2026-10-09 ---------- */
+
+/** Kartu pilihan radio dengan judul dan penjelasan (L06, L10, Q06, D05). */
+export function RadioCard({
+  name,
+  checked,
+  onChange,
+  title,
+  description,
+}: {
+  name: string
+  checked: boolean
+  onChange: () => void
+  title: string
+  description?: string
+}) {
+  return (
+    <label
+      className={`tap flex min-h-14 cursor-pointer items-start gap-3 rounded-control border p-3 ${
+        checked ? 'border-primary bg-primary-container' : 'border-line bg-surface hover:border-line-control'
+      }`}
+    >
+      <input type="radio" name={name} checked={checked} onChange={onChange} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" />
+      <span className="min-w-0">
+        <span className="block font-semibold leading-6">{title}</span>
+        {description && <span className="block text-meta text-ink-secondary">{description}</span>}
+      </span>
+    </label>
+  )
+}
+
+/** Input jumlah dengan tombol kurang/tambah (L05). */
+export function QtyStepper({
+  id,
+  value,
+  onChange,
+  min = 0,
+  max,
+  unit,
+  describedBy,
+}: {
+  id: string
+  value: number
+  onChange: (n: number) => void
+  min?: number
+  max?: number
+  unit: string
+  describedBy?: string
+}) {
+  const clamp = (n: number) => Math.max(min, max !== undefined ? Math.min(max, n) : n)
+  const btn = 'tap flex h-12 w-12 shrink-0 items-center justify-center rounded-control text-primary hover:bg-primary-container disabled:text-disabled-fg disabled:hover:bg-transparent'
+  return (
+    <div className="flex items-center gap-1 rounded-control border border-line-control bg-surface p-1 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
+      <button type="button" className={btn} aria-label={`Kurangi 1 ${unit}`} disabled={value <= min} onClick={() => onChange(clamp(value - 1))}>
+        <Minus size={22} weight="bold" aria-hidden="true" />
+      </button>
+      <input
+        id={id}
+        inputMode="numeric"
+        aria-describedby={describedBy}
+        className="h-12 min-w-0 flex-1 bg-transparent text-center text-[1.25rem] font-bold focus:outline-none"
+        value={String(value)}
+        onChange={(e) => onChange(clamp(Number(e.target.value.replace(/\D/g, '') || 0)))}
+      />
+      <button type="button" className={btn} aria-label={`Tambah 1 ${unit}`} disabled={max !== undefined && value >= max} onClick={() => onChange(clamp(value + 1))}>
+        <Plus size={22} weight="bold" aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
+
+/** Baris pemberi → penerima (L02, L05, L06). */
+export function PartiesRow({ donor, recipient }: { donor: string; recipient: string }) {
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-control bg-info-container/60 p-3">
+      <div className="min-w-0">
+        <p className="text-caption text-ink-secondary">Pemberi</p>
+        <p className="font-semibold leading-6">{donor}</p>
+      </div>
+      <ArrowRight size={18} aria-label="kepada" className="text-ink-secondary" />
+      <div className="min-w-0 text-right">
+        <p className="text-caption text-ink-secondary">Penerima</p>
+        <p className="font-semibold leading-6">{recipient}</p>
+      </div>
+    </div>
+  )
+}
+
+/** Kartu prinsip pelaporan tanpa sanksi (L06, L10, Q06, C06). */
+export function PolicyNote({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <aside className="flex gap-3 rounded-card border border-primary/20 bg-primary-container/60 p-4">
+      <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-primary">
+        <ShieldCheck size={20} />
+      </span>
+      <div className="min-w-0">
+        <p className="font-semibold text-primary">{title}</p>
+        <p className="mt-0.5 text-meta text-ink">{children}</p>
+      </div>
+    </aside>
+  )
+}
+
+/** Langkah tahapan vertikal (L02, Q02). */
+export function StageList({ stages, current, label }: { stages: { title: string; detail?: string }[]; current: number; label: string }) {
+  return (
+    <ol aria-label={label} className="flex flex-col">
+      {stages.map((s, i) => {
+        const done = i < current
+        const active = i === current
+        return (
+          <li key={s.title} className="relative flex gap-3 pb-4 last:pb-0" aria-current={active ? 'step' : undefined}>
+            {i < stages.length - 1 && (
+              <span aria-hidden="true" className={`absolute left-[13px] top-7 h-[calc(100%-1.5rem)] w-0.5 ${done ? 'bg-primary' : 'bg-line'}`} />
+            )}
+            <span
+              aria-hidden="true"
+              className={`relative z-[1] flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-bold ${
+                done ? 'bg-primary text-white' : active ? 'border-2 border-primary bg-surface text-primary' : 'border-2 border-line bg-surface text-ink-secondary'
+              }`}
+            >
+              {done ? <Check size={14} weight="bold" /> : i + 1}
+            </span>
+            <div className={`min-w-0 flex-1 ${active ? 'rounded-control bg-primary-container px-3 py-2' : 'pt-0.5'}`}>
+              <p className={`leading-6 ${done || active ? 'font-semibold text-ink' : 'text-ink-secondary'}`}>
+                {s.title}
+                <span className="sr-only">{done ? ' (selesai)' : active ? ' (sedang berlangsung)' : ' (belum)'}</span>
+              </p>
+              {s.detail && <p className="text-meta text-ink-secondary">{s.detail}</p>}
+            </div>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+/** Kartu unggah foto yang belum aktif di prototipe. */
+export function PhotoUploadPlaceholder({ label, hint }: { label: string; hint: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-control border-2 border-dashed border-line bg-page px-4 py-6 text-center">
+      <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-primary">
+        <ImageSquare size={22} />
+      </span>
+      <p className="font-semibold">{label}</p>
+      <p className="text-caption text-ink-secondary">{hint}</p>
+    </div>
+  )
 }

@@ -88,6 +88,7 @@ export interface Transfer {
   timeEnd: string
   status: TransferStatus
   distributionReported: boolean
+  distribution?: { distributed: number; used: number; wasted: number }
   timeline: TimelineEvent[]
 }
 
@@ -116,6 +117,8 @@ export interface Notification {
   read: boolean
   to: string
   kind: 'Kegiatan' | 'Reward' | 'Sistem'
+  /** Label tautan di kartu notifikasi. */
+  cta?: string
 }
 
 export interface Tip {

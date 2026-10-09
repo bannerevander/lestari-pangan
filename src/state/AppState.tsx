@@ -45,11 +45,12 @@ type Action =
   | { type: 'submitRequest'; request: Omit<FoodRequest, 'id' | 'status' | 'createdAt'> }
   | { type: 'decideRequest'; id: string; decision: 'approve' | 'reject'; reason?: string }
   | { type: 'cancelRequest'; id: string; reason: string }
-  | { type: 'handover'; id: string; quantity: number }
-  | { type: 'receive'; id: string; received: number; reason?: string }
+  | { type: 'handover'; id: string; quantity: number; note?: string }
+  | { type: 'receive'; id: string; received: number; reason?: string; note?: string }
   | { type: 'reportDistribution'; id: string; distributed: number; used: number; wasted: number }
   | { type: 'addRecord'; record: Omit<FoodRecord, 'id'> }
   | { type: 'readNotification'; id: string }
+  | { type: 'readAllNotifications' }
   | { type: 'toggleTip'; id: string }
   | { type: 'reset' }
 
@@ -146,14 +147,34 @@ function reducer(s: State, a: Action): State {
                 ...t,
                 status: 'Diserahkan',
                 handedOver: a.quantity,
-                timeline: [...t.timeline, { label: 'Diserahkan', at, by: t.donorName, note: `${a.quantity} ${t.unit} diserahkan` }],
+                timeline: [...t.timeline, { label: 'Diserahkan', at, by: t.donorName, note: `${a.quantity} ${t.unit} diserahkan${a.note ? `. ${a.note}` : ''}` }],
               }
             : t,
         ),
       }
-    case 'receive':
+    case 'receive': {
+      const target = s.transfers.find((t) => t.id === a.id)
+      const seq = s.seq + 1
+      const record: FoodRecord | null =
+        target && a.received > 0
+          ? {
+              id: `CP-${seq}`,
+              owner: 'penerima',
+              name: target.foodName,
+              category: 'Makanan matang',
+              quantity: a.received,
+              unit: target.unit,
+              estimate: false,
+              date: at,
+              storage: 'Posko penerima',
+              status: 'Masih tersedia',
+              source: `Diterima dari ${target.donorName} (${target.id})`,
+            }
+          : null
       return {
         ...s,
+        seq: record ? seq : s.seq,
+        records: record ? [record, ...s.records] : s.records,
         transfers: s.transfers.map((t) => {
           if (t.id !== a.id || (t.status !== 'Diserahkan' && t.status !== 'Terjadwal')) return t
           const base = t.handedOver ?? t.agreed
@@ -161,17 +182,18 @@ function reducer(s: State, a: Action): State {
           const note =
             status === 'Diterima penuh'
               ? `${a.received} ${t.unit} diterima`
-              : `${a.received} ${t.unit} diterima, ${base - a.received} ${t.unit} ditolak${a.reason ? `: ${a.reason}` : ''}`
+              : `${a.received} ${t.unit} diterima, ${base - a.received} ${t.unit} tidak diterima${a.reason ? `: ${a.reason}` : ''}`
           return {
             ...t,
             status,
             handedOver: base,
             received: a.received,
             rejected: base - a.received,
-            timeline: [...t.timeline, { label: status, at, by: t.recipientName, note }],
+            timeline: [...t.timeline, { label: status, at, by: t.recipientName, note: a.note ? `${note}. ${a.note}` : note }],
           }
         }),
       }
+    }
     case 'reportDistribution':
       return {
         ...s,
@@ -180,6 +202,7 @@ function reducer(s: State, a: Action): State {
             ? {
                 ...t,
                 distributionReported: true,
+                distribution: { distributed: a.distributed, used: a.used, wasted: a.wasted },
                 timeline: [
                   ...t.timeline,
                   {
@@ -199,6 +222,8 @@ function reducer(s: State, a: Action): State {
     }
     case 'readNotification':
       return { ...s, notifications: s.notifications.map((n) => (n.id === a.id ? { ...n, read: true } : n)) }
+    case 'readAllNotifications':
+      return { ...s, notifications: s.notifications.map((n) => (n.role === s.role ? { ...n, read: true } : n)) }
     case 'toggleTip':
       return {
         ...s,
@@ -209,7 +234,7 @@ function reducer(s: State, a: Action): State {
   }
 }
 
-const KEY = 'lestari-pangan-demo-v1'
+const KEY = 'lestari-pangan-demo-v2'
 
 function load(): State {
   try {

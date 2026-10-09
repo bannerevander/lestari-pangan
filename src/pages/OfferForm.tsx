@@ -144,6 +144,8 @@ export default function OfferForm() {
     else navigate(-1)
   }
 
+  const [declared, setDeclared] = useState(false)
+  const [declareError, setDeclareError] = useState(false)
   const errorList = Object.entries(errors).filter(([, v]) => v)
 
   return (
@@ -317,6 +319,7 @@ export default function OfferForm() {
 
         {step === 2 && (
           <>
+            <Notice tone="info">Periksa kembali detail sebelum penawaran terlihat oleh penerima di sekitar Anda.</Notice>
             <Review title="Pangan" onEdit={() => setStep(0)} rows={[
               ['Nama', d.name],
               ['Kategori', d.category],
@@ -327,9 +330,16 @@ export default function OfferForm() {
             <Review title="Penyaluran" onEdit={() => setStep(1)} rows={[
               ['Area (publik)', d.area],
               ['Pengambilan', `${isoToLabel(d.date)}, ${timeLabel(d.start)}–${timeLabel(d.end)} WIB`],
+              ['Alamat lengkap', 'Terkunci sampai ada kesepakatan dengan penerima'],
               ['Cara', d.methods.join(', ')],
+              ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Mitra pengiriman: biaya belum tersedia' : 'Tanpa biaya pengiriman dari platform'],
             ]} />
-            <Notice tone="info">Penawaran belum dihitung sebagai donasi berhasil. Jumlah diterima dicatat setelah serah terima.</Notice>
+            <label className={`flex items-start gap-3 rounded-card border p-4 ${declareError ? 'border-danger bg-danger-container' : 'border-primary/30 bg-primary-container'}`}>
+              <input type="checkbox" checked={declared} onChange={(e) => { setDeclared(e.target.checked); setDeclareError(false) }} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" aria-describedby="declare-err" />
+              <span className="text-meta text-ink">Saya menyatakan pangan ini layak dikonsumsi saat disiapkan dan informasinya sesuai kondisi sebenarnya.</span>
+            </label>
+            {declareError && <p id="declare-err" className="-mt-3 text-meta font-medium text-danger">Centang pernyataan ini sebelum menerbitkan.</p>}
+            <p className="text-caption text-ink-secondary">Penawaran belum dihitung sebagai donasi berhasil. Jumlah diterima dicatat setelah serah terima.</p>
           </>
         )}
       </main>
@@ -346,7 +356,7 @@ export default function OfferForm() {
               Lanjut
             </Button>
           ) : (
-            <Button className="flex-[2]" loading={submitting} loadingLabel="Menerbitkan…" icon={<Check size={20} weight="bold" />} onClick={() => publish(false)}>
+            <Button className="flex-[2]" loading={submitting} loadingLabel="Menerbitkan…" icon={<Check size={20} weight="bold" />} onClick={() => (declared ? publish(false) : setDeclareError(true))}>
               Terbitkan penawaran
             </Button>
           )}

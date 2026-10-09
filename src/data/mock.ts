@@ -234,6 +234,7 @@ export const transfers: Transfer[] = [
     timeEnd: '18.00',
     status: 'Diterima sebagian',
     distributionReported: true,
+    distribution: { distributed: 9, used: 1, wasted: 0 },
     timeline: [
       { label: 'Permintaan disetujui', at: '7 Okt 2026, 12.10 WIB', by: 'Warung Kebun' },
       { label: 'Diserahkan', at: '7 Okt 2026, 17.05 WIB', by: 'Warung Kebun', note: '12 porsi diserahkan' },
@@ -258,10 +259,11 @@ export const records: FoodRecord[] = [
 ]
 
 export const notifications: Notification[] = [
-  { id: 'N1', role: 'pemberi', title: '2 permintaan baru', body: 'Nasi kotak ayam dan sayur menerima 2 permintaan.', at: '10 Okt 2026, 13.45 WIB', read: false, to: '/aktivitas/permintaan', kind: 'Kegiatan' },
-  { id: 'N2', role: 'pemberi', title: 'Jadwal pengambilan hari ini', body: 'Komunitas Berbagi mengambil 12 porsi pukul 16.30 WIB.', at: '10 Okt 2026, 12.50 WIB', read: true, to: '/aktivitas/LP-DEMO-01', kind: 'Kegiatan' },
-  { id: 'N3', role: 'penerima', title: 'Permintaan disetujui', body: 'Warung Kebun menyetujui 12 porsi nasi kotak.', at: '10 Okt 2026, 12.48 WIB', read: false, to: '/aktivitas/LP-DEMO-01', kind: 'Kegiatan' },
-  { id: 'N4', role: 'penerima', title: 'Tips baru', body: 'Simpan sayur berdaun agar tetap segar lebih lama.', at: '9 Okt 2026, 08.00 WIB', read: true, to: '/tips/simpan-sayur', kind: 'Sistem' },
+  { id: 'N1', role: 'pemberi', title: '2 permintaan baru', body: 'Nasi kotak ayam dan sayur menerima 2 permintaan.', at: '10 Okt 2026, 13.45 WIB', read: false, to: '/aktivitas/permintaan', kind: 'Kegiatan', cta: 'Tinjau permintaan' },
+  { id: 'N2', role: 'pemberi', title: 'Jadwal pengambilan hari ini', body: 'Komunitas Berbagi mengambil 12 porsi pukul 16.30 WIB.', at: '10 Okt 2026, 12.50 WIB', read: true, to: '/aktivitas/LP-DEMO-01', kind: 'Kegiatan', cta: 'Buka detail penyaluran' },
+  { id: 'N5', role: 'pemberi', title: 'Catatan apresiasi sedang ditinjau', body: 'Riwayat penyaluran Anda bulan ini sedang diperiksa untuk program apresiasi mitra.', at: '9 Okt 2026, 09.10 WIB', read: true, to: '/reward', kind: 'Reward', cta: 'Lihat status' },
+  { id: 'N3', role: 'penerima', title: 'Permintaan disetujui', body: 'Warung Kebun menyetujui 12 porsi nasi kotak.', at: '10 Okt 2026, 12.48 WIB', read: false, to: '/aktivitas/LP-DEMO-01', kind: 'Kegiatan', cta: 'Lihat jadwal' },
+  { id: 'N4', role: 'penerima', title: 'Tips baru', body: 'Simpan sayur berdaun agar tetap segar lebih lama.', at: '9 Okt 2026, 08.00 WIB', read: true, to: '/tips/simpan-sayur', kind: 'Sistem', cta: 'Baca tips' },
 ]
 
 export const tips: Tip[] = [

@@ -2,17 +2,23 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   BookmarkSimple,
+  CaretRight,
   Clock,
   Funnel,
   HandHeart,
   House,
+  LockSimple,
   MagnifyingGlass,
   MapPin,
+  MinusCircle,
+  PencilSimple,
   Plus,
   SealCheck,
   Truck,
+  Warning,
   WarningCircle,
   X,
+  XCircle,
 } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
 import {
@@ -23,9 +29,13 @@ import {
   ButtonLink,
   Chip,
   DemoNote,
+  Field,
   IconButton,
+  inputCls,
   KeyValue,
+  MenuRow,
   Notice,
+  RadioCard,
   Segmented,
   StatePanel,
   StatusBadge,
@@ -385,120 +395,234 @@ export function OfferDetail() {
 
 export function OfferManage() {
   const { id } = useParams()
-  const { state, dispatch } = useApp()
+  const { state } = useApp()
   const offer = state.offers.find((o) => o.id === id)
-  const [confirmClose, setConfirmClose] = useState(false)
-  const [reason, setReason] = useState('')
   if (!offer) return <NotAvailable />
   const reqs = state.requests.filter((r) => r.offerId === offer.id)
   const pending = reqs.filter((r) => r.status === 'Diajukan')
+  const pct = (n: number) => (offer.initial ? Math.round((n / offer.initial) * 100) : 0)
 
   return (
     <>
       <AppBar title="Kelola penawaran" />
       <main className="flex flex-col gap-4 px-4 pb-32 pt-4">
-        <div className="flex gap-3">
-          <FoodPhoto src={offer.photo} alt={offer.name} className="h-20 w-20 shrink-0 rounded-control" />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge status={offer.status} />
-              <span className="text-caption text-ink-secondary">#{offer.id}</span>
+        <section className="card flex flex-col gap-3 p-4">
+          <div className="flex gap-3">
+            <FoodPhoto src={offer.photo} alt={offer.name} className="h-20 w-20 shrink-0 rounded-control" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <StatusBadge status={offer.status} />
+                <Badge tone="neutral" icon={false}>{offer.category}</Badge>
+              </div>
+              <h1 className="mt-1 text-card-title">{offer.name}</h1>
+              <p className="flex items-start gap-1 text-meta text-ink-secondary">
+                <MapPin size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+                <span className="min-w-0">{offer.area} · #{offer.id}</span>
+              </p>
             </div>
-            <h1 className="mt-1 text-card-title">{offer.name}</h1>
-            <p className="text-meta text-ink-secondary">{pickupLabel(offer)}</p>
           </div>
-        </div>
+          <p className="flex items-center gap-2 rounded-control border border-line px-3 py-2 text-meta">
+            <Clock size={18} aria-hidden="true" className="shrink-0 text-primary" />
+            <span>Pengambilan {pickupLabel(offer)}</span>
+          </p>
+        </section>
 
         <section aria-labelledby="jumlah-h" className="card p-4">
-          <h2 id="jumlah-h" className="mb-3 text-card-title">Rincian jumlah</h2>
-          <dl className="grid grid-cols-2 gap-3">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-2">
+            <h2 id="jumlah-h" className="text-card-title">Alokasi jumlah</h2>
+            <span className="text-meta text-ink-secondary">Total awal {offer.initial} {offer.unit}</span>
+          </div>
+          <dl className="grid grid-cols-3 gap-2 text-center">
             {[
-              ['Tersedia', offer.available, 'text-primary'],
-              ['Direservasi', offer.reserved, 'text-info'],
-              ['Diserahkan', offer.handedOver, 'text-ink'],
-              ['Jumlah awal', offer.initial, 'text-ink-secondary'],
-            ].map(([label, value, cls]) => (
-              <div key={label as string} className="rounded-control bg-page p-3">
-                <dt className="text-meta text-ink-secondary">{label}</dt>
-                <dd className={`text-[1.25rem] font-bold leading-7 ${cls}`}>
-                  {value} {offer.unit}
-                </dd>
+              ['Tersedia', offer.available, 'Masih bisa diminta', 'bg-primary-container text-primary'],
+              ['Direservasi', offer.reserved, 'Menunggu serah terima', 'bg-info-container text-info'],
+              ['Diserahkan', offer.handedOver, 'Sudah dicatat', 'bg-page text-ink'],
+            ].map(([label, value, hint, cls]) => (
+              <div key={label as string} className={`flex flex-col rounded-control p-2 ${cls}`}>
+                <dt className="order-2 text-caption font-semibold">{label}</dt>
+                <dd className="order-1 text-[1.25rem] font-bold leading-7">{value}</dd>
+                <dd className="order-3 text-[0.75rem] leading-4 text-ink-secondary">{hint}</dd>
               </div>
             ))}
           </dl>
-          <p className="mt-3 text-caption text-ink-secondary">Direservasi belum berarti diterima. Jumlah diterima dicatat oleh penerima saat serah terima.</p>
+          <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-line" aria-hidden="true">
+            <span className="bg-primary" style={{ width: `${pct(offer.available)}%` }} />
+            <span className="bg-info" style={{ width: `${pct(offer.reserved)}%` }} />
+            <span className="bg-ink-secondary" style={{ width: `${pct(offer.handedOver)}%` }} />
+          </div>
+          <p className="mt-3 text-caption text-ink-secondary">Satuan: {offer.unit}. Direservasi belum berarti diterima; jumlah diterima dicatat penerima saat serah terima.</p>
         </section>
 
         <section aria-labelledby="req-h" className="flex flex-col gap-3">
-          <h2 id="req-h" className="text-section-title">Permintaan ({reqs.length})</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="req-h" className="text-section-title">Permintaan ({reqs.length})</h2>
+            {pending.length > 0 && <Badge tone="warning">{pending.length} perlu ditinjau</Badge>}
+          </div>
           {reqs.length === 0 && <p className="text-body text-ink-secondary">Belum ada permintaan.</p>}
-          {reqs.map((r) => (
-            <Link key={r.id} to={r.status === 'Diajukan' ? `/permintaan/${r.id}/tinjau` : `/permintaan/${r.id}`} className="tap card flex items-center gap-3 p-3 hover:bg-page">
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">{r.recipientName}</p>
-                <p className="text-meta text-ink-secondary">
-                  {r.quantity} {r.unit} · {r.pickupTime}
-                </p>
-              </div>
-              <StatusBadge status={r.status} />
-            </Link>
-          ))}
+          {reqs.map((r) => {
+            const over = r.status === 'Diajukan' && r.quantity > offer.available
+            return (
+              <Link key={r.id} to={r.status === 'Diajukan' ? `/permintaan/${r.id}/tinjau` : `/permintaan/${r.id}`} className="tap card flex flex-col gap-2 p-4 hover:bg-page">
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{r.recipientName}</p>
+                    <p className="text-meta text-ink-secondary">{r.method} · {r.pickupTime}</p>
+                  </div>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-[1.125rem] font-bold">{r.quantity} {r.unit}</span>
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <StatusBadge status={r.status} />
+                  <span className="inline-flex items-center gap-1 text-[0.875rem] font-semibold text-primary">
+                    {r.status === 'Diajukan' ? 'Tinjau' : 'Lihat detail'} <CaretRight size={14} weight="bold" aria-hidden="true" />
+                  </span>
+                </div>
+                {over && (
+                  <p className="flex items-start gap-1.5 rounded-control bg-warning-container p-2 text-meta text-ink">
+                    <WarningCircle size={18} weight="fill" aria-hidden="true" className="mt-px shrink-0 text-warning" />
+                    Melebihi sisa tersedia ({offer.available} {offer.unit}). Perlu penyesuaian jumlah.
+                  </p>
+                )}
+              </Link>
+            )
+          })}
         </section>
 
         {offer.status === 'Tersedia' && (
-          <Button variant="danger" block onClick={() => setConfirmClose(true)}>
-            Tutup penawaran
-          </Button>
+          <nav aria-labelledby="aksi-h" className="flex flex-col gap-2">
+            <h2 id="aksi-h" className="text-section-title">Tindakan penawaran</h2>
+            <div className="card divide-y divide-line overflow-hidden">
+              <MenuRow to={`/donasi/kelola/${offer.id}/ubah`} icon={<PencilSimple size={20} />} title="Ubah informasi penawaran" />
+              <Link to={`/donasi/kelola/${offer.id}/tutup`} className="tap flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-danger-container">
+                <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger-container text-danger">
+                  <XCircle size={20} />
+                </span>
+                <span className="min-w-0 flex-1 font-medium text-danger">Tutup penawaran lebih awal</span>
+                <CaretRight size={20} aria-hidden="true" className="shrink-0 text-ink-secondary" />
+              </Link>
+            </div>
+          </nav>
         )}
+        <DemoNote />
       </main>
       {pending.length > 0 && (
         <StickyFooter>
-          <ButtonLink to={`/permintaan/${pending[0].id}/tinjau`} block>
+          <ButtonLink to="/aktivitas/permintaan" block>
             Tinjau {pending.length} permintaan
           </ButtonLink>
         </StickyFooter>
       )}
-      <BottomSheet
-        open={confirmClose}
-        onClose={() => setConfirmClose(false)}
-        title="Tutup penawaran?"
-        footer={
-          <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setConfirmClose(false)}>
-              Batal
-            </Button>
-            <Button
-              variant="danger"
-              className="flex-1"
-              disabled={!reason}
-              onClick={() => {
-                dispatch({ type: 'closeOffer', id: offer.id })
-                setConfirmClose(false)
-              }}
-            >
-              Tutup penawaran
-            </Button>
+    </>
+  )
+}
+
+/* ---------- D05 Tutup penawaran ---------- */
+
+const CLOSE_REASONS = [
+  ['Pangan sudah habis', 'Semua pangan sudah tersalurkan atau terpakai.'],
+  ['Pangan dipakai sendiri', 'Pangan dibutuhkan untuk operasional sendiri.'],
+  ['Jam operasional berubah', 'Dapur atau toko tutup lebih cepat hari ini.'],
+  ['Informasi perlu diperbaiki', 'Akan diterbitkan ulang dengan data yang benar.'],
+  ['Alasan lain', 'Jelaskan di catatan.'],
+] as const
+
+export function OfferClose() {
+  const { id } = useParams()
+  const { state, dispatch } = useApp()
+  const navigate = useNavigate()
+  const offer = state.offers.find((o) => o.id === id)
+  const [reason, setReason] = useState('')
+  const [note, setNote] = useState('')
+  const [ack, setAck] = useState(false)
+  const [busy, setBusy] = useState(false)
+  if (!offer) return <NotAvailable />
+  if (offer.status !== 'Tersedia') return <NotAvailable />
+  const transfers = state.transfers.filter((t) => t.offerId === offer.id && t.status === 'Terjadwal')
+  const ready = !!reason && (reason !== 'Alasan lain' || note.trim()) && (offer.reserved === 0 || ack)
+
+  return (
+    <>
+      <AppBar title="Tutup penawaran" />
+      <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
+        <section className="card flex gap-3 p-3">
+          <FoodPhoto src={offer.photo} alt="" className="h-14 w-14 shrink-0 rounded-control" />
+          <div className="min-w-0">
+            <p className="text-caption font-semibold text-primary">#{offer.id}</p>
+            <h1 className="font-semibold">{offer.name}</h1>
+            <p className="text-meta text-ink-secondary">{offer.donorName}</p>
           </div>
-        }
-      >
-        <p className="text-body">Penawaran tidak lagi menerima permintaan baru.</p>
+        </section>
+
         {offer.reserved > 0 && (
-          <div className="mt-3">
-            <Notice tone="warning">
-              Ada {offer.reserved} {offer.unit} yang sudah direservasi. Kesepakatan yang sudah ada tetap berjalan sesuai kebijakan.
-            </Notice>
+          <div role="note" className="flex gap-3 rounded-card border border-danger/30 bg-danger-container p-4">
+            <Warning size={22} weight="fill" aria-hidden="true" className="mt-0.5 shrink-0 text-danger" />
+            <div className="text-meta text-ink">
+              <p className="font-semibold text-danger">Ada {offer.reserved} {offer.unit} yang sudah direservasi</p>
+              <p className="mt-0.5">
+                Menutup penawaran tidak membatalkan pengambilan yang sudah disetujui
+                {transfers[0] ? ` untuk ${transfers[0].recipientName}` : ''}. Jadwal itu tetap berjalan.
+              </p>
+            </div>
           </div>
         )}
-        <fieldset className="mt-4">
-          <legend className="mb-2 text-label">Alasan</legend>
-          {['Pangan sudah habis', 'Pangan dipakai sendiri', 'Informasi perlu diperbaiki', 'Lainnya'].map((r) => (
-            <label key={r} className="flex min-h-12 items-center gap-3">
-              <input type="radio" name="close-reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="h-5 w-5 accent-primary" />
-              {r}
-            </label>
+
+        <section aria-labelledby="dampak-h" className="flex flex-col gap-2">
+          <h2 id="dampak-h" className="text-label">Yang terjadi pada jumlah</h2>
+          <div className="card flex items-start gap-3 p-3">
+            <MinusCircle size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-ink-secondary" />
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center justify-between gap-2 font-semibold">Sisa tersedia <Badge tone="neutral" icon={false}>{offer.available} {offer.unit}</Badge></p>
+              <p className="text-meta text-ink-secondary">Langsung ditarik dari pencarian dan tidak bisa diminta lagi.</p>
+            </div>
+          </div>
+          <div className="card flex items-start gap-3 p-3">
+            <LockSimple size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-info" />
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center justify-between gap-2 font-semibold">Direservasi <Badge tone="info" icon={false}>{offer.reserved} {offer.unit}</Badge></p>
+              <p className="text-meta text-ink-secondary">Tetap terjadwal sampai serah terima, kecuali dibatalkan bersama penerima.</p>
+            </div>
+          </div>
+        </section>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 text-label">Alasan penutupan</legend>
+          {CLOSE_REASONS.map(([t, d]) => (
+            <RadioCard key={t} name="alasan-tutup" checked={reason === t} onChange={() => setReason(t)} title={t} description={d} />
           ))}
         </fieldset>
-      </BottomSheet>
+        <Field label="Catatan tambahan" optional={reason !== 'Alasan lain'}>
+          {(p) => <textarea {...p} rows={3} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Contoh: dapur tutup pukul 17.00 hari ini." />}
+        </Field>
+        {offer.reserved > 0 && (
+          <label className="flex items-start gap-3 rounded-card border border-line bg-surface p-4">
+            <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" />
+            <span className="text-meta">Saya memahami bahwa {offer.reserved} {offer.unit} yang sudah disetujui tetap wajib dikoordinasikan sampai serah terima.</span>
+          </label>
+        )}
+        <p className="text-caption text-ink-secondary">Penutupan dicatat di riwayat penawaran.</p>
+      </main>
+      <StickyFooter>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="danger"
+            block
+            loading={busy}
+            disabled={!ready}
+            icon={<XCircle size={20} />}
+            onClick={() => {
+              setBusy(true)
+              window.setTimeout(() => {
+                dispatch({ type: 'closeOffer', id: offer.id })
+                navigate(`/donasi/kelola/${offer.id}`, { replace: true })
+              }, 500)
+            }}
+          >
+            Tutup penawaran sekarang
+          </Button>
+          <Button block variant="ghost" onClick={() => navigate(-1)}>Kembali</Button>
+        </div>
+      </StickyFooter>
     </>
   )
 }

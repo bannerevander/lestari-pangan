@@ -7,6 +7,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* fieldset bawaan memakai min-width: min-content, yang membuat layout melebar pada teks besar. */
+@layer base {
+  fieldset {
+    min-width: 0;
+  }
+  /* Kata panjang boleh dipotong hanya bila tidak muat (mis. teks 200%). */
+  body {
+    overflow-wrap: break-word;
+  }
+}
+
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body { @apply bg-page text-ink font-sans antialiased; }

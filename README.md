@@ -1,6 +1,6 @@
 # Lestari Pangan — Front End (prototipe v0.1)
 
-Front end mobile-first Lestari Pangan, dibangun dari `design.md`, `REQUIREMENTS.md`, `GAYA-HOME-TERKUNCI.md`, dan ekspor layar Google Stitch (H01 terkunci sebagai acuan utama).
+Front end mobile-first Lestari Pangan, dibangun dari `design.md`, `REQUIREMENTS.md`, `GAYA-HOME-TERKUNCI.md`, dan ekspor layar Google Stitch (H01 terkunci sebagai acuan utama). Layar sudah dicocokkan dengan ekspor lengkap Stitch 9 Okt 2026 (`output/stitch/export-2026-10-09/`); lihat ULASAN-UX.md.
 
 Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.
 
@@ -35,11 +35,11 @@ Masuk lewat pengenalan → pilih peran (Pemberi atau Penerima). Peran bisa dituk
 | H03 | Semua fitur | `/fitur` |
 | D01 | Penawaran saya (pemberi) | `/donasi` |
 | D02 | Tawarkan Pangan, 3 langkah + draf | `/donasi/baru` (juga `?dari=<id catatan>`) |
-| D03, D05 | Kelola dan tutup penawaran | `/donasi/kelola/:id` |
+| D03, D05 | Kelola dan tutup penawaran | `/donasi/kelola/:id`, `/donasi/kelola/:id/tutup` |
 | D06, D07 | Cari pangan + filter (penerima) | `/donasi` |
 | D08 | Detail pangan | `/donasi/:id` |
-| Q01 | Ajukan permintaan + tinjauan | `/donasi/:id/minta` |
-| Q02, Q06 | Detail dan batalkan permintaan | `/permintaan/:id` |
+| Q01, Q01-B | Ajukan permintaan, 2 langkah + komitmen | `/donasi/:id/minta` |
+| Q02, Q06 | Detail dan batalkan permintaan | `/permintaan/:id`, `/permintaan/:id/batal` |
 | Q03, Q04 | Permintaan masuk, tinjau (setujui/tolak) | `/aktivitas/permintaan`, `/permintaan/:id/tinjau` |
 | L01 / L01R | Aktivitas: Perlu tindakan / Berjalan / Riwayat | `/aktivitas` |
 | L02 | Detail penyaluran + riwayat kegiatan | `/aktivitas/:id` |
