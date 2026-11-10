@@ -83,6 +83,7 @@ export interface Challenge {
   periodEnd?: string
   metric?: ChallengeMetric
   targetCount?: number
+  points?: number
 }
 
 export interface RewardPack {
@@ -92,12 +93,14 @@ export interface RewardPack {
   sponsor: string
   quota: number
   claimed: number
+  cost: number
   dbId?: number
 }
 
 export interface Claim {
   id: string
   org: string
+  /** Poin yang dipakai, mis. "80 poin". */
   challenge: string
   pack: string
   at: string
@@ -149,8 +152,11 @@ export interface OpOffer {
 /** Rantai satu penyaluran (AD06): penawaran → kesepakatan → pengambilan → penerimaan → pemanfaatan. */
 export interface Chain {
   id: string
+  dbId: number
   offerId: string
   status?: string
+  /** Penerimaan sebagian/penolakan yang menunggu verifikasi staf ops (OD-03). */
+  pendingReceipt?: { received: number; reason: string; base: number; unit: string }
   steps: { title: string; value: string; who: string; tone: string }[]
   ledger: string[][]
 }

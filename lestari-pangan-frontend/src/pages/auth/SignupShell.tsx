@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from '@phosphor-icons/react'
 
-const STEPS = ['Akun', 'Konfirmasi', 'Peran', 'Profil', 'Bukti']
+const STEPS = ['Akun', 'Konfirmasi', 'Peran', 'Profil']
 
 /** Kerangka layar pendaftaran: tombol kembali, progres langkah (bila ada), judul. */
 export function SignupShell({ step, title, desc, children, back }: { step?: number; title: string; desc?: string; children: ReactNode; back?: () => void }) {

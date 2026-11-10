@@ -33,6 +33,7 @@ export function RequestDetail() {
           </div>
           <h1 className="text-page-title">{req.quantity} {req.unit} {offer?.name.toLowerCase() ?? ''}</h1>
           {req.status === 'Diajukan' && <p className="text-meta text-ink-secondary">Permintaan Anda masuk antrean {donorName} untuk diperiksa ketersediaannya.</p>}
+          {req.deadline && <p className="text-meta font-medium text-warning">Batal otomatis bila belum ditanggapi sampai {req.deadline}.</p>}
           {req.status === 'Menunggu penyesuaian' && req.proposal && (
             <Notice tone="warning" title={`${donorName} mengusulkan ${req.proposal.quantity} ${req.unit}`}>
               {state.role === 'penerima' ? 'Tinjau usulan untuk melanjutkan. Kuota belum dikunci.' : 'Menunggu jawaban penerima.'}

@@ -23,17 +23,19 @@ Proyek: **Lestari Pangan** (`nuikazqzrdtaxkywwfvm`, region Singapura, Postgres 1
 | `20261013100000_engagement_seed_realtime` | Data awal tips/resep, challenge, paket reward; Realtime untuk `notifications` |
 | `20261013110000_tickets_promotions` | Tiket bantuan/hapus data, promosi, bucket publik `media` (unggah hanya admin konten) |
 | `20261013120000_admin_scope_all` | Lingkup admin `semua` (satu akun memegang ops, keuangan, konten) |
+| `20261110100000_product_decisions` | OD-01 s.d. OD-05: batas konfirmasi 2 jam, batas per penerima, data wajib per kategori, verifikasi penerimaan sebagian, ongkir penerima/pemberi, poin challenge dan periode berikutnya |
 
 ## Menjalankan tes
 
-Tanpa Supabase CLI: buka **SQL Editor**, tempel seluruh isi satu berkas dari `tests/`, jalankan. Hasilnya satu kolom `tap`; semua baris harus diawali `ok`.
+Tanpa Supabase CLI: buka **SQL Editor**, tempel seluruh isi satu berkas dari `tests/`, jalankan. Hasilnya satu kolom `tap`; semua baris harus diawali `ok`. Database produksi sudah berisi data asli, jadi tes baru harus memfilter ke akun/`client_id` uji, bukan `limit 1` atau `count(*)` seluruh tabel.
 
 | Berkas | Asersi | Cakupan |
 | --- | --- | --- |
-| `donation_fulfillment.test.sql` | 22 | AT-01, AT-02, AT-03, AT-06, AT-10, append-only, hak akses |
+| `donation_fulfillment.test.sql` | 23 | AT-01, AT-02, AT-03, AT-06, AT-10, append-only, hak akses |
 | `issues_engagement_funding.test.sql` | 26 | AT-04, AT-07, AT-08, AT-09, kendala, challenge, konten, ledger, admin |
 | `security.test.sql` | 12 | Hak `anon`/`authenticated`, RLS, view, `search_path`, kolom privat, storage |
 | `tickets_promotions.test.sql` | 10 | Tiket idempoten + privat, balasan admin, promosi hanya admin konten, tautan internal, periode tayang |
+| `product_decisions.test.sql` | 19 | Data wajib kategori, batas per penerima, batal otomatis 2 jam, ongkir, verifikasi penerimaan, poin, periode berikutnya |
 
 ## Akun admin
 

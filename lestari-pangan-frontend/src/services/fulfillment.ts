@@ -25,6 +25,10 @@ export const reportDistribution = (code: string, distributed: number, used: numb
 
 export const respondSchedule = (code: string, accept: boolean) => rpc('fulfillment_respond_schedule', { p_id: idFromCode(code), p_accept: accept })
 
+export const requestFee = (code: string) => rpc('fulfillment_request_fee', { p_id: idFromCode(code) })
+
+export const respondFee = (code: string, accept: boolean) => rpc('fulfillment_respond_fee', { p_id: idFromCode(code), p_accept: accept })
+
 export const setMethod = (code: string, method: string) => rpc('fulfillment_set_method', { p_id: idFromCode(code), p_method: method })
 
 export const setPrep = (code: string, checks: string[]) => rpc('fulfillment_set_prep', { p_id: idFromCode(code), p_checks: checks })

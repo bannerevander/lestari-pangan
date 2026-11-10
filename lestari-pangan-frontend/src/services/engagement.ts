@@ -62,8 +62,8 @@ export interface EngagementData {
   /** Paket pada klaim aktif terakhir dan statusnya. */
   rewardClaim: string | null
   claimStatus: string | null
-  /** Keikutsertaan yang lolos dan belum dipakai untuk klaim. */
-  claimRight: string | null
+  /** Saldo poin: poin challenge yang lolos dikurangi klaim yang tidak ditolak (server memeriksa ulang saat klaim). */
+  points: number
   /** 'Draf' juga bila belum ada materi (appreciationId null). */
   appreciation: 'Draf' | 'Disetujui' | 'Revisi diminta'
   appreciationId: number | null
@@ -75,10 +75,10 @@ export async function loadEngagement(): Promise<EngagementData> {
   const [contents, saved, challenges, progress, packs, claims, material] = await Promise.all([
     supabase.from('contents').select('slug, kind, title, category, summary, body, minutes, photo_path, reviewed_at').eq('status', 'Terbit').order('id'),
     supabase.from('saved_contents').select('content:contents(slug, kind)'),
-    supabase.from('challenges').select('id, code, title, description, period_start, period_end, roles, metric, target_count').eq('status', 'Aktif').order('id'),
-    supabase.from('v_challenge_progress').select('code, challenge_id, status, progress'),
-    supabase.from('reward_packs').select('code, title, detail, sponsor').eq('active', true).order('id'),
-    supabase.from('reward_claims').select('status, pack:reward_packs(code), participant:challenge_participants(code)').order('created_at', { ascending: false }),
+    supabase.from('challenges').select('id, code, title, description, period_start, period_end, roles, metric, target_count, points').eq('status', 'Aktif').order('id'),
+    supabase.from('v_challenge_progress').select('participant_id, code, challenge_id, status, progress, period_start, points').order('participant_id'),
+    supabase.from('reward_packs').select('code, title, detail, sponsor, cost').eq('active', true).order('id'),
+    supabase.from('reward_claims').select('status, points, pack:reward_packs(code)').order('created_at', { ascending: false }),
     supabase.from('appreciation_materials').select('id, status, caption, image_path').order('version', { ascending: false }).limit(1),
   ])
   for (const r of [contents, saved, challenges, progress, packs, claims, material]) if (r.error) throw toAppError(r.error)
@@ -86,16 +86,18 @@ export async function loadEngagement(): Promise<EngagementData> {
   const rows = (contents.data ?? []) as unknown as ContentRow[]
   const savedRows = (saved.data ?? []) as unknown as { content: { slug: string; kind: string } | null }[]
   const chRows = challenges.data ?? []
-  const codeById = new Map(chRows.map((c) => [c.id, c.code as string]))
+  const byId = new Map(chRows.map((c) => [c.id, c]))
   const entries: Record<string, ChallengeEntry> = {}
+  let earned = 0
   for (const p of progress.data ?? []) {
-    const code = codeById.get(p.challenge_id as number)
-    if (code) entries[code] = { participant: p.code as string, status: p.status as ChallengeEntry['status'], progress: p.progress ?? 0 }
+    if (p.status === 'Lolos') earned += p.points ?? 0
+    const c = byId.get(p.challenge_id as number)
+    // Hanya keikutsertaan periode berjalan; periode lalu tetap dihitung poinnya.
+    if (c && p.period_start === c.period_start) entries[c.code as string] = { participant: p.code as string, status: p.status as ChallengeEntry['status'], progress: p.progress ?? 0 }
   }
-  const claimRows = (claims.data ?? []) as unknown as { status: string; pack: { code: string } | null; participant: { code: string } | null }[]
+  const claimRows = (claims.data ?? []) as unknown as { status: string; points: number; pack: { code: string } | null }[]
   const live = claimRows.filter((c) => c.status !== 'Ditolak')
-  const used = new Set(live.map((c) => c.participant?.code))
-  const right = Object.values(entries).find((e) => e.status === 'Lolos' && !used.has(e.participant))
+  const spent = live.reduce((s, c) => s + c.points, 0)
   const mat = material.data?.[0]
 
   return {
@@ -112,13 +114,14 @@ export async function loadEngagement(): Promise<EngagementData> {
       unit: METRIC_UNIT[c.metric as ChallengeMetric] ?? 'kegiatan',
       period: `${dateLabel(c.period_start)} – ${dateLabel(c.period_end)}`,
       metric: c.metric as ChallengeMetric,
+      points: c.points,
     })),
     challengeEntries: entries,
     joinedChallenges: Object.keys(entries),
-    rewardPacks: (packs.data ?? []).map((p) => ({ id: p.code as string, title: p.title, desc: p.detail, sponsor: p.sponsor })),
+    rewardPacks: (packs.data ?? []).map((p) => ({ id: p.code as string, title: p.title, desc: p.detail, sponsor: p.sponsor, cost: p.cost })),
     rewardClaim: live[0]?.pack?.code ?? null,
     claimStatus: live[0]?.status ?? null,
-    claimRight: right?.participant ?? null,
+    points: earned - spent,
     appreciation: (mat?.status as EngagementData['appreciation']) ?? 'Draf',
     appreciationId: mat?.id ?? null,
     appreciationCaption: mat?.caption ?? null,
@@ -135,7 +138,7 @@ export async function toggleSaved(slug: string): Promise<void> {
 
 export const joinChallenge = (code: string) => rpc('engagement_join_challenge', { p_challenge_id: idFromCode(code) })
 export const finishChallenge = (participant: string) => rpc('engagement_finish_challenge', { p_participant_id: idFromCode(participant) })
-export const claimReward = (participant: string, pack: string) =>
-  rpc('engagement_claim_reward', { p_participant_id: idFromCode(participant), p_pack_id: idFromCode(pack) })
+export const claimReward = (clientId: string, pack: string) =>
+  rpc('engagement_claim_reward', { p_client_id: clientId, p_pack_id: idFromCode(pack) })
 export const respondAppreciation = (id: number, decision: 'Disetujui' | 'Revisi diminta', note?: string) =>
   rpc('engagement_respond_appreciation', { p_material_id: id, p_decision: decision, p_note: note })

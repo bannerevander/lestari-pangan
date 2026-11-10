@@ -595,11 +595,11 @@ Keputusan ini belum disepakati. Requirement yang bergantung padanya dapat diguna
 
 | ID | Keputusan yang diperlukan | Requirement terkait |
 | --- | --- | --- |
-| OD-01 | Permintaan dengan persetujuan atau klaim langsung; lama reservasi; pembagian sebagian; batas perubahan dan pembatalan. | FR-DN, FR-PN |
-| OD-02 | Metode login; satu atau beberapa peran; bukti verifikasi; akun yang boleh melakukan kegiatan; pemeriksaan admin. | FR-AK |
-| OD-03 | Kategori pangan, data wajib, kriteria penerimaan/penolakan, prosedur penanganan, dan batas waktu operasional. | FR-DN, FR-PN, FR-TP |
-| OD-04 | Pembayar ongkir, kelayakan sponsor, kegagalan, biaya pembatalan, dan pengembalian. | FR-KR, FR-FD |
-| OD-05 | Nama/target challenge, poin atau klaim langsung, paket per peserta, stok, nilai voucher, sponsor, dan durasi apresiasi. | FR-EC, FR-RW |
+| OD-01 | **Diputuskan 11 Nov 2026, lihat architecture.md AR-16.** Permintaan dengan persetujuan atau klaim langsung; lama reservasi; pembagian sebagian; batas perubahan dan pembatalan. | FR-DN, FR-PN |
+| OD-02 | **Diputuskan 11 Nov 2026, lihat architecture.md AR-17.** Metode login; satu atau beberapa peran; bukti verifikasi; akun yang boleh melakukan kegiatan; pemeriksaan admin. | FR-AK |
+| OD-03 | **Diputuskan 11 Nov 2026, lihat architecture.md AR-18.** Kategori pangan, data wajib, kriteria penerimaan/penolakan, prosedur penanganan, dan batas waktu operasional. | FR-DN, FR-PN, FR-TP |
+| OD-04 | **Diputuskan 11 Nov 2026, lihat architecture.md AR-19.** Pembayar ongkir, kelayakan sponsor, kegagalan, biaya pembatalan, dan pengembalian. | FR-KR, FR-FD |
+| OD-05 | **Diputuskan 11 Nov 2026, lihat architecture.md AR-20.** Nama/target challenge, poin atau klaim langsung, paket per peserta, stok, nilai voucher, sponsor, dan durasi apresiasi. | FR-EC, FR-RW |
 | OD-06 | Sumber resep, Bahasa Indonesia, batas sesi, izin, retensi, penghapusan, dan kualitas percakapan. Penyedia API dibahas di architecture.md. | FR-RS, NFR-03 |
 | OD-07 | Anggaran, tujuan dana, cadangan, alokasi surplus, jadwal laporan, dan kewenangan pengeluaran. | BR-02, FR-FD |
 | OD-08 | Penyedia pembayaran, dukungan rutin, bukti transaksi, dan rekonsiliasi. | FR-FD, FR-AD |

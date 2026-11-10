@@ -51,7 +51,7 @@ export function IncomingRequests() {
                       <div className="min-w-0">
                         <p className="flex flex-wrap items-center gap-2">
                           <Badge tone={first ? 'success' : 'warning'} icon={false}>Antrean #{i + 1}</Badge>
-                          <span className="text-caption text-ink-secondary">{r.createdAt.split(', ')[1]}</span>
+                          <span className="text-caption text-ink-secondary">{r.createdAt.split(', ')[1]}{r.deadline && ` · tanggapi sebelum ${r.deadline.split(', ')[1]}`}</span>
                         </p>
                         <h3 className="mt-1.5 text-card-title">{r.recipientName}</h3>
                         <p className="text-meta text-ink-secondary">{r.recipientType} · kapasitas {r.capacity}</p>

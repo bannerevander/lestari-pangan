@@ -56,6 +56,7 @@ export function ReviewRequest() {
             <KeyValue label="Pengambilan">{req.pickupTime}</KeyValue>
             <KeyValue label="Cara">{req.method}</KeyValue>
             {req.note && <KeyValue label="Catatan">{req.note}</KeyValue>}
+            {req.deadline && <KeyValue label="Tanggapi sebelum"><span className="font-semibold text-warning">{req.deadline}</span></KeyValue>}
           </dl>
         </section>
         {over && <Notice tone="warning" title="Jumlah melebihi yang tersedia">Tersedia {offer.available} {offer.unit}. Ajukan penyesuaian atau tolak dengan alasan.</Notice>}

@@ -57,10 +57,10 @@ export async function loadAdminData(): Promise<AdminData> {
           .order('created_at', { ascending: false })
           .limit(LIMIT),
       ),
-      q<{ id: number; code: string; agreed: number; handed_over: number | null; received: number | null; rejected: number | null; distributed: number | null; used: number | null; wasted: number | null; unit: string; method: string; status: string; window_start: string; request: { code: string } | null; offer: { code: string; name: string; initial: number } | null; donor: Name; recipient: Name }>(
+      q<{ id: number; code: string; agreed: number; handed_over: number | null; received: number | null; rejected: number | null; distributed: number | null; used: number | null; wasted: number | null; unit: string; method: string; status: string; window_start: string; pending_receipt: { received: number; reason: string } | null; request: { code: string } | null; offer: { code: string; name: string; initial: number } | null; donor: Name; recipient: Name }>(
         db
           .from('transfers')
-          .select('id, code, agreed, handed_over, received, rejected, distributed, used, wasted, unit, method, status, window_start, request:requests!transfers_request_id_fkey(code), offer:offers!transfers_offer_id_fkey(code, name, initial), donor:profiles!transfers_donor_id_fkey(org_name), recipient:profiles!transfers_recipient_id_fkey(org_name)')
+          .select('id, code, agreed, handed_over, received, rejected, distributed, used, wasted, unit, method, status, window_start, pending_receipt, request:requests!transfers_request_id_fkey(code), offer:offers!transfers_offer_id_fkey(code, name, initial), donor:profiles!transfers_donor_id_fkey(org_name), recipient:profiles!transfers_recipient_id_fkey(org_name)')
           .order('created_at', { ascending: false })
           .limit(LIMIT),
       ),
@@ -70,17 +70,17 @@ export async function loadAdminData(): Promise<AdminData> {
       q<{ id: number; slug: string; kind: 'Tips' | 'Resep'; title: string; category: string; summary: string; body: unknown; photo_path: string | null; version: number; status: string; author: string; updated_at: string }>(
         db.from('contents').select('id, slug, kind, title, category, summary, body, photo_path, version, status, author, updated_at').order('updated_at', { ascending: false }),
       ),
-      q<{ id: number; code: string; title: string; description: string; period_start: string; period_end: string; roles: string[]; metric: string; target_count: number; status: string }>(
-        db.from('challenges').select('id, code, title, description, period_start, period_end, roles, metric, target_count, status').order('id', { ascending: false }),
+      q<{ id: number; code: string; title: string; description: string; period_start: string; period_end: string; roles: string[]; metric: string; target_count: number; points: number; status: string }>(
+        db.from('challenges').select('id, code, title, description, period_start, period_end, roles, metric, target_count, points, status').order('id', { ascending: false }),
       ),
       q<{ participant_id: number; code: string; challenge_id: number; profile_id: number; status: string; title: string; metric: string; target_count: number; progress: number }>(
         db.from('v_challenge_progress').select('participant_id, code, challenge_id, profile_id, status, title, metric, target_count, progress'),
       ),
-      q<{ id: number; code: string; title: string; detail: string; sponsor: string; quota: number; claimed: number; active: boolean }>(
-        db.from('reward_packs').select('id, code, title, detail, sponsor, quota, claimed, active').order('id'),
+      q<{ id: number; code: string; title: string; detail: string; sponsor: string; quota: number; claimed: number; cost: number; active: boolean }>(
+        db.from('reward_packs').select('id, code, title, detail, sponsor, quota, claimed, cost, active').order('id'),
       ),
-      q<{ code: string; status: string; created_at: string; pack: { code: string } | null; participant: { code: string; profile: Name } | null }>(
-        db.from('reward_claims').select('code, status, created_at, pack:reward_packs(code), participant:challenge_participants(code, profile:profiles!challenge_participants_profile_id_fkey(org_name))').order('created_at', { ascending: false }),
+      q<{ code: string; status: string; points: number; created_at: string; pack: { code: string } | null; profile: Name }>(
+        db.from('reward_claims').select('code, status, points, created_at, pack:reward_packs(code), profile:profiles!reward_claims_profile_id_fkey(org_name)').order('created_at', { ascending: false }),
       ),
       q<{ id: number; code: string; at: string; kind: 'Masuk' | 'Keluar'; fund: string; program_id: number | null; amount: number; source: string; note: string | null; transfer: { code: string } | null; reverses_id: number | null }>(
         db.from('ledger_entries').select('id, code, at, kind, fund, program_id, amount, source, note, reverses_id, transfer:transfers(code)').order('at', { ascending: false }).limit(LIMIT),
@@ -140,8 +140,12 @@ export async function loadAdminData(): Promise<AdminData> {
     const unit = t.unit
     chains[t.code] = {
       id: t.code,
+      dbId: t.id,
       offerId: t.offer?.code ?? '',
       status: t.status,
+      pendingReceipt: t.pending_receipt
+        ? { received: Number(t.pending_receipt.received), reason: t.pending_receipt.reason, base: Number(t.handed_over ?? t.agreed), unit }
+        : undefined,
       steps: [
         { title: 'Penawaran awal', value: `${t.offer?.initial ?? '—'} ${unit}`, who: `${t.donor?.org_name ?? 'Pemberi'} (${t.offer?.code ?? ''})`, tone: 'done' },
         { title: 'Permintaan disetujui', value: `${t.agreed} ${unit}`, who: t.recipient?.org_name ?? 'Penerima', tone: 'done' },
@@ -284,16 +288,17 @@ export async function loadAdminData(): Promise<AdminData> {
       roles: c.roles.length === 2 ? 'Pemberi dan penerima' : ROLE_LABEL[c.roles[0]],
       metric: c.metric as ChallengeMetric,
       targetCount: c.target_count,
+      points: c.points,
       target: `${c.target_count} ${METRIC_UNIT[c.metric as ChallengeMetric] ?? 'kegiatan'}`,
       participants: progress.filter((p) => p.challenge_id === c.id).length,
       status: c.status as 'Aktif' | 'Draf' | 'Arsip',
     })),
     participants,
-    rewardPacks: packs.map((p) => ({ id: p.code, dbId: p.id, title: p.title, detail: p.detail, sponsor: p.sponsor, quota: p.quota, claimed: p.claimed })),
+    rewardPacks: packs.map((p) => ({ id: p.code, dbId: p.id, title: p.title, detail: p.detail, sponsor: p.sponsor, quota: p.quota, claimed: p.claimed, cost: p.cost })),
     claims: claims.map((c) => ({
       id: c.code,
-      org: c.participant?.profile?.org_name ?? '—',
-      challenge: c.participant?.code ?? '',
+      org: c.profile?.org_name ?? '—',
+      challenge: `${c.points} poin`,
       pack: c.pack?.code ?? '',
       at: stampLabel(c.created_at),
       status: c.status,

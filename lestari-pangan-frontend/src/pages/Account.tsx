@@ -7,7 +7,6 @@ import {
   Gift,
   Handshake,
   HeartStraight,
-  IdentificationCard,
   Info,
   Lifebuoy,
   Lightbulb,
@@ -56,13 +55,11 @@ export function AccountTab() {
               <p className="text-meta font-semibold text-primary">Peran aktif: {donor ? 'Pemberi' : 'Penerima'}</p>
             </div>
           </div>
-          <div className="mt-3">
-            {profile.verification === 'Terverifikasi' ? (
+          {profile.verification === 'Terverifikasi' && (
+            <div className="mt-3">
               <Notice tone="success" title="Identitas terverifikasi">Verifikasi memeriksa identitas pengelola, bukan jaminan mutu pangan.</Notice>
-            ) : (
-              <Notice tone="warning" title="Identitas menunggu pemeriksaan">Anda tetap bisa menyiapkan penawaran. Verifikasi memeriksa identitas, bukan jaminan mutu pangan.</Notice>
-            )}
-          </div>
+            </div>
+          )}
           <Button block className="mt-3" icon={<PencilSimple size={20} />} onClick={() => navigate('/akun/profil')}>
             Edit profil
           </Button>
@@ -71,7 +68,6 @@ export function AccountTab() {
         <Group title="Profil dan verifikasi">
           <MenuRow to="/akun/profil" icon={donor ? <Storefront size={20} /> : <UsersThree size={20} />} title={donor ? 'Informasi usaha' : 'Informasi organisasi'} subtitle="Nama, penanggung jawab, jam operasional" />
           {!donor && <MenuRow to="/akun/kebutuhan" icon={<Handshake size={20} />} title="Kebutuhan dan kapasitas" subtitle="Jenis pangan, kapasitas, penyimpanan" />}
-          <MenuRow to="/akun/verifikasi" icon={<IdentificationCard size={20} />} title="Status verifikasi" subtitle={profile.verification} />
           <MenuRow to="/akun/lokasi" icon={<MapPin size={20} />} title="Lokasi dan koordinasi" subtitle="Alamat privat dibuka setelah kesepakatan" />
         </Group>
 

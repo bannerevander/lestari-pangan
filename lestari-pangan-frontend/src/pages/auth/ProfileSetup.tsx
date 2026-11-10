@@ -1,7 +1,7 @@
 import { AreaField } from '../../components/AreaField'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Button, Chip, Field, inputCls, RadioCard } from '../../components/ui'
+import { Button, Chip, Field, inputCls, RadioCard, toast } from '../../components/ui'
 import { useApp } from '../../state/AppState'
 import { messageOf } from '../../lib/supabase/errors'
 import { completeOnboarding } from '../../services/identity'
@@ -13,7 +13,7 @@ import { SignupShell } from './SignupShell'
 const STORAGE_OPTIONS = ['Suhu ruang dan pendingin', 'Hanya suhu ruang', 'Freezer untuk bahan mentah']
 
 export function ProfileSetup() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const draft = readDraft()
   const donor = state.role === 'pemberi'
@@ -50,8 +50,11 @@ export function ProfileSetup() {
         capacity,
         storage: donor ? undefined : storage,
       })
-      writeDraft({ ...draft, name: f.pic.trim() })
-      navigate('/daftar/bukti')
+      // OD-02: cukup email + OTP; langkah unggah bukti verifikasi dilewati untuk saat ini.
+      writeDraft(null)
+      dispatch({ type: 'signIn', role: state.role })
+      toast('Akun dibuat. Selamat datang di Lestari Pangan.')
+      navigate('/', { replace: true })
     } catch (err) {
       setErrors({ org: messageOf(err) })
       setBusy(false)

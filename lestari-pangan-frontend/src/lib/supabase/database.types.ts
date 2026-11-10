@@ -119,6 +119,9 @@ export type Database = {
           code: string | null
           id: number
           joined_at: string
+          period_end: string
+          period_start: string
+          points: number
           profile_id: number
           reason: string | null
           status: string
@@ -130,6 +133,9 @@ export type Database = {
           code?: string | null
           id?: never
           joined_at?: string
+          period_end: string
+          period_start: string
+          points?: number
           profile_id: number
           reason?: string | null
           status?: string
@@ -141,6 +147,9 @@ export type Database = {
           code?: string | null
           id?: never
           joined_at?: string
+          period_end?: string
+          period_start?: string
+          points?: number
           profile_id?: number
           reason?: string | null
           status?: string
@@ -180,6 +189,7 @@ export type Database = {
           metric: string
           period_end: string
           period_start: string
+          points: number
           roles: string[]
           status: string
           target_count: number
@@ -193,6 +203,7 @@ export type Database = {
           metric: string
           period_end: string
           period_start: string
+          points?: number
           roles: string[]
           status?: string
           target_count: number
@@ -206,6 +217,7 @@ export type Database = {
           metric?: string
           period_end?: string
           period_start?: string
+          points?: number
           roles?: string[]
           status?: string
           target_count?: number
@@ -698,6 +710,7 @@ export type Database = {
           id: number
           initial: number
           label_date: string | null
+          max_per_recipient: number | null
           methods: string[]
           name: string
           photo_path: string | null
@@ -725,6 +738,7 @@ export type Database = {
           id?: never
           initial: number
           label_date?: string | null
+          max_per_recipient?: number | null
           methods: string[]
           name: string
           photo_path?: string | null
@@ -752,6 +766,7 @@ export type Database = {
           id?: never
           initial?: number
           label_date?: string | null
+          max_per_recipient?: number | null
           methods?: string[]
           name?: string
           photo_path?: string | null
@@ -897,6 +912,54 @@ export type Database = {
           sponsor?: string
           status?: string
           title?: string
+        }
+        Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          area: string | null
+          code: string | null
+          created_at: string
+          ends_on: string | null
+          id: number
+          image_path: string
+          link: string | null
+          placement: string
+          sort: number
+          starts_on: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          area?: string | null
+          code?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: never
+          image_path: string
+          link?: string | null
+          placement: string
+          sort?: number
+          starts_on?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          area?: string | null
+          code?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: never
+          image_path?: string
+          link?: string | null
+          placement?: string
+          sort?: number
+          starts_on?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1064,29 +1127,38 @@ export type Database = {
       }
       reward_claims: {
         Row: {
+          client_id: string | null
           code: string | null
           created_at: string
           id: number
           pack_id: number
-          participant_id: number
+          participant_id: number | null
+          points: number
+          profile_id: number
           reason: string | null
           status: string
         }
         Insert: {
+          client_id?: string | null
           code?: string | null
           created_at?: string
           id?: never
           pack_id: number
-          participant_id: number
+          participant_id?: number | null
+          points?: number
+          profile_id: number
           reason?: string | null
           status?: string
         }
         Update: {
+          client_id?: string | null
           code?: string | null
           created_at?: string
           id?: never
           pack_id?: number
-          participant_id?: number
+          participant_id?: number | null
+          points?: number
+          profile_id?: number
           reason?: string | null
           status?: string
         }
@@ -1112,6 +1184,13 @@ export type Database = {
             referencedRelation: "v_challenge_progress"
             referencedColumns: ["participant_id"]
           },
+          {
+            foreignKeyName: "reward_claims_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reward_packs: {
@@ -1119,6 +1198,7 @@ export type Database = {
           active: boolean
           claimed: number
           code: string | null
+          cost: number
           created_at: string
           detail: string
           eligible_roles: string[]
@@ -1131,6 +1211,7 @@ export type Database = {
           active?: boolean
           claimed?: number
           code?: string | null
+          cost?: number
           created_at?: string
           detail?: string
           eligible_roles: string[]
@@ -1143,6 +1224,7 @@ export type Database = {
           active?: boolean
           claimed?: number
           code?: string | null
+          cost?: number
           created_at?: string
           detail?: string
           eligible_roles?: string[]
@@ -1179,6 +1261,59 @@ export type Database = {
           },
           {
             foreignKeyName: "saved_contents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          client_id: string | null
+          code: string | null
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          profile_id: number
+          related: string | null
+          reply: string | null
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          code?: string | null
+          created_at?: string
+          id?: never
+          kind: string
+          message?: string
+          profile_id: number
+          related?: string | null
+          reply?: string | null
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          code?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          message?: string
+          profile_id?: number
+          related?: string | null
+          reply?: string | null
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1306,11 +1441,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -1332,11 +1470,14 @@ export type Database = {
           distributed?: number | null
           distribution_reported_at?: string | null
           donor_id: number
+          fee_payer?: string
+          fee_request?: boolean
           handed_over?: number | null
           id?: never
           method: string
           offer_id: number
           overdue_notified_at?: string | null
+          pending_receipt?: Json | null
           pending_schedule?: Json | null
           pickup_at: string
           prep?: string[]
@@ -1358,11 +1499,14 @@ export type Database = {
           distributed?: number | null
           distribution_reported_at?: string | null
           donor_id?: number
+          fee_payer?: string
+          fee_request?: boolean
           handed_over?: number | null
           id?: never
           method?: string
           offer_id?: number
           overdue_notified_at?: string | null
+          pending_receipt?: Json | null
           pending_schedule?: Json | null
           pickup_at?: string
           prep?: string[]
@@ -1484,11 +1628,13 @@ export type Database = {
       v_challenge_progress: {
         Row: {
           challenge_id: number | null
+          challenge_points: number | null
           code: string | null
           metric: string | null
           participant_id: number | null
           period_end: string | null
           period_start: string | null
+          points: number | null
           profile_id: number | null
           progress: number | null
           status: string | null
@@ -1639,6 +1785,9 @@ export type Database = {
           code: string | null
           id: number
           joined_at: string
+          period_end: string
+          period_start: string
+          points: number
           profile_id: number
           reason: string | null
           status: string
@@ -1783,6 +1932,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_reply_ticket: {
+        Args: { p_id: number; p_reply: string; p_status: string }
+        Returns: {
+          client_id: string | null
+          code: string | null
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          profile_id: number
+          related: string | null
+          reply: string | null
+          status: string
+          topic: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_tickets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_reverse_ledger: {
         Args: { p_id: number; p_reason: string }
         Returns: {
@@ -1818,6 +1990,7 @@ export type Database = {
           metric: string
           period_end: string
           period_start: string
+          points: number
           roles: string[]
           status: string
           target_count: number
@@ -1877,12 +2050,37 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_save_promotion: {
+        Args: { p_fields: Json; p_id: number }
+        Returns: {
+          active: boolean
+          area: string | null
+          code: string | null
+          created_at: string
+          ends_on: string | null
+          id: number
+          image_path: string
+          link: string | null
+          placement: string
+          sort: number
+          starts_on: string | null
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "promotions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_save_reward_pack: {
         Args: { p_fields: Json; p_id: number }
         Returns: {
           active: boolean
           claimed: number
           code: string | null
+          cost: number
           created_at: string
           detail: string
           eligible_roles: string[]
@@ -1901,11 +2099,14 @@ export type Database = {
       admin_update_claim: {
         Args: { p_id: number; p_reason: string; p_status: string }
         Returns: {
+          client_id: string | null
           code: string | null
           created_at: string
           id: number
           pack_id: number
-          participant_id: number
+          participant_id: number | null
+          points: number
+          profile_id: number
           reason: string | null
           status: string
         }
@@ -1939,6 +2140,44 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "issues"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_verify_receipt: {
+        Args: { p_approve: boolean; p_id: number; p_note: string }
+        Returns: {
+          agreed: number
+          code: string | null
+          created_at: string
+          distributed: number | null
+          distribution_reported_at: string | null
+          donor_id: number
+          fee_payer: string
+          fee_request: boolean
+          handed_over: number | null
+          id: number
+          method: string
+          offer_id: number
+          overdue_notified_at: string | null
+          pending_receipt: Json | null
+          pending_schedule: Json | null
+          pickup_at: string
+          prep: string[]
+          received: number | null
+          recipient_id: number
+          rejected: number | null
+          request_id: number
+          status: string
+          unit: string
+          used: number | null
+          wasted: number | null
+          window_end: string
+          window_start: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transfers"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1987,6 +2226,7 @@ export type Database = {
           id: number
           initial: number
           label_date: string | null
+          max_per_recipient: number | null
           methods: string[]
           name: string
           photo_path: string | null
@@ -2069,6 +2309,7 @@ export type Database = {
           p_description?: string
           p_estimate?: boolean
           p_label_date?: string
+          p_max_per_recipient?: number
           p_methods: string[]
           p_name: string
           p_photo_path?: string
@@ -2095,6 +2336,7 @@ export type Database = {
           id: number
           initial: number
           label_date: string | null
+          max_per_recipient: number | null
           methods: string[]
           name: string
           photo_path: string | null
@@ -2200,6 +2442,7 @@ export type Database = {
           id: number
           initial: number
           label_date: string | null
+          max_per_recipient: number | null
           methods: string[]
           name: string
           photo_path: string | null
@@ -2220,13 +2463,16 @@ export type Database = {
         }
       }
       engagement_claim_reward: {
-        Args: { p_pack_id: number; p_participant_id: number }
+        Args: { p_client_id: string; p_pack_id: number }
         Returns: {
+          client_id: string | null
           code: string | null
           created_at: string
           id: number
           pack_id: number
-          participant_id: number
+          participant_id: number | null
+          points: number
+          profile_id: number
           reason: string | null
           status: string
         }
@@ -2244,6 +2490,9 @@ export type Database = {
           code: string | null
           id: number
           joined_at: string
+          period_end: string
+          period_start: string
+          points: number
           profile_id: number
           reason: string | null
           status: string
@@ -2264,6 +2513,9 @@ export type Database = {
           code: string | null
           id: number
           joined_at: string
+          period_end: string
+          period_start: string
+          points: number
           profile_id: number
           reason: string | null
           status: string
@@ -2311,11 +2563,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2351,11 +2606,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2391,11 +2649,90 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
+          pending_schedule: Json | null
+          pickup_at: string
+          prep: string[]
+          received: number | null
+          recipient_id: number
+          rejected: number | null
+          request_id: number
+          status: string
+          unit: string
+          used: number | null
+          wasted: number | null
+          window_end: string
+          window_start: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transfers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      fulfillment_request_fee: {
+        Args: { p_id: number }
+        Returns: {
+          agreed: number
+          code: string | null
+          created_at: string
+          distributed: number | null
+          distribution_reported_at: string | null
+          donor_id: number
+          fee_payer: string
+          fee_request: boolean
+          handed_over: number | null
+          id: number
+          method: string
+          offer_id: number
+          overdue_notified_at: string | null
+          pending_receipt: Json | null
+          pending_schedule: Json | null
+          pickup_at: string
+          prep: string[]
+          received: number | null
+          recipient_id: number
+          rejected: number | null
+          request_id: number
+          status: string
+          unit: string
+          used: number | null
+          wasted: number | null
+          window_end: string
+          window_start: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transfers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      fulfillment_respond_fee: {
+        Args: { p_accept: boolean; p_id: number }
+        Returns: {
+          agreed: number
+          code: string | null
+          created_at: string
+          distributed: number | null
+          distribution_reported_at: string | null
+          donor_id: number
+          fee_payer: string
+          fee_request: boolean
+          handed_over: number | null
+          id: number
+          method: string
+          offer_id: number
+          overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2426,11 +2763,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2461,11 +2801,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2496,11 +2839,14 @@ export type Database = {
           distributed: number | null
           distribution_reported_at: string | null
           donor_id: number
+          fee_payer: string
+          fee_request: boolean
           handed_over: number | null
           id: number
           method: string
           offer_id: number
           overdue_notified_at: string | null
+          pending_receipt: Json | null
           pending_schedule: Json | null
           pickup_at: string
           prep: string[]
@@ -2916,6 +3262,35 @@ export type Database = {
         }
       }
       notify_mark_read: { Args: { p_id?: number }; Returns: number }
+      support_create_ticket: {
+        Args: {
+          p_client_id: string
+          p_kind: string
+          p_message: string
+          p_related?: string
+          p_topic: string
+        }
+        Returns: {
+          client_id: string | null
+          code: string | null
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          profile_id: number
+          related: string | null
+          reply: string | null
+          status: string
+          topic: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_tickets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

@@ -13,6 +13,8 @@ export interface Challenge {
   unit: string
   period: string
   metric: ChallengeMetric
+  /** Poin yang diberikan setelah capaian lolos pemeriksaan. */
+  points: number
 }
 
 /** Keikutsertaan akun ini; progres dihitung server dari kegiatan (v_challenge_progress). */
@@ -27,6 +29,8 @@ export interface RewardPack {
   title: string
   desc: string
   sponsor: string
+  /** Poin yang ditukar untuk paket ini. */
+  cost: number
 }
 
 export const METRIC_UNIT: Record<ChallengeMetric, string> = {

@@ -233,7 +233,10 @@ export function ChallengeEditor() {
   const [end, setEnd] = useState(base?.periodEnd ?? '2026-11-30')
   const [metric, setMetric] = useState<ChallengeMetric>(base?.metric ?? 'catat_pangan')
   const [count, setCount] = useState(base?.targetCount ?? 3)
-  const locked = !!base && base.participants > 0
+  const [points, setPoints] = useState(base?.points ?? 50)
+  // Ada peserta: aturan terkunci, kecuali periode digeser setelah periode lama selesai (periode berikutnya).
+  const nextPeriod = !!base?.periodEnd && start > base.periodEnd
+  const locked = !!base && base.participants > 0 && !nextPeriod
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   if (!base && id !== 'baru') return <Navigate to="/admin/challenge" replace />
@@ -246,7 +249,7 @@ export function ChallengeEditor() {
     // Aturan terkunci setelah ada peserta (FR-EC-03): hanya judul, deskripsi, dan status yang dikirim.
     const fields = locked
       ? { title: title.trim(), description: target.trim(), status: 'Aktif' }
-      : { title: title.trim(), description: target.trim(), roles: roleList, period_start: start, period_end: end, metric, target_count: count, status: 'Aktif' }
+      : { title: title.trim(), description: target.trim(), roles: roleList, period_start: start, period_end: end, metric, target_count: count, points, status: 'Aktif' }
     saveChallenge(base?.dbId ?? null, fields)
       .then(refresh)
       .then(() => {
@@ -271,11 +274,11 @@ export function ChallengeEditor() {
             </div>
           </fieldset>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Mulai">{(p) => <input {...p} type="date" className={inputCls} disabled={locked} value={start} onChange={(e) => setStart(e.target.value)} />}</Field>
-            <Field label="Selesai">{(p) => <input {...p} type="date" className={inputCls} disabled={locked} value={end} onChange={(e) => setEnd(e.target.value)} />}</Field>
+            <Field label="Mulai" hint={base && base.participants > 0 ? `Untuk periode berikutnya, isi tanggal setelah ${base.periodEnd}.` : undefined}>{(p) => <input {...p} type="date" className={inputCls} value={start} onChange={(e) => setStart(e.target.value)} />}</Field>
+            <Field label="Selesai">{(p) => <input {...p} type="date" className={inputCls} value={end} onChange={(e) => setEnd(e.target.value)} />}</Field>
           </div>
           {(
-            <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+            <div className="grid gap-4 sm:grid-cols-[1fr_140px_140px]">
               <Field label="Ukuran dari log sistem" hint={locked ? 'Terkunci karena sudah ada peserta.' : 'Progres dihitung otomatis dari kegiatan.'}>
                 {(p) => (
                   <select {...p} className={inputCls} disabled={locked} value={metric} onChange={(e) => setMetric(e.target.value as ChallengeMetric)}>
@@ -288,6 +291,9 @@ export function ChallengeEditor() {
               </Field>
               <Field label={`Target (${METRIC_UNIT[metric]})`}>
                 {(p) => <input {...p} type="number" min={1} className={inputCls} disabled={locked} value={count} onChange={(e) => setCount(Math.max(1, Number(e.target.value)))} />}
+              </Field>
+              <Field label="Poin">
+                {(p) => <input {...p} type="number" min={0} className={inputCls} disabled={locked} value={points} onChange={(e) => setPoints(Math.max(0, Number(e.target.value)))} />}
               </Field>
             </div>
           )}
@@ -346,7 +352,7 @@ export function Rewards() {
   const { data, refresh } = useAdmin()
   const { rewardPacks, claims } = data
   const [adding, setAdding] = useState(false)
-  const [pack, setPack] = useState({ title: '', detail: '', sponsor: '', quota: 10 })
+  const [pack, setPack] = useState({ title: '', detail: '', sponsor: '', quota: 10, cost: 50 })
   const [packErr, setPackErr] = useState('')
   const [busy, setBusy] = useState(false)
   const addPack = () => {
@@ -356,7 +362,7 @@ export function Rewards() {
       .then(refresh)
       .then(() => {
         setAdding(false)
-        setPack({ title: '', detail: '', sponsor: '', quota: 10 })
+        setPack({ title: '', detail: '', sponsor: '', quota: 10, cost: 50 })
         toast('Paket reward ditambahkan.')
       })
       .catch((e) => setPackErr(messageOf(e)))
@@ -374,6 +380,7 @@ export function Rewards() {
             <Field label="Sponsor">{(p) => <input {...p} className={inputCls} value={pack.sponsor} onChange={(e) => setPack({ ...pack, sponsor: e.target.value })} />}</Field>
             <Field label="Isi paket" optional>{(p) => <input {...p} className={inputCls} value={pack.detail} onChange={(e) => setPack({ ...pack, detail: e.target.value })} />}</Field>
             <Field label="Kuota">{(p) => <input {...p} type="number" min={1} className={inputCls} value={pack.quota} onChange={(e) => setPack({ ...pack, quota: Number(e.target.value) })} />}</Field>
+            <Field label="Harga (poin)">{(p) => <input {...p} type="number" min={0} className={inputCls} value={pack.cost} onChange={(e) => setPack({ ...pack, cost: Math.max(0, Number(e.target.value)) })} />}</Field>
           </div>
           {packErr && <p role="alert" className="mt-3 text-meta font-medium text-danger">{packErr}</p>}
           <div className="mt-4 flex gap-2">
@@ -391,7 +398,7 @@ export function Rewards() {
         <Table label="Paket reward" head={['Paket', 'Sponsor', 'Kuota', 'Terpakai']}>
           {rewardPacks.map((r) => (
             <tr key={r.id}>
-              <td className={td}><p className="font-semibold">{r.title}</p><p className="text-ink-secondary">{r.id} · {r.detail}</p></td>
+              <td className={td}><p className="font-semibold">{r.title}</p><p className="text-ink-secondary">{r.id} · {r.cost} poin · {r.detail}</p></td>
               <td className={td}>{r.sponsor}</td>
               <td className={`${td} tabular`}>{r.quota} paket<br /><span className="text-ink-secondary">sisa {r.quota - r.claimed}</span></td>
               <td className={`${td} w-48`}>
@@ -410,7 +417,7 @@ export function Rewards() {
             return (
               <tr key={c.id} className="hover:bg-page">
                 <td className={td}><p className="font-semibold">{c.id}</p><p className="text-ink-secondary">{c.at}</p></td>
-                <td className={td}>{c.org}<br /><span className="text-ink-secondary">Capaian {c.challenge}</span></td>
+                <td className={td}>{c.org}<br /><span className="text-ink-secondary">{c.challenge}</span></td>
                 <td className={td}>{rewardPacks.find((r) => r.id === c.pack)?.title}</td>
                 <td className={td}><Status status={st} /></td>
                 <td className={`${td} text-right`}><ButtonLink to={`/admin/klaim/${c.id}`} variant={st === 'Siap disalurkan' || st === 'Diajukan' ? 'primary' : 'secondary'} className="min-h-10 px-3 text-[0.875rem]">{st === 'Siap disalurkan' || st === 'Diajukan' ? 'Proses' : 'Lihat'}</ButtonLink></td>
@@ -438,8 +445,8 @@ export function ClaimDetail() {
           <Panel title="Pemeriksaan hak">
             <ul className="stagger flex flex-col gap-2">
               {[
-                ['Sumber hak', `Capaian ${c.challenge} valid`],
-                ['Duplikasi akun', 'Lolos: tidak ada klaim ganda di periode ini'],
+                ['Poin dipakai', c.challenge],
+                ['Saldo poin', 'Diperiksa server saat klaim; poin kembali bila klaim ditolak'],
                 ['Kuota paket', `Sisa ${pack.quota - pack.claimed} dari ${pack.quota}`],
                 ['Biaya penyerahan', 'Rp0 platform (digital atau ambil di posko)'],
               ].map(([k, v]) => (

@@ -4,11 +4,12 @@ import { ArrowRight, CheckCircle, FilePdf, MagnifyingGlass, MapPin, Phone, Shiel
 import { Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, StageList, Toaster, toast } from '../../components/ui'
 import { asset } from '../../lib/format'
 import { useAdmin } from '../store'
+import type { Chain } from '../data'
 import { messageOf } from '../../lib/supabase/errors'
 import { sendEmailOtp, signOut, verifyEmailOtp } from '../../services/auth'
 import { fetchMyProfile } from '../../services/identity'
 import { verificationDocUrl } from '../../services/admin'
-import { assignCourier } from '../../services/adminActions'
+import { assignCourier, verifyReceipt } from '../../services/adminActions'
 import { DecisionPanel, Filters, PageHeader, Panel, rp, Stat, Status, Table, td } from '../ui'
 
 /* ---------- AD01 Masuk admin ---------- */
@@ -371,6 +372,7 @@ export function OperationDetail() {
           </li>
         ))}
       </ol>
+      {chain.pendingReceipt && <ReceiptReview chain={chain} />}
       <Panel title="Rekonsiliasi jumlah" desc="Satu satuan per penyaluran; setiap angka punya sumber.">
         <Table label="Rekonsiliasi" head={['Komponen', 'Jumlah', 'Sumber data']}>
           {chain.ledger.map(([k, v, src]) => (
@@ -388,6 +390,38 @@ export function OperationDetail() {
         <ButtonLink to="/admin/audit" variant="secondary">Riwayat perubahan</ButtonLink>
       </div>
     </>
+  )
+}
+
+/** OD-03: staf ops menyetujui atau mengembalikan laporan penerimaan sebagian/penolakan. */
+function ReceiptReview({ chain }: { chain: Chain }) {
+  const { refresh } = useAdmin()
+  const [note, setNote] = useState('')
+  const [busy, setBusy] = useState<'ok' | 'back' | null>(null)
+  const [err, setErr] = useState('')
+  const p = chain.pendingReceipt!
+  const decide = (approve: boolean) => {
+    if (!note.trim()) return setErr('Tulis catatan pemeriksaan untuk penerima dan audit.')
+    setBusy(approve ? 'ok' : 'back')
+    verifyReceipt(chain.dbId, approve, note.trim())
+      .then(refresh)
+      .then(() => toast(approve ? 'Penerimaan disetujui dan tercatat.' : 'Dikembalikan ke penerima untuk konfirmasi ulang.', 'success'))
+      .catch((e) => setErr(messageOf(e)))
+      .finally(() => setBusy(null))
+  }
+  return (
+    <Panel title="Verifikasi penerimaan" desc="Penerima melaporkan jumlah lebih kecil dari yang diserahkan. Dampak belum dihitung sampai disetujui.">
+      <div className="flex max-w-[720px] flex-col gap-3">
+        <p className="text-body"><strong>{p.received} dari {p.base} {p.unit}</strong> diterima. Alasan: “{p.reason}”</p>
+        <Field label="Catatan pemeriksaan" error={err}>
+          {(f) => <textarea {...f} rows={2} className={inputCls} value={note} onChange={(e) => (setNote(e.target.value), setErr(''))} />}
+        </Field>
+        <div className="flex flex-wrap gap-2">
+          <Button loading={busy === 'ok'} disabled={!!busy} onClick={() => decide(true)}>Setujui dan catat</Button>
+          <Button variant="secondary" loading={busy === 'back'} disabled={!!busy} onClick={() => decide(false)}>Kembalikan ke penerima</Button>
+        </div>
+      </div>
+    </Panel>
   )
 }
 

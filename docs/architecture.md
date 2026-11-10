@@ -30,6 +30,14 @@ Dokumen ini mencatat keputusan arsitektur backend dan database yang **sudah dise
 | AR-10 | Skema database, RLS, view, dan RPC mengikuti bagian 9. | Disetujui setelah tinjauan draf. |
 | AR-11 | Front end di-hosting di **Vercel** (paket Hobby, non-komersial) dengan header keamanan di `vercel.json`; produksi di https://lestari-pangan.vercel.app. Front end memanggil Supabase langsung memakai publishable key. | Gratis, preview otomatis per push; keamanan data tetap di database (RLS + RPC). |
 | AR-12 | **Kode dibagi per tanggung jawab**: satu layar per berkas di `pages/<fitur>/`, akses Supabase hanya di `services/<modul>.ts`, aturan lengkap di CONVENTIONS.md. | Mudah dilacak dan diuji oleh pengembang tunggal. |
+| AR-13 | Akun **boleh menawarkan dan meminta sebelum diverifikasi admin** (menjawab AO-09). Galat `BELUM_TERVERIFIKASI` tidak dipakai di alur donasi. | Hambatan awal rendah untuk pilot; verifikasi tetap tampil sebagai status akun. |
+| AR-14 | Pembayaran dukungan **cukup transfer manual** yang divalidasi admin keuangan (menjawab AO-05). QRIS/penyedia otomatis tidak dikerjakan untuk lomba. | Rp0, tanpa integrasi pihak ketiga sebelum code freeze. |
+| AR-15 | Push notification web **boleh, tetapi ditunda** (menjawab AO-06); fokus pada fitur di dalam aplikasi. Notifikasi in-app lewat Realtime tetap jalur utama. | Waktu pengembang tunggal dipakai untuk alur inti. |
+| AR-16 | OD-01: permintaan yang **tidak ditanggapi lebih dari 2 jam batal otomatis** (`job_expire_requests`, tiap 5 menit; usulan penyesuaian dihitung dari `proposal_at`). Pemberi boleh **membatasi jumlah per penerima** (opsional, `offers.max_per_recipient`). Pembagian sebagian, satu permintaan aktif per penawaran, dan pembatalan hanya sebelum disetujui tetap. | Stok tidak tertahan lama; lebih banyak penerima kebagian. |
+| AR-17 | OD-02: **cukup email + OTP**; langkah unggah bukti verifikasi dilewati saat daftar dan menu verifikasi disembunyikan. Tabel dan konsol verifikasi tetap ada untuk nanti. | Hambatan daftar rendah selama lomba. |
+| AR-18 | OD-03: kategori tetap 3. **Data wajib per kategori**: semua wajib penyimpanan; Makanan matang wajib waktu dimasak; Produk kemasan wajib tanggal label yang belum lewat (`private.check_offer_fields`). Penerimaan **sebagian/penolakan wajib alasan (≥10 karakter) dan diverifikasi staf ops** (status `Menunggu verifikasi`, `admin_verify_receipt`) sebelum dampak dan catatan pangan tercatat. | Mencegah penolakan sepihak tanpa alasan dan data dampak yang keliru. |
+| AR-19 | OD-04: ongkir hanya untuk **Mitra pengiriman**, bawaan **ditanggung penerima**; penerima bisa mengajukan ke pemberi (`fulfillment_request_fee` / `fulfillment_respond_fee`). Ongkir dibayar langsung ke mitra, tidak lewat aplikasi; aplikasi mencatat siapa pembayarnya. Ambil sendiri dan Antar pemberi tanpa ongkir untuk penerima. Kegagalan pengiriman dan tanpa refund tetap. | Tanpa aliran uang baru sebelum code freeze. |
+| AR-20 | OD-05: challenge yang **lolos memberi poin** (`challenges.points`), poin **ditukar paket reward** (`reward_packs.cost`, saldo dihitung server `private.points_balance`); klaim ditolak mengembalikan poin. Challenge bisa diikuti lagi **di periode berikutnya** (periode disalin ke `challenge_participants`; admin menggeser periode setelah periode lama selesai). Sponsor memakai nama fiksi. | Sesuai keputusan pemilik produk 10 Nov 2026. |
 
 ## 3 Gambaran sistem
 
@@ -404,8 +412,8 @@ Lapisan `src/lib/supabase/` (klien, RPC, kode galat, tipe hasil generate) dan `s
 | ID | Topik | Catatan |
 | --- | --- | --- |
 | AO-04 | Penyedia resep suara (speech-to-speech) | OD-06; token sesi diberikan Edge Function. |
-| AO-05 | Penyedia pembayaran | OD-08; konfirmasi lewat webhook ke Edge Function. |
-| AO-06 | Push notification web | Opsional; notifikasi in-app lewat Realtime tetap menjadi jalur utama. |
-| AO-07 | Format yang diwajibkan lomba (APK, URL, video) | Menentukan perlu atau tidaknya Capacitor (AR-04). |
-| AO-08 | Keputusan produk OD-01 sampai OD-05 yang belum dijawab AR-07 sampai AR-09 | Memengaruhi aturan state machine dan reservasi. |
-| AO-09 | Boleh berkegiatan (menawarkan/meminta) sebelum akun diverifikasi admin? | Menentukan pemakaian galat `BELUM_TERVERIFIKASI` (OD-02). |
+| AO-05 | ~~Penyedia pembayaran~~ | Terjawab AR-14 (transfer manual). |
+| AO-06 | ~~Push notification web~~ | Terjawab AR-15 (ditunda). |
+| AO-07 | ~~Format yang diwajibkan lomba~~ | Terjawab guidebook LOGICODIX 2026 (lihat PROGRESS.md §4). |
+| AO-08 | ~~Keputusan produk OD-01 sampai OD-05~~ | Terjawab AR-16 s.d. AR-20 (migrasi `20261110100000_product_decisions`). |
+| AO-09 | ~~Boleh berkegiatan sebelum diverifikasi?~~ | Terjawab AR-13 (boleh). |

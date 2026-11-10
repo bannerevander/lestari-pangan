@@ -69,8 +69,8 @@ insert into r (line) select ok(exists (select 1 from audit_log where action = 'k
 -- Challenge dan reward (AT-07).
 select pg_temp.login('00000000-0000-0000-0000-0000000000f1');
 select admin_save_challenge(null, jsonb_build_object('title', 'Catat Pangan rutin', 'period_start', current_date - 1,
-  'period_end', current_date + 30, 'roles', jsonb_build_array('pemberi'), 'metric', 'catat_pangan', 'target_count', 1, 'status', 'Aktif'));
-select admin_save_reward_pack(null, '{"title":"Wadah besek","sponsor":"Mitra","quota":1,"eligible_roles":["pemberi"]}');
+  'period_end', current_date + 30, 'roles', jsonb_build_array('pemberi'), 'metric', 'catat_pangan', 'target_count', 1, 'points', 50, 'status', 'Aktif'));
+select admin_save_reward_pack(null, '{"title":"Wadah besek","sponsor":"Mitra","quota":1,"cost":50,"eligible_roles":["pemberi"]}');
 select admin_save_reward_pack(null, '{"title":"Tas insulasi","sponsor":"Mitra","quota":0,"eligible_roles":["pemberi"]}');
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 select engagement_join_challenge((select id from challenges where title = 'Catat Pangan rutin'));
@@ -79,20 +79,20 @@ insert into r (line) select throws_ok($$ select engagement_finish_challenge((sel
 select inventory_add_record('a1000000-0000-0000-0000-000000000002', 'Wortel', 'Bahan pangan', 2, 'kg');
 insert into r (line) select is((select progress from v_challenge_progress where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), 1, 'Progres dihitung dari catatan pangan');
 select engagement_finish_challenge((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')));
-insert into r (line) select throws_ok($$ select engagement_claim_reward((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), (select id from reward_packs where quota = 1)) $$,
-  'P0001', 'STATUS_TIDAK_SESUAI', 'AT-07: belum diverifikasi, reward belum bisa diklaim');
+insert into r (line) select throws_ok($$ select engagement_claim_reward('a1000000-0000-0000-0000-0000000000c0', (select id from reward_packs where quota = 1)) $$,
+  'P0001', 'POIN_TIDAK_CUKUP', 'AT-07: belum diverifikasi, poin belum ada');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
 select admin_decide_participant((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), 'Lolos', 'Bukti catatan sesuai');
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
-select engagement_claim_reward((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), (select id from reward_packs where quota = 1));
-select engagement_claim_reward((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), (select id from reward_packs where quota = 1));
+select engagement_claim_reward('a1000000-0000-0000-0000-0000000000c1', (select id from reward_packs where quota = 1));
+select engagement_claim_reward('a1000000-0000-0000-0000-0000000000c1', (select id from reward_packs where quota = 1));
 insert into r (line) select results_eq($$ select (select count(*) from reward_claims)::int, (select claimed from reward_packs where quota = 1) $$,
   $$ values (1, 1) $$, 'AT-07: klaim ulang tidak membuat klaim atau mengurangi stok lagi');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
 select admin_update_claim((select id from reward_claims limit 1), 'Ditolak', 'Alamat pengiriman tidak lengkap');
 insert into r (line) select is((select claimed from reward_packs where quota = 1), 0, 'Klaim ditolak mengembalikan kuota');
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
-insert into r (line) select throws_ok($$ select engagement_claim_reward((select id from challenge_participants where challenge_id = (select id from challenges where title = 'Catat Pangan rutin')), (select id from reward_packs where quota = 0)) $$,
+insert into r (line) select throws_ok($$ select engagement_claim_reward('a1000000-0000-0000-0000-0000000000c2', (select id from reward_packs where quota = 0)) $$,
   'P0001', 'KUOTA_HABIS', 'AT-07: stok habis ditolak, tidak negatif');
 
 -- Konten hanya terbit setelah ditinjau.
@@ -119,21 +119,23 @@ insert into r (line) select results_eq($$ select version, status from appreciati
 
 -- AT-09: dukungan dan ledger.
 select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+-- Database bisa berisi dana asli: saldo dibandingkan terhadap saldo awal, entri difilter ke data uji.
+select set_config('t.base', coalesce((select saldo from funding_summary() where fund = 'pengiriman'), 0)::text, true);
 select funding_add_support('b1000000-0000-0000-0000-000000000003', 50000, 'pengiriman', 'Subsidi ongkir dan relawan');
 select pg_temp.login('00000000-0000-0000-0000-0000000000e1');
-select admin_decide_support((select id from supports limit 1), 'Tervalidasi', 'Bukti transfer sesuai', 'PAY-001');
-select admin_decide_support((select id from supports limit 1), 'Tervalidasi', 'Bukti transfer sesuai', 'PAY-001');
-insert into r (line) select results_eq($$ select (select count(*) from ledger_entries)::int, (select saldo from funding_summary() where fund = 'pengiriman') $$,
+select admin_decide_support((select id from supports where client_id = 'b1000000-0000-0000-0000-000000000003'), 'Tervalidasi', 'Bukti transfer sesuai', 'PAY-001');
+select admin_decide_support((select id from supports where client_id = 'b1000000-0000-0000-0000-000000000003'), 'Tervalidasi', 'Bukti transfer sesuai', 'PAY-001');
+insert into r (line) select results_eq($$ select (select count(*) from ledger_entries where provider_ref = 'PAY-001')::int, (select saldo from funding_summary() where fund = 'pengiriman') - current_setting('t.base')::bigint $$,
   $$ values (1, 50000::bigint) $$, 'AT-09: validasi ganda = satu entri, saldo bertambah sekali');
 select admin_record_ledger('Masuk', 'operasional', 100000, 'Donatur', 'Dukungan operasional', null, null, 'PAY-002');
 select admin_record_ledger('Masuk', 'operasional', 100000, 'Donatur', 'Dukungan operasional', null, null, 'PAY-002');
 insert into r (line) select is((select count(*) from ledger_entries where provider_ref = 'PAY-002')::int, 1, 'AT-09: konfirmasi penyedia ganda dicatat sekali');
-insert into r (line) select throws_ok($$ select admin_record_ledger('Keluar', 'pengiriman', 60000, 'Kurir', 'Ongkir') $$,
+insert into r (line) select throws_ok($$ select admin_record_ledger('Keluar', 'pengiriman', current_setting('t.base')::bigint + 60000, 'Kurir', 'Ongkir') $$,
   'P0001', 'SALDO_TIDAK_CUKUP', 'Dana pengiriman tidak bisa keluar melebihi saldonya');
 select admin_record_ledger('Keluar', 'pengiriman', 20000, 'Kurir K', 'Ongkir penyaluran', null, (select id from transfers limit 1));
-insert into r (line) select is((select saldo from funding_summary() where fund = 'pengiriman'), 30000::bigint, 'Saldo = masuk - keluar');
-select admin_reverse_ledger((select id from ledger_entries where kind = 'Keluar'), 'Salah catat nominal');
-insert into r (line) select is((select saldo from funding_summary() where fund = 'pengiriman'), 50000::bigint, 'Koreksi lewat entri pembalik');
+insert into r (line) select is((select saldo from funding_summary() where fund = 'pengiriman') - current_setting('t.base')::bigint, 30000::bigint, 'Saldo = masuk - keluar');
+select admin_reverse_ledger((select id from ledger_entries where kind = 'Keluar' and transfer_id = (select id from transfers limit 1)), 'Salah catat nominal');
+insert into r (line) select is((select saldo from funding_summary() where fund = 'pengiriman') - current_setting('t.base')::bigint, 50000::bigint, 'Koreksi lewat entri pembalik');
 insert into r (line) select throws_ok($$ update ledger_entries set amount = 1 $$, 'P0001', 'APPEND_ONLY', 'Ledger tidak bisa diubah');
 
 -- Rincian ledger hanya admin keuangan; ringkasan terbuka untuk semua.

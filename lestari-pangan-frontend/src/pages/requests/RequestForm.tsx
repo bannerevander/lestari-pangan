@@ -34,9 +34,15 @@ export function RequestForm() {
   if (!offer) return <NotAvailable />
 
   const n = Number(qty)
+  // Batas per penerima (OD-01) dikurangi permintaan aktif/disetujui akun ini; server memeriksa ulang.
+  const used = state.requests
+    .filter((r) => r.offerId === offer.id && ['Diajukan', 'Menunggu penyesuaian', 'Disetujui'].includes(r.status))
+    .reduce((s, r) => s + r.quantity, 0)
+  const cap = offer.maxPerRecipient !== undefined ? Math.max(0, Math.min(offer.available, offer.maxPerRecipient - used)) : offer.available
   const check = () => {
     if (!qty || !Number.isInteger(n) || n <= 0) return setError(`Isi jumlah ${offer.unit} dalam bilangan bulat.`)
     if (n > offer.available) return setError(`Jumlah tersedia saat ini ${offer.available} ${offer.unit}. Ubah jumlah permintaan.`)
+    if (n > cap) return setError(`Pemberi membatasi ${offer.maxPerRecipient} ${offer.unit} per penerima. Sisa untuk Anda: ${cap} ${offer.unit}.`)
     if (time < offer.pickupStart.replace('.', ':') || time > offer.pickupEnd.replace('.', ':'))
       return setError(`Pilih jam di rentang ${offer.pickupStart}–${offer.pickupEnd} WIB.`)
     setError('')
@@ -86,7 +92,7 @@ export function RequestForm() {
         </header>
         <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
           <Notice tone="success" title="Perlu persetujuan pemberi">
-            Porsi direservasi setelah {offer.donorName} menyetujui. Pastikan Anda siap mengambil sesuai jadwal.
+            Porsi direservasi setelah {offer.donorName} menyetujui. Bila tidak ditanggapi dalam 2 jam, permintaan batal otomatis. Pastikan Anda siap mengambil sesuai jadwal.
           </Notice>
           <section className="card p-4">
             <div className="mb-2 flex items-center justify-between">
@@ -168,8 +174,8 @@ export function RequestForm() {
           </Link>
         </section>
 
-        <Field label={`Jumlah yang diminta (${offer.unit})`} error={error}>
-          {(p) => <input {...p} inputMode="numeric" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value.replace(/\D/g, ''))} placeholder={`Maksimal ${offer.available}`} />}
+        <Field label={`Jumlah yang diminta (${offer.unit})`} error={error} hint={offer.maxPerRecipient !== undefined ? `Batas pemberi: ${offer.maxPerRecipient} ${offer.unit} per penerima.` : undefined}>
+          {(p) => <input {...p} inputMode="numeric" className={inputCls} value={qty} onChange={(e) => setQty(e.target.value.replace(/\D/g, ''))} placeholder={`Maksimal ${cap}`} />}
         </Field>
         <Field label="Jam pengambilan (WIB)" hint={`Rentang pemberi: ${offer.pickupStart}–${offer.pickupEnd} WIB`}>
           {(p) => <input {...p} type="time" className={inputCls} value={time} onChange={(e) => setTime(e.target.value)} />}

@@ -31,6 +31,9 @@ interface Draft {
   end: string
   methods: Offer['methods']
   instructions: string
+  /** Batas jumlah per penerima (opsional, OD-01). */
+  limitOn: boolean
+  limit: string
 }
 
 /** Tanggal hari ini (zona perangkat) sebagai YYYY-MM-DD. */
@@ -57,6 +60,8 @@ const empty: Draft = {
   end: '18:00',
   methods: ['Ambil sendiri'],
   instructions: '',
+  limitOn: false,
+  limit: '',
 }
 
 const steps = ['Informasi pangan', 'Penyaluran', 'Tinjauan']
@@ -102,6 +107,15 @@ export default function OfferForm() {
       else if ((d.unit === 'porsi' || d.unit === 'kemasan' || d.unit === 'bungkus' || d.unit === 'unit') && !Number.isInteger(n))
         e.quantity = `Jumlah ${d.unit} harus bilangan bulat.`
       if (!d.storage.trim()) e.storage = 'Isi cara penyimpanan saat ini.'
+      // Data wajib per kategori (OD-03); server memeriksa aturan yang sama.
+      if (d.category === 'Makanan matang') {
+        if (!d.preparedAt) e.preparedAt = 'Isi waktu selesai dimasak.'
+        else if (new Date(d.preparedAt).getTime() > Date.now() + 5 * 60_000) e.preparedAt = 'Waktu dimasak tidak boleh di masa depan.'
+      }
+      if (d.category === 'Produk kemasan') {
+        if (!d.labelDate) e.labelDate = 'Isi tanggal kedaluwarsa pada label.'
+        else if (d.labelDate < todayIso()) e.labelDate = 'Produk sudah melewati tanggal label dan tidak bisa ditawarkan.'
+      }
       if (!d.allergensKnown) e.allergensKnown = 'Pilih apakah bahan/alergen diketahui.'
       if (d.allergensKnown === 'ya' && !d.allergens.trim()) e.allergens = 'Tulis bahan atau alergen yang diketahui.'
     }
@@ -112,6 +126,11 @@ export default function OfferForm() {
       else if (d.end <= d.start) e.end = 'Jam selesai harus setelah jam mulai.'
       else if (d.date && new Date(`${d.date}T${d.end}`) <= new Date()) e.end = 'Jam selesai sudah lewat. Pilih waktu yang akan datang.'
       if (d.methods.length === 0) e.methods = 'Pilih minimal satu cara penyaluran.'
+      if (d.limitOn) {
+        const l = Number(d.limit.replace(',', '.'))
+        if (!(l > 0)) e.limit = 'Isi batas lebih dari 0.'
+        else if (l > Number(d.quantity.replace(',', '.'))) e.limit = 'Batas tidak boleh melebihi jumlah yang ditawarkan.'
+      }
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -141,6 +160,7 @@ export default function OfferForm() {
         allergens: d.allergensKnown === 'ya' ? d.allergens : null,
         description: [d.description.trim(), d.instructions.trim() && `Petunjuk pengambilan: ${d.instructions.trim()}`].filter(Boolean).join('. ') || undefined,
         recordCode: fromRecord?.id,
+        maxPerRecipient: d.limitOn ? Number(d.limit.replace(',', '.')) : undefined,
       })
       await refresh()
       navigate('/donasi', { replace: true })
@@ -250,12 +270,12 @@ export default function OfferForm() {
               {(p) => <input {...p} className={inputCls} value={d.storage} onChange={(e) => set('storage', e.target.value)} placeholder="Contoh: Kulkas, wadah tertutup" />}
             </Field>
             {d.category === 'Makanan matang' && (
-              <Field label="Waktu persiapan" optional hint="Kapan pangan selesai dimasak atau dibuka.">
+              <Field label="Waktu selesai dimasak" error={errors.preparedAt} hint="Wajib untuk makanan matang, agar penerima bisa menilai keamanannya.">
                 {(p) => <input {...p} type="datetime-local" className={inputCls} value={d.preparedAt} onChange={(e) => set('preparedAt', e.target.value)} />}
               </Field>
             )}
             {d.category === 'Produk kemasan' && (
-              <Field label="Tanggal pada label" optional>
+              <Field label="Tanggal kedaluwarsa pada label" error={errors.labelDate}>
                 {(p) => <input {...p} type="date" className={inputCls} value={d.labelDate} onChange={(e) => set('labelDate', e.target.value)} />}
               </Field>
             )}
@@ -314,7 +334,7 @@ export default function OfferForm() {
                       />
                       <span className="flex-1">
                         <span className="block font-medium">{m === 'Ambil sendiri' ? 'Penerima ambil sendiri' : m === 'Antar pemberi' ? 'Saya antar' : 'Mitra pengiriman'}</span>
-                        {m === 'Mitra pengiriman' && <span className="block text-meta text-ink-secondary">Biaya belum tersedia; dibahas sebelum disetujui.</span>}
+                        {m === 'Mitra pengiriman' && <span className="block text-meta text-ink-secondary">Ongkir ditanggung penerima; penerima bisa mengajukan agar Anda yang menanggung.</span>}
                       </span>
                     </label>
                   )
@@ -322,6 +342,17 @@ export default function OfferForm() {
               </div>
               {errors.methods && <p className="mt-1.5 text-meta font-medium text-danger">{errors.methods}</p>}
             </fieldset>
+            <div>
+              <label className="tap flex min-h-12 cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={d.limitOn} onChange={(e) => set('limitOn', e.target.checked)} className="h-5 w-5 accent-primary" />
+                <span><span className="block font-medium">Batasi jumlah per penerima</span><span className="block text-meta text-ink-secondary">Opsional. Agar lebih banyak penerima kebagian.</span></span>
+              </label>
+              {d.limitOn && (
+                <Field label={`Maksimal per penerima (${d.unit})`} error={errors.limit}>
+                  {(p) => <input {...p} inputMode="decimal" className={inputCls} value={d.limit} onChange={(e) => set('limit', e.target.value)} />}
+                </Field>
+              )}
+            </div>
             <Field label="Instruksi pengambilan" optional>
               {(p) => <textarea {...p} rows={3} className={inputCls} value={d.instructions} onChange={(e) => set('instructions', e.target.value)} placeholder="Contoh: Hubungi kasir di pintu samping." />}
             </Field>
@@ -343,6 +374,7 @@ export default function OfferForm() {
               ['Pengambilan', `${isoToLabel(d.date)}, ${timeLabel(d.start)}–${timeLabel(d.end)} WIB`],
               ['Alamat lengkap', 'Terkunci sampai ada kesepakatan dengan penerima'],
               ['Cara', d.methods.join(', ')],
+              ['Batas per penerima', d.limitOn ? `${d.limit} ${d.unit}` : 'Tanpa batas'],
               ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Mitra pengiriman: biaya belum tersedia' : 'Tanpa biaya pengiriman dari platform'],
             ]} />
             <label className={`flex items-start gap-3 rounded-card border p-4 ${declareError ? 'border-danger bg-danger-container' : 'border-primary/30 bg-primary-container'}`}>

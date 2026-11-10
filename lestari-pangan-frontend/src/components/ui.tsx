@@ -216,6 +216,7 @@ export function statusTone(status: string): Tone {
     case 'Terverifikasi':
       return 'success'
     case 'Menunggu penyesuaian':
+    case 'Menunggu verifikasi':
     case 'Diterima sebagian':
     case 'Menunggu pemeriksaan':
       return 'warning'

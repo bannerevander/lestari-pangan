@@ -172,6 +172,37 @@ function TransferCard({ t, donor }: { t: Transfer; donor: boolean }) {
   )
 }
 
+/** OD-04: penerima mengajukan ongkir ke pemberi; pemberi menyetujui atau menolak. */
+function FeeActions({ t, donor }: { t: Transfer; donor: boolean }) {
+  const run = useCommand()
+  const [busy, setBusy] = useState<'yes' | 'no' | null>(null)
+  const go = (a: Parameters<typeof run>[0], key: 'yes' | 'no', ok: string) => {
+    setBusy(key)
+    run(a)
+      .then(() => toast(ok, 'success'))
+      .catch((err) => toast(messageOf(err), 'info'))
+      .finally(() => setBusy(null))
+  }
+  if (t.feePayer === 'pemberi') return null
+  if (!donor && !t.feeRequest)
+    return (
+      <Button variant="secondary" className="mt-2" loading={busy === 'yes'} onClick={() => go({ type: 'requestFee', id: t.id }, 'yes', 'Permintaan dikirim ke pemberi.')}>
+        Ajukan ongkir ditanggung pemberi
+      </Button>
+    )
+  if (!donor) return <p className="mt-1 text-meta text-warning">Menunggu jawaban {t.donorName} soal ongkir.</p>
+  if (!t.feeRequest) return null
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      <p className="text-meta font-medium">{t.recipientName} meminta Anda menanggung ongkir.</p>
+      <div className="flex gap-2">
+        <Button className="flex-1" loading={busy === 'yes'} disabled={!!busy} onClick={() => go({ type: 'respondFee', id: t.id, accept: true }, 'yes', 'Ongkir Anda tanggung.')}>Saya tanggung</Button>
+        <Button variant="secondary" className="flex-1" loading={busy === 'no'} disabled={!!busy} onClick={() => go({ type: 'respondFee', id: t.id, accept: false }, 'no', 'Ongkir tetap ditanggung penerima.')}>Tidak</Button>
+      </div>
+    </div>
+  )
+}
+
 /* ---------- L02 Detail penyaluran ---------- */
 
 const STAGES = ['Kesepakatan', 'Persiapan pangan', 'Penyerahan', 'Penerimaan', 'Laporan distribusi'] as const
@@ -179,7 +210,7 @@ const STAGES = ['Kesepakatan', 'Persiapan pangan', 'Penyerahan', 'Penerimaan', '
 /** Tahap aktif (0–4); 5 berarti semua tahap selesai. */
 function stageOf(t: Transfer) {
   if (t.status === 'Terjadwal') return 1
-  if (t.status === 'Diserahkan') return 3
+  if (t.status === 'Diserahkan' || t.status === 'Menunggu verifikasi') return 3
   if (t.status === 'Ditolak') return 5
   return t.distributionReported ? 5 : 4
 }
@@ -261,7 +292,11 @@ export function TransferDetail() {
           </section>
         )}
 
-        {next ? (
+        {t.pendingReceipt ? (
+          <Notice tone="warning" title="Menunggu verifikasi staf">
+            Penerima melaporkan {t.pendingReceipt.received} dari {t.handedOver ?? t.agreed} {t.unit} diterima: “{t.pendingReceipt.reason}”. Tercatat setelah staf menyetujui.
+          </Notice>
+        ) : next ? (
           <Notice tone="info" title="Langkah berikutnya">{next.label}.</Notice>
         ) : t.status === 'Terjadwal' || t.status === 'Diserahkan' ? (
           <Notice tone="info">Menunggu {donor ? 'penerima mengonfirmasi penerimaan' : 'pemberi mencatat penyerahan'}.</Notice>
@@ -296,8 +331,13 @@ export function TransferDetail() {
                 <p className="text-meta text-ink-secondary">Cara pengambilan</p>
                 <p className="font-semibold">{t.method}</p>
                 <p className="text-meta text-ink-secondary">
-                  {t.method === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : 'Biaya pengiriman belum tersedia'}
+                  {t.method === 'Ambil sendiri'
+                    ? 'Tanpa biaya pengiriman'
+                    : t.method === 'Antar pemberi'
+                      ? 'Diantar pemberi tanpa biaya untuk penerima'
+                      : `Ongkir ditanggung ${t.feePayer}, dibayar langsung ke mitra pengiriman`}
                 </p>
+                {t.method === 'Mitra pengiriman' && t.status === 'Terjadwal' && <FeeActions t={t} donor={donor} />}
               </div>
             </li>
           </ul>
@@ -484,10 +524,15 @@ export function Receive() {
 
   const submit = () => {
     if (notReceived > 0 && !reason) return setError('Pilih alasan agar pemberi memahami selisihnya.')
-    if (reason === 'Alasan lain' && !note.trim()) return setError('Tulis catatan singkat untuk alasan lain.')
+    // Selisih diperiksa staf (OD-03): alasan harus jelas, server meminta minimal 10 karakter.
+    if (notReceived > 0 && note.trim().length < 10) return setError('Jelaskan kondisi pangan yang tidak diterima (minimal 10 karakter).')
     setBusy(true)
-    run({ type: 'receive', id: t.id, received: qty, reason: notReceived > 0 ? reason.toLowerCase() : undefined, note: note.trim() || undefined })
-      .then(() => navigate(`/aktivitas/${t.id}`, { replace: true }))
+    const partial = notReceived > 0
+    run({ type: 'receive', id: t.id, received: qty, reason: partial ? `${reason}: ${note.trim()}` : undefined, note: partial ? undefined : note.trim() || undefined })
+      .then(() => {
+        if (partial) toast('Dikirim ke staf untuk diverifikasi. Penerimaan tercatat setelah disetujui.')
+        navigate(`/aktivitas/${t.id}`, { replace: true })
+      })
       .catch((err) => {
         setError(messageOf(err))
         setBusy(false)
@@ -543,7 +588,7 @@ export function Receive() {
               ))}
             </fieldset>
           )}
-          <Field label="Catatan kondisi pangan" optional={reason !== 'Alasan lain'}>
+          <Field label={notReceived > 0 ? 'Penjelasan selisih' : 'Catatan kondisi pangan'} optional={notReceived === 0} hint={notReceived > 0 ? 'Wajib. Staf Lestari Pangan memeriksa penjelasan ini sebelum penerimaan tercatat.' : undefined}>
             {(p) => <textarea {...p} rows={3} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Contoh: 2 kotak kuahnya tumpah, sisanya dalam kondisi baik." />}
           </Field>
           {error && <Notice tone="danger">{error}</Notice>}

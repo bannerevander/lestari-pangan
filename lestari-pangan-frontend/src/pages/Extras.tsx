@@ -245,8 +245,7 @@ export function RewardDetail() {
   const i = state.rewardPacks.findIndex((x) => x.id === id)
   if (i < 0) return <NotAvailable />
   const r = { ...state.rewardPacks[i], ...packStyle(i) }
-  const claimed = !!state.rewardClaim
-  const canClaim = !!state.claimRight
+  const canClaim = state.points >= r.cost
   return (
     <>
       <AppBar title="Detail paket" />
@@ -272,16 +271,14 @@ export function RewardDetail() {
         <section className="card p-4">
           <dl className="flex flex-col gap-2 text-meta">
             <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Sponsor</dt><dd className="text-right font-medium">{r.sponsor}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Periode</dt><dd className="text-right font-medium">Oktober 2026</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Penukaran</dt><dd className="text-right font-medium">{r.cost} poin (saldo {state.points})</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Biaya</dt><dd className="text-right font-medium">Rp0</dd></div>
           </dl>
         </section>
       </main>
       <StickyFooter>
-        {claimed ? (
-          <ButtonLink to="/reward" variant="secondary" block>Anda sudah mengajukan klaim</ButtonLink>
-        ) : !canClaim ? (
-          <ButtonLink to="/tantangan" variant="secondary" block>Selesaikan challenge untuk klaim</ButtonLink>
+        {!canClaim ? (
+          <ButtonLink to="/tantangan" variant="secondary" block>Kurang {r.cost - state.points} poin · ikuti challenge</ButtonLink>
         ) : (
           <ButtonLink to={`/reward/${r.id}/klaim`} block>Pilih paket ini</ButtonLink>
         )}
@@ -300,22 +297,22 @@ export function ClaimReview() {
   const [method, setMethod] = useState('Ambil di posko')
   const [ack, setAck] = useState(false)
   const [busy, setBusy] = useState(false)
-  if (!r) return <NotAvailable />
-  if (state.rewardClaim || !state.claimRight) return <NotAvailable />
+  const [clientId] = useState(() => crypto.randomUUID()) // ketukan ganda = satu klaim
+  if (!r || state.points < r.cost) return <NotAvailable />
   return (
     <>
       <AppBar title="Tinjau klaim" />
       <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
-        <Notice tone="info" title="Apresiasi, bukan belanja poin">Ketersediaan aktual menunggu konfirmasi kuota dari sponsor program.</Notice>
+        <Notice tone="info" title={`Tukar ${r.cost} poin`}>Ketersediaan aktual menunggu konfirmasi kuota dari sponsor program. Klaim yang ditolak mengembalikan poin.</Notice>
         <Link to={`/reward/${r.id}`} className="tap card flex items-center gap-3 p-4 hover:bg-page">
           <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent-ink"><r.icon size={24} /></span>
-          <span className="min-w-0 flex-1"><span className="block font-semibold">{r.title}</span><span className="block text-meta text-ink-secondary">1 pilihan per akun</span></span>
+          <span className="min-w-0 flex-1"><span className="block font-semibold">{r.title}</span><span className="block text-meta text-ink-secondary">{r.cost} poin</span></span>
           <CaretRight size={18} aria-hidden="true" className="text-ink-secondary" />
         </Link>
         <section className="card p-4">
           <h2 className="text-card-title">Pemeriksaan hak</h2>
           <dl className="mt-2 divide-y divide-line text-meta">
-            {[['Capaian', 'Menunggu pemeriksaan tim'], ['Kuota', 'Menunggu konfirmasi program'], ['Biaya paket', 'Rp0']].map(([k, v]) => (
+            {[['Poin dipakai', `${r.cost} poin`], ['Sisa poin', `${state.points - r.cost} poin`], ['Kuota', 'Menunggu konfirmasi program'], ['Biaya paket', 'Rp0']].map(([k, v]) => (
               <div key={k} className="flex justify-between gap-3 py-2.5"><dt className="text-ink-secondary">{k}</dt><dd className="text-right font-medium">{v}</dd></div>
             ))}
           </dl>
@@ -338,7 +335,7 @@ export function ClaimReview() {
           loadingLabel="Mengajukan…"
           onClick={() => {
             setBusy(true)
-            run({ type: 'claimReward', id: r.id, participant: state.claimRight ?? undefined })
+            run({ type: 'claimReward', id: r.id, clientId })
               .then(() => {
                 toast('Klaim diajukan. Kami kabari saat program mengonfirmasi.')
                 navigate('/reward', { replace: true })

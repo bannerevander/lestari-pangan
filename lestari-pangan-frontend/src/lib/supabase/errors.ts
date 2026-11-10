@@ -5,6 +5,7 @@ const RPC_MESSAGES: Record<string, string> = {
   STATUS_TIDAK_SESUAI: 'Data sudah berubah. Muat ulang halaman lalu coba lagi.',
   STOK_TIDAK_CUKUP: 'Jumlah tersedia tidak mencukupi.',
   KUOTA_HABIS: 'Kuota reward sudah habis.',
+  POIN_TIDAK_CUKUP: 'Poin Anda belum cukup untuk paket ini.',
   SALDO_TIDAK_CUKUP: 'Saldo dana tujuan tidak mencukupi.',
   DATA_TIDAK_VALID: 'Isian belum sesuai. Periksa kembali.',
   BELUM_TERVERIFIKASI: 'Kegiatan ini memerlukan akun terverifikasi.',

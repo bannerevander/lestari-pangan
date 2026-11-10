@@ -33,6 +33,8 @@ export interface Offer {
   pickupStart: string
   pickupEnd: string
   methods: Array<'Ambil sendiri' | 'Antar pemberi' | 'Mitra pengiriman'>
+  /** Batas jumlah per penerima (opsional). */
+  maxPerRecipient?: number
   status: OfferStatus
   createdAt: string
 }
@@ -55,11 +57,14 @@ export interface FoodRequest {
   createdAt: string
   /** Usulan penyesuaian jumlah dari pemberi (Q05); menunggu jawaban penerima. */
   proposal?: { quantity: number; reason: string; at: string }
+  /** Batas tanggapan (2 jam) saat Diajukan/Menunggu penyesuaian, mis. "12 Okt 2026, 16.30 WIB". */
+  deadline?: string
 }
 
 export type TransferStatus =
   | 'Terjadwal'
   | 'Diserahkan'
+  | 'Menunggu verifikasi'
   | 'Diterima penuh'
   | 'Diterima sebagian'
   | 'Ditolak'
@@ -99,6 +104,11 @@ export interface Transfer {
   pendingSchedule?: { date: string; timeStart: string; timeEnd: string; reason?: string }
   /** Daftar periksa persiapan yang sudah dicentang pemberi (L04). */
   prep?: string[]
+  /** Penerimaan sebagian/penolakan yang menunggu verifikasi staf (OD-03). */
+  pendingReceipt?: { received: number; reason: string }
+  /** Pembayar ongkir mitra pengiriman; feeRequest = penerima meminta pemberi menanggung (OD-04). */
+  feePayer: 'penerima' | 'pemberi'
+  feeRequest: boolean
 }
 
 export type IssueStatus = 'Dikirim' | 'Sedang ditinjau' | 'Selesai' | 'Keberatan diajukan'

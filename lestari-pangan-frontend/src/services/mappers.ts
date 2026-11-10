@@ -31,7 +31,7 @@ const photoUrl = (path: string | null) => (path ? supabase.storage.from('offer-p
 // ---- Penawaran ----
 
 export const OFFER_SELECT =
-  'code, name, category, unit, initial, available, reserved, handed_over, estimate, photo_path, storage, prepared_at, label_date, allergens, description, area, pickup_start, pickup_end, methods, status, created_at, donor:profiles!offers_donor_id_fkey(org_name, org_type, verification_status)'
+  'code, name, category, unit, initial, available, reserved, handed_over, estimate, photo_path, storage, prepared_at, label_date, allergens, description, area, pickup_start, pickup_end, methods, max_per_recipient, status, created_at, donor:profiles!offers_donor_id_fkey(org_name, org_type, verification_status)'
 
 export interface OfferRow {
   code: string
@@ -53,6 +53,7 @@ export interface OfferRow {
   pickup_start: string
   pickup_end: string
   methods: string[]
+  max_per_recipient: number | null
   status: string
   created_at: string
   donor: { org_name: string; org_type: string; verification_status: string } | null
@@ -82,6 +83,7 @@ export const toOffer = (r: OfferRow): Offer => ({
   pickupStart: timeOf(r.pickup_start),
   pickupEnd: timeOf(r.pickup_end),
   methods: r.methods as Offer['methods'],
+  maxPerRecipient: r.max_per_recipient ?? undefined,
   status: r.status as Offer['status'],
   createdAt: stampLabel(r.created_at),
 })
@@ -125,12 +127,17 @@ export const toRequest = (r: RequestRow): FoodRequest => ({
   proposal: r.proposal_quantity
     ? { quantity: r.proposal_quantity, reason: r.proposal_reason ?? '', at: r.proposal_at ? stampLabel(r.proposal_at) : '' }
     : undefined,
+  deadline:
+    r.status === 'Diajukan' ? plus2h(r.created_at) : r.status === 'Menunggu penyesuaian' && r.proposal_at ? plus2h(r.proposal_at) : undefined,
 })
+
+/** Batas tanggapan permintaan: 2 jam (job server membatalkan setelahnya). */
+const plus2h = (ts: string) => stampLabel(new Date(new Date(ts).getTime() + 2 * 3600_000).toISOString())
 
 // ---- Penyaluran ----
 
 export const TRANSFER_SELECT =
-  'code, agreed, handed_over, received, rejected, unit, method, window_start, window_end, status, pending_schedule, prep, distributed, used, wasted, distribution_reported_at, offer:offers!transfers_offer_id_fkey(code, name, photo_path, area), request:requests!transfers_request_id_fkey(code), donor:profiles!transfers_donor_id_fkey(org_name, contact:profile_contacts(address)), recipient:profiles!transfers_recipient_id_fkey(org_name), events:transfer_events(label, at, note, actor:profiles!transfer_events_actor_id_fkey(org_name))'
+  'code, agreed, handed_over, received, rejected, unit, method, window_start, window_end, status, pending_schedule, pending_receipt, fee_payer, fee_request, prep, distributed, used, wasted, distribution_reported_at, offer:offers!transfers_offer_id_fkey(code, name, photo_path, area), request:requests!transfers_request_id_fkey(code), donor:profiles!transfers_donor_id_fkey(org_name, contact:profile_contacts(address)), recipient:profiles!transfers_recipient_id_fkey(org_name), events:transfer_events(label, at, note, actor:profiles!transfer_events_actor_id_fkey(org_name))'
 
 export interface TransferRow {
   code: string
@@ -144,6 +151,9 @@ export interface TransferRow {
   window_end: string
   status: string
   pending_schedule: { start: string; end: string; reason?: string | null } | null
+  pending_receipt: { received: number; reason: string } | null
+  fee_payer: 'penerima' | 'pemberi'
+  fee_request: boolean
   prep: string[]
   distributed: number | null
   used: number | null
@@ -192,4 +202,7 @@ export const toTransfer = (r: TransferRow): Transfer => ({
       }
     : undefined,
   prep: r.prep,
+  pendingReceipt: r.pending_receipt ? { received: Number(r.pending_receipt.received), reason: r.pending_receipt.reason } : undefined,
+  feePayer: r.fee_payer,
+  feeRequest: r.fee_request,
 })

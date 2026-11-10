@@ -25,6 +25,8 @@ export type Command =
   | { type: 'receive'; id: string; received: number; reason?: string; note?: string }
   | { type: 'reportDistribution'; id: string; distributed: number; used: number; wasted: number }
   | { type: 'respondSchedule'; id: string; accept: boolean }
+  | { type: 'requestFee'; id: string }
+  | { type: 'respondFee'; id: string; accept: boolean }
   | { type: 'setMethod'; id: string; method: Transfer['method'] }
   | { type: 'setPrep'; id: string; checks: string[] }
   | { type: 'taskPickup'; id: string; quantity: number }
@@ -41,7 +43,7 @@ export type Command =
   | { type: 'toggleRecipe'; id: string }
   | { type: 'joinChallenge'; id: string }
   | { type: 'finishChallenge'; id: string }
-  | { type: 'claimReward'; id: string; participant?: string }
+  | { type: 'claimReward'; id: string; clientId: string }
   | { type: 'setAppreciation'; value: 'Disetujui' | 'Revisi diminta'; note?: string; materialId?: number | null }
   | { type: 'addSupport'; amount: number; allocation: string; fund?: 'operasional' | 'pengiriman'; clientId?: string }
   | { type: 'setRecurring'; value: { amount: number; day: number } | null }
@@ -86,6 +88,12 @@ async function toServer(a: Command): Promise<void> {
       return
     case 'respondSchedule':
       await fulfillment.respondSchedule(a.id, a.accept)
+      return
+    case 'requestFee':
+      await fulfillment.requestFee(a.id)
+      return
+    case 'respondFee':
+      await fulfillment.respondFee(a.id, a.accept)
       return
     case 'setMethod':
       await fulfillment.setMethod(a.id, a.method)
@@ -134,8 +142,7 @@ async function toServer(a: Command): Promise<void> {
       await engagement.finishChallenge(a.id)
       return
     case 'claimReward':
-      if (!a.participant) throw new AppError('STATUS_TIDAK_SESUAI', 'Belum ada challenge terverifikasi untuk diklaim.')
-      await engagement.claimReward(a.participant, a.id)
+      await engagement.claimReward(a.clientId, a.id)
       return
     case 'setAppreciation':
       if (!a.materialId) throw new AppError('STATUS_TIDAK_SESUAI', 'Belum ada materi apresiasi dari tim program.')

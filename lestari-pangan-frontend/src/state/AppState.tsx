@@ -39,8 +39,8 @@ interface State {
   rewardPacks: RewardPack[]
   rewardClaim: string | null
   claimStatus: string | null
-  /** Kode keikutsertaan yang lolos dan belum dipakai klaim. */
-  claimRight: string | null
+  /** Saldo poin dari challenge yang lolos. */
+  points: number
   /** Persetujuan mitra atas materi apresiasi (E08/E09); appreciationId null = belum ada materi. */
   appreciation: 'Draf' | 'Disetujui' | 'Revisi diminta'
   appreciationId: number | null
@@ -101,7 +101,7 @@ const empty: Omit<LiveData, 'prefs'> = {
   rewardPacks: [],
   rewardClaim: null,
   claimStatus: null,
-  claimRight: null,
+  points: 0,
   appreciation: 'Draf',
   appreciationId: null,
   appreciationCaption: null,

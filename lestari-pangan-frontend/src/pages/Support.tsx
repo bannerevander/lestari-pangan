@@ -42,7 +42,6 @@ export function Rewards() {
   const { state } = useApp()
   const claimed = state.rewardPacks.find((r) => r.id === state.rewardClaim)
   const claimStage = { 'Siap disalurkan': 2, Diserahkan: 3 }[state.claimStatus ?? ''] ?? 1
-  const canClaim = !!state.claimRight
 
   return (
     <>
@@ -52,19 +51,15 @@ export function Rewards() {
         <section className="relative animate-rise-in overflow-hidden rounded-greet bg-primary p-5 text-white">
           <Gift size={120} weight="fill" aria-hidden="true" className="absolute -right-6 -top-6 -rotate-12 text-white/10" />
           <p className="text-caption font-semibold uppercase tracking-wide text-white/80">Apresiasi gotong royong</p>
-          <h2 className="mt-1 text-section-title">{claimed ? (state.claimStatus === 'Diserahkan' ? 'Paket sudah diserahkan' : 'Klaim Anda sedang diproses') : canClaim ? '1 hak klaim tersedia' : 'Belum ada hak klaim'}</h2>
+          <h2 className="mt-1 text-section-title tabular">{state.points} poin</h2>
           <p className="mt-1 text-[0.9375rem] leading-6 text-white/90">
-            {claimed
-              ? claimed.title
-              : canClaim
-                ? `Dari tantangan #${state.claimRight} yang sudah terverifikasi. Pilih satu paket.`
-                : 'Selesaikan Eco Challenge, ajukan pemeriksaan, lalu pilih paket setelah dinyatakan lolos.'}
+            Selesaikan Eco Challenge dan ajukan pemeriksaan. Poin masuk setelah lolos, lalu tukar dengan paket di bawah.
           </p>
         </section>
 
-        {claimed ? (
+        {claimed && (
           <section className="card animate-rise-in p-4">
-            <h2 className="mb-3 text-card-title">Status penyerahan</h2>
+            <h2 className="mb-3 text-card-title">Status klaim terakhir</h2>
             <StageList
               label="Status klaim"
               current={claimStage}
@@ -75,9 +70,9 @@ export function Rewards() {
               ]}
             />
           </section>
-        ) : (
-          <section aria-labelledby="rw-h" className="flex flex-col gap-3">
-            <h2 id="rw-h" className="text-section-title">Pilih paket</h2>
+        )}
+        <section aria-labelledby="rw-h" className="flex flex-col gap-3">
+            <h2 id="rw-h" className="text-section-title">Tukar poin</h2>
             <div className="stagger flex flex-col gap-3">
               {state.rewardPacks.map((r, i) => ({ ...r, ...packStyle(i) })).map((r) => (
                 <article key={r.id} className="card flex flex-col gap-3 p-4">
@@ -93,20 +88,19 @@ export function Rewards() {
                   <p className="text-meta text-ink-secondary">{r.desc}</p>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-caption text-ink-secondary">Disediakan {r.sponsor}</span>
-                    <Badge tone="warning">Menunggu konfirmasi program</Badge>
+                    <Badge tone={state.points >= r.cost ? 'success' : 'neutral'} icon={false}>{r.cost} poin</Badge>
                   </div>
                   <ButtonLink to={`/reward/${r.id}`} variant="tonal" block>
-                    Lihat dan pilih paket
+                    Lihat paket
                   </ButtonLink>
                 </article>
               ))}
             </div>
-          </section>
-        )}
+        </section>
 
         <Reveal>
           <PolicyNote title="Prinsip keadilan apresiasi">
-            Bukan sistem poin berbayar. Satu akun satu klaim per periode tantangan. Biaya pengiriman fisik dipisahkan dan bergantung ketersediaan relawan atau sponsor.
+            Poin tidak bisa dibeli dan tidak memberi prioritas memperoleh pangan. Klaim yang ditolak mengembalikan poin. Biaya pengiriman fisik dipisahkan dan bergantung ketersediaan relawan atau sponsor.
           </PolicyNote>
         </Reveal>
         {state.role === 'pemberi' && (

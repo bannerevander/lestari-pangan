@@ -40,6 +40,8 @@ export interface PublishOfferInput {
   description?: string
   /** Kode catatan pangan asal (mis. "CP-12"); catatan ditandai Ditawarkan. */
   recordCode?: string
+  /** Batas jumlah per penerima; kosong = tanpa batas. */
+  maxPerRecipient?: number
 }
 
 export const publishOffer = (i: PublishOfferInput) =>
@@ -60,6 +62,7 @@ export const publishOffer = (i: PublishOfferInput) =>
     p_allergens: i.allergens,
     p_description: i.description,
     p_record_id: i.recordCode ? idFromCode(i.recordCode) : undefined,
+    p_max_per_recipient: i.maxPerRecipient,
   })
 
 export const updateOffer = (code: string, c: { pickupStart: Date; pickupEnd: Date; available: number; storage?: string; description?: string; reason?: string }) =>

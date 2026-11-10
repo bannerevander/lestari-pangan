@@ -341,7 +341,7 @@ export function ChallengeList() {
                   <div className="min-w-0 flex-1">
                     <h2 className="font-semibold">{c.title}</h2>
                     <p className="text-meta text-ink-secondary">{c.desc}</p>
-                    <p className="mt-1 text-caption text-ink-secondary">{c.period}</p>
+                    <p className="mt-1 text-caption text-ink-secondary">{c.period} · {c.points} poin</p>
                   </div>
                   <CaretRight size={20} aria-hidden="true" className="shrink-0 text-ink-secondary" />
                 </div>
@@ -382,17 +382,17 @@ export function ChallengeDetail() {
           <img src={asset('illustrations/medali-daun.svg')} alt="" className="h-20 w-20 animate-pop" />
           <h1 className="text-page-title">{c.title}</h1>
           <p className="max-w-[34ch] text-body text-ink-secondary">{c.desc}</p>
-          <Badge tone="neutral" icon={false}>Program contoh · v1.0</Badge>
+          <Badge tone="success" icon={false}>+{c.points} poin</Badge>
         </section>
         <section className="card p-4">
           <dl className="grid grid-cols-2 gap-4">
             <div><dt className="text-meta text-ink-secondary">Periode</dt><dd className="font-semibold">{c.period}</dd></div>
             <div><dt className="text-meta text-ink-secondary">Target</dt><dd className="font-semibold">{c.target} {c.unit}</dd></div>
             <div><dt className="text-meta text-ink-secondary">Pemeriksaan</dt><dd className="font-semibold">Otomatis dari catatan</dd></div>
-            <div><dt className="text-meta text-ink-secondary">Apresiasi</dt><dd className="font-semibold">Menunggu aturan program</dd></div>
+            <div><dt className="text-meta text-ink-secondary">Apresiasi</dt><dd className="font-semibold">{c.points} poin, ditukar paket reward</dd></div>
           </dl>
         </section>
-        <Notice tone="info" title="Target masih contoh">Melaporkan sisa atau kendala tidak mengurangi kelayakan Anda.</Notice>
+        <Notice tone="info" title="Cara kerja poin">Poin masuk setelah tim memeriksa capaian. Challenge bisa diikuti lagi di periode berikutnya. Melaporkan sisa atau kendala tidak mengurangi kelayakan Anda.</Notice>
         <PolicyNote title="Sukarela dan adil">Tidak ada hadiah uang tunai. Challenge tidak memengaruhi prioritas memperoleh pangan.</PolicyNote>
       </main>
       <StickyFooter>

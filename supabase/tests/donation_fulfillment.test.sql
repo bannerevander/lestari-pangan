@@ -4,7 +4,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 create temp table r (n serial, line text);
-insert into r (line) select plan(22);
+insert into r (line) select plan(23);
 
 create function pg_temp.login(p_uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true)
@@ -15,7 +15,10 @@ insert into auth.users (id, email, aud, role) values
   ('00000000-0000-0000-0000-00000000000a', 'a@test.invalid', 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-00000000000b', 'b@test.invalid', 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-00000000000c', 'c@test.invalid', 'authenticated', 'authenticated'),
-  ('00000000-0000-0000-0000-00000000000d', 'd@test.invalid', 'authenticated', 'authenticated');
+  ('00000000-0000-0000-0000-00000000000d', 'd@test.invalid', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-00000000000e', 'e@test.invalid', 'authenticated', 'authenticated');
+insert into profiles (user_id, role, admin_scope, org_name, org_type, area) values
+  ('00000000-0000-0000-0000-00000000000e', 'admin', 'ops', 'Admin Ops', 'Admin', 'Coblong');
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 select identity_complete_onboarding('pemberi', 'Warung Uji', 'UMKM', 'Coblong', 'Rina', '0812', 'Jl. Uji 1');
@@ -29,9 +32,9 @@ select identity_complete_onboarding('penerima', 'Dapur D', 'Komunitas', 'Coblong
 -- Pemberi menawarkan 20 porsi; publikasi ulang dengan client_id sama tidak menggandakan.
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 select donation_publish_offer('aaaaaaaa-0000-0000-0000-000000000001', 'Nasi kotak', 'Makanan matang', 'porsi', 20,
-  'Suhu ruang', 'Coblong', now() - interval '1 hour', now() + interval '5 hours', array['Ambil sendiri']);
+  'Suhu ruang', 'Coblong', now() - interval '1 hour', now() + interval '5 hours', array['Ambil sendiri'], p_prepared_at => now() - interval '30 minutes');
 select donation_publish_offer('aaaaaaaa-0000-0000-0000-000000000001', 'Nasi kotak', 'Makanan matang', 'porsi', 20,
-  'Suhu ruang', 'Coblong', now() - interval '1 hour', now() + interval '5 hours', array['Ambil sendiri']);
+  'Suhu ruang', 'Coblong', now() - interval '1 hour', now() + interval '5 hours', array['Ambil sendiri'], p_prepared_at => now() - interval '30 minutes');
 insert into r (line) select is((select count(*) from offers)::int, 1, 'Publikasi ulang dengan client_id sama = satu penawaran');
 
 -- B meminta 12, C meminta 10.
@@ -64,6 +67,11 @@ insert into r (line) select ok(exists (select 1 from notifications n join profil
 select fulfillment_handover((select id from transfers limit 1), 12);
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 select fulfillment_receive((select id from transfers limit 1), 10, '2 kemasan rusak');
+insert into r (line) select results_eq($$ select status, received is null from transfers $$,
+  $$ values ('Menunggu verifikasi'::text, true) $$, 'OD-03: penerimaan sebagian menunggu verifikasi staf, dampak belum dihitung');
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select admin_verify_receipt((select id from transfers limit 1), true, 'Foto kemasan rusak sesuai');
+select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into r (line) select results_eq($$ select status, received, rejected from transfers $$,
   $$ values ('Diterima sebagian'::text, 10.00::numeric(10,2), 2.00::numeric(10,2)) $$, 'AT-02: diterima sebagian 10, ditolak 2');
 select fulfillment_receive((select id from transfers limit 1), 12);
