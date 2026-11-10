@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="790" viewBox="0 0 1120 790">
+<rect width="1120" height="790" fill="#FFFFFF"/>
+<style>text{font-family:Segoe UI,Arial,sans-serif;fill:#24332C}.title{font-size:28px;font-weight:700}.name{font-size:22px;font-weight:700}.label{font-size:14px}.hex{font-size:16px;font-weight:600}</style>
+<text x="40" y="48" class="title">Lestari Pangan — Pilihan Palet Warna</text>
+<text x="40" y="76" class="label">Urutan: utama · pendamping · aksen · latar · teks | Permukaan kartu: putih</text>
+<text x="40" y="120" class="name">1. Kebun Hangat</text>
+<rect x="40" y="140" width="200" height="78" rx="12" fill="#2E7D32"/><rect x="250" y="140" width="200" height="78" rx="12" fill="#DDF2DF"/><rect x="460" y="140" width="200" height="78" rx="12" fill="#FFB74D"/><rect x="670" y="140" width="200" height="78" rx="12" fill="#F5F9F5" stroke="#D8DFDB"/><rect x="880" y="140" width="200" height="78" rx="12" fill="#12212B"/>
+<text x="40" y="244" class="hex">#2E7D32</text><text x="250" y="244" class="hex">#DDF2DF</text><text x="460" y="244" class="hex">#FFB74D</text><text x="670" y="244" class="hex">#F5F9F5</text><text x="880" y="244" class="hex">#12212B</text>
+<text x="40" y="292" class="name">2. Bumi dan Panen</text>
+<rect x="40" y="312" width="200" height="78" rx="12" fill="#3F6212"/><rect x="250" y="312" width="200" height="78" rx="12" fill="#E7EDDA"/><rect x="460" y="312" width="200" height="78" rx="12" fill="#C4663D"/><rect x="670" y="312" width="200" height="78" rx="12" fill="#FAF7F0" stroke="#D8DFDB"/><rect x="880" y="312" width="200" height="78" rx="12" fill="#292D22"/>
+<text x="40" y="416" class="hex">#3F6212</text><text x="250" y="416" class="hex">#E7EDDA</text><text x="460" y="416" class="hex">#C4663D</text><text x="670" y="416" class="hex">#FAF7F0</text><text x="880" y="416" class="hex">#292D22</text>
+<text x="40" y="464" class="name">3. Segar Teal</text>
+<rect x="40" y="484" width="200" height="78" rx="12" fill="#0F766E"/><rect x="250" y="484" width="200" height="78" rx="12" fill="#CCFBF1"/><rect x="460" y="484" width="200" height="78" rx="12" fill="#F4B942"/><rect x="670" y="484" width="200" height="78" rx="12" fill="#F3FAF8" stroke="#D8DFDB"/><rect x="880" y="484" width="200" height="78" rx="12" fill="#16332F"/>
+<text x="40" y="588" class="hex">#0F766E</text><text x="250" y="588" class="hex">#CCFBF1</text><text x="460" y="588" class="hex">#F4B942</text><text x="670" y="588" class="hex">#F3FAF8</text><text x="880" y="588" class="hex">#16332F</text>
+<text x="40" y="636" class="name">4. Hutan Tenang</text>
+<rect x="40" y="656" width="200" height="78" rx="12" fill="#166534"/><rect x="250" y="656" width="200" height="78" rx="12" fill="#E3EDE5"/><rect x="460" y="656" width="200" height="78" rx="12" fill="#C69A46"/><rect x="670" y="656" width="200" height="78" rx="12" fill="#F8FAF7" stroke="#D8DFDB"/><rect x="880" y="656" width="200" height="78" rx="12" fill="#1C2B23"/>
+<text x="40" y="760" class="hex">#166534</text><text x="250" y="760" class="hex">#E3EDE5</text><text x="460" y="760" class="hex">#C69A46</text><text x="670" y="760" class="hex">#F8FAF7</text><text x="880" y="760" class="hex">#1C2B23</text>
+</svg>
