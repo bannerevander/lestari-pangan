@@ -18,20 +18,144 @@
   }
 }
 
+/* Token warna (kanal RGB). Aplikasi hanya memakai tema terang. */
+@layer base {
+  :root {
+    --primary: 46 125 50;
+    --primary-pressed: 37 101 40;
+    --primary-container: 234 245 236;
+    --primary-hover: 220 239 223;
+    --primary-active: 208 233 212;
+    --accent: 255 183 77;
+    --accent-soft: 255 246 229;
+    --accent-ink: 138 75 0;
+    --ink: 18 33 43;
+    --ink-secondary: 82 96 90;
+    --page: 247 248 250;
+    --surface: 255 255 255;
+    --frame: 233 237 234;
+    --paper: 251 251 248;
+    --neutral-soft: 238 241 239;
+    --leaf: 139 203 145;
+    --on-ink-info: 147 197 253;
+    --on-primary: 255 255 255;
+    --line: 220 227 222;
+    --line-control: 122 135 128;
+    --disabled-bg: 226 232 228;
+    --disabled-fg: 82 96 90;
+    --warning: 146 64 14;
+    --warning-container: 255 244 219;
+    --danger: 180 35 24;
+    --danger-container: 254 243 242;
+    --info: 29 78 216;
+    --info-container: 239 246 255;
+    color-scheme: light;
+  }
+}
+
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body { @apply bg-page text-ink font-sans antialiased; }
-  :focus-visible { outline: 2px solid #2E7D32; outline-offset: 3px; border-radius: 6px; }
+  :focus-visible { outline: 2px solid rgb(var(--primary)); outline-offset: 3px; border-radius: 6px; }
+  /* Judul yang menerima fokus programatik saat pindah halaman tidak perlu cincin fokus. */
+  h1[tabindex='-1']:focus { outline: none; }
   button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 @layer components {
   .card { @apply bg-surface rounded-card border border-line shadow-card; }
-  .tap { @apply transition-colors duration-feedback ease-standard; }
+  /* Umpan balik tekan: warna + sedikit mengecil, tanpa menggeser layout. */
+  .tap {
+    @apply transition-[color,background-color,border-color,box-shadow,transform] duration-feedback ease-standard active:scale-[0.97];
+    touch-action: manipulation;
+  }
+  /* Kartu besar cukup mengecil sedikit agar tidak terasa "melompat". */
+  .tap-soft { @apply active:scale-[0.99]; }
+  /* Daftar muncul berurutan 40 ms per item (maks. 8 item, sisanya bersamaan). */
+  .stagger > * { @apply animate-rise-in; }
+  .stagger > :nth-child(2) { animation-delay: 40ms; }
+  .stagger > :nth-child(3) { animation-delay: 80ms; }
+  .stagger > :nth-child(4) { animation-delay: 120ms; }
+  .stagger > :nth-child(5) { animation-delay: 160ms; }
+  .stagger > :nth-child(6) { animation-delay: 200ms; }
+  .stagger > :nth-child(7) { animation-delay: 240ms; }
+  .stagger > :nth-child(n + 8) { animation-delay: 280ms; }
+  /* Baris chip geser horizontal tanpa scrollbar abu yang mengganggu. */
+  .chip-row { scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 1rem; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .chip-row > * { scroll-snap-align: start; }
+  /* Tepi memudar menandakan masih ada chip di luar layar. */
+  .chip-row[data-fade-end] { mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
+  .chip-row[data-fade-start] { mask-image: linear-gradient(to right, transparent, #000 40px); }
+  .chip-row[data-fade-start][data-fade-end] { mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
   .gutter { @apply px-4; }
+  /* Muncul saat masuk layar (Reveal); tanpa JS/IO konten tetap terlihat lewat data-shown. */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), transform 520ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal[data-shown] { opacity: 1; transform: none; }
+  /* Isi akordeon membuka dengan tinggi alami (grid 0fr → 1fr), bukan animasi height. */
+  .collapse-grid { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms cubic-bezier(0.2, 0, 0, 1); }
+  .collapse-grid[data-open] { grid-template-rows: 1fr; }
+  .collapse-grid > * { overflow: hidden; }
+  .tabular { font-variant-numeric: tabular-nums; }
 }
 
+/* Pengaturan "Kurangi gerakan" di aplikasi, setara preferensi sistem. */
+html[data-reduce-motion] *, html[data-reduce-motion] ::before, html[data-reduce-motion] ::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+html[data-reduce-motion] .reveal { opacity: 1; transform: none; }
+
+/* ---------- U01 Layar pembuka (lihat components/Splash.tsx) ----------
+   Signature easing: cubic-bezier(0.16, 1, 0.3, 1) — melambat panjang, tanpa pantulan (premium). */
+.splash-leaf {
+  opacity: 0;
+  /* Poros di pangkal batang logo, supaya helai terasa tumbuh dari satu tunas. */
+  transform-origin: 39% 96%;
+  animation: leaf-unfurl 760ms cubic-bezier(0.16, 1, 0.3, 1) var(--d) forwards;
+}
+@keyframes leaf-unfurl {
+  0% { opacity: 0; transform: rotate(var(--r)) scale(0.35); }
+  35% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+.splash-glow {
+  background: radial-gradient(closest-side, rgb(var(--primary-container)), transparent);
+  opacity: 0;
+  animation: splash-glow 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards, splash-breathe 2600ms ease-in-out 900ms infinite;
+}
+@keyframes splash-glow { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+@keyframes splash-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.splash-ground {
+  background: radial-gradient(closest-side, rgb(var(--ink) / 0.14), transparent);
+  transform-origin: center;
+  animation: splash-ground 700ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+@keyframes splash-ground { from { opacity: 0; transform: scaleX(0.2); } to { opacity: 1; transform: none; } }
+/* Kilau tipis sekali lewat, dibatasi bentuk logo lewat mask. */
+.splash-sheen {
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.7) 50%, transparent 62%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  animation: splash-sheen 900ms cubic-bezier(0.4, 0, 0.2, 1) 900ms forwards;
+}
+@keyframes splash-sheen { to { background-position: -40% 0; } }
+.splash-line > span {
+  display: block;
+  transform: translateY(105%);
+  animation: splash-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) var(--d) forwards;
+}
+@keyframes splash-rise { to { transform: none; } }
+.splash[data-out] .splash-stage { animation: splash-stage-out 300ms cubic-bezier(0.3, 0, 1, 1) forwards; }
+.splash[data-out] { animation: splash-out 360ms cubic-bezier(0.4, 0, 1, 1) 80ms forwards; }
+@keyframes splash-stage-out { to { opacity: 0; transform: scale(1.04) translateY(-6px); } }
+@keyframes splash-out { to { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
   *, ::before, ::after {
     animation-duration: 0s !important;
     transition-duration: 0s !important;

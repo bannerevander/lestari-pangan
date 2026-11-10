@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 
 /** Geometri ikon diambil dari H01 / Pemberi / Home • LOCKED v1 (Stitch). */
@@ -42,7 +43,7 @@ const tabs = [
 ]
 
 export function BottomTabBar() {
-  return (
+  return createPortal(
     <nav
       aria-label="Navigasi utama"
       className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 border-t border-line bg-surface pb-[env(safe-area-inset-bottom,0px)] shadow-nav"
@@ -62,7 +63,7 @@ export function BottomTabBar() {
             <>
               <span
                 className={`flex h-[28px] w-[48px] items-center justify-center rounded-full transition-colors duration-micro ease-standard ${
-                  isActive ? 'bg-primary-container' : ''
+                  isActive ? 'animate-pop bg-primary-container' : ''
                 }`}
               >
                 <svg
@@ -83,6 +84,7 @@ export function BottomTabBar() {
           )}
         </NavLink>
       ))}
-    </nav>
+    </nav>,
+    document.body,
   )
 }

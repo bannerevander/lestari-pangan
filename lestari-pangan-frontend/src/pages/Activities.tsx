@@ -1,11 +1,16 @@
 import { useId, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
+import { ArrowRight, Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { AppBar, Badge, Button, ButtonLink, Chip, DemoNote, Field, inputCls, MenuRow, Notice, PartiesRow, PhotoUploadPlaceholder, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter } from '../components/ui'
+import { AppBar, Badge, BottomSheet, Button, ButtonLink, Chip, Field, inputCls, MenuRow, Notice, PartiesRow, PhotoUploadPlaceholder, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter, ChipRow, toast } from '../components/ui'
 import { FoodPhoto } from '../components/FoodPhoto'
-import { useApp, useProfile } from '../state/AppState'
-import { NotAvailable } from './Donasi'
+import { useApp } from '../state/AppState'
+import { useCommand } from '../state/useCommand'
+import { useLiveData } from '../state/LiveData'
+import { messageOf } from '../lib/supabase/errors'
+import { reportIssue } from '../services/issues'
+import { useProfile } from '../state/useProfile'
+import { NotAvailable } from '../components/NotAvailable'
 import type { Transfer } from '../data/types'
 
 /* ---------- L01 / L01R Aktivitas ---------- */
@@ -42,7 +47,7 @@ export function ActivitiesTab() {
   return (
     <>
       <RootHeader title="Aktivitas" subtitle={donor ? 'Permintaan masuk dan penyerahan' : 'Permintaan, jadwal, dan penerimaan'} />
-      <div className="flex flex-col gap-4 px-4 pt-4">
+      <div className="stagger flex flex-col gap-4 px-4 pt-4">
         <Segmented
           label="Kelompok aktivitas"
           value={tab}
@@ -117,14 +122,15 @@ export function ActivitiesTab() {
             {counts.riwayat === 0 && <StatePanel title="Belum ada riwayat" />}
           </>
         )}
-        <DemoNote />
       </div>
     </>
   )
 }
 
 function nextAction(t: Transfer, donor: boolean): { label: string; to: string } | null {
-  if (donor && t.status === 'Terjadwal') return { label: 'Catat penyerahan', to: `/aktivitas/${t.id}/serahkan` }
+  // Persiapan (L04) didahulukan sebelum penyerahan bila daftar periksa belum lengkap.
+  if (donor && t.status === 'Terjadwal')
+    return (t.prep?.length ?? 0) < 4 ? { label: 'Siapkan pangan', to: `/aktivitas/${t.id}/persiapan` } : { label: 'Catat penyerahan', to: `/aktivitas/${t.id}/serahkan` }
   if (!donor && (t.status === 'Terjadwal' || t.status === 'Diserahkan')) return { label: 'Konfirmasi penerimaan', to: `/aktivitas/${t.id}/terima` }
   if (!donor && (t.status === 'Diterima penuh' || t.status === 'Diterima sebagian') && !t.distributionReported)
     return { label: 'Catat penggunaan/distribusi', to: `/aktivitas/${t.id}/distribusi` }
@@ -191,17 +197,27 @@ function stageDetails(t: Transfer): string[] {
 export function TransferDetail() {
   const { id } = useParams()
   const { state } = useApp()
+  const run = useCommand()
+  const [busy, setBusy] = useState<'accept' | 'reject' | null>(null)
   const t = state.transfers.find((x) => x.id === id)
   if (!t) return <NotAvailable />
   const donor = state.role === 'pemberi'
   const next = nextAction(t, donor)
   const stage = stageOf(t)
   const details = stageDetails(t)
+  const issues = state.issues.filter((i) => i.transferId === t.id)
+  const respond = (accept: boolean) => {
+    setBusy(accept ? 'accept' : 'reject')
+    run({ type: 'respondSchedule', id: t.id, accept })
+      .then(() => toast(accept ? 'Jadwal baru disetujui.' : 'Jadwal lama tetap berlaku.', accept ? 'success' : 'info'))
+      .catch((err) => toast(messageOf(err), 'info'))
+      .finally(() => setBusy(null))
+  }
 
   return (
     <>
       <AppBar title="Detail penyaluran" />
-      <main className="flex flex-col gap-4 px-4 pb-32 pt-4">
+      <main className="stagger flex flex-col gap-4 px-4 pb-32 pt-4">
         <section className="card flex flex-col gap-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <StatusBadge status={t.status} />
@@ -219,6 +235,32 @@ export function TransferDetail() {
           <PartiesRow donor={t.donorName} recipient={t.recipientName} />
         </section>
 
+        {t.pendingSchedule && (
+          <section aria-live="polite" className="animate-rise-in rounded-card border border-warning/40 bg-warning-container p-4">
+            <p className="flex items-center gap-2 font-semibold"><CalendarBlank size={20} aria-hidden="true" className="text-warning" />Usulan jadwal baru dari {t.donorName}</p>
+            <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-control bg-surface p-3">
+              <div className="min-w-0">
+                <p className="text-caption text-ink-secondary">Berlaku sekarang</p>
+                <p className="text-meta">{t.date}, {t.timeStart}–{t.timeEnd}</p>
+              </div>
+              <ArrowRight size={18} aria-label="menjadi" className="text-ink-secondary" />
+              <div className="min-w-0">
+                <p className="text-caption font-semibold text-primary">Usulan</p>
+                <p className="text-meta font-semibold">{t.pendingSchedule.date}, {t.pendingSchedule.timeStart}–{t.pendingSchedule.timeEnd}</p>
+              </div>
+            </div>
+            {t.pendingSchedule.reason && <p className="mt-2 text-meta">Alasan: “{t.pendingSchedule.reason}”</p>}
+            {donor ? (
+              <p className="mt-3 text-meta text-ink-secondary">Menunggu persetujuan {t.recipientName}. Jadwal lama tetap berlaku.</p>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                <Button className="flex-1" loading={busy === 'accept'} disabled={!!busy} onClick={() => respond(true)}>Setujui</Button>
+                <Button variant="secondary" className="flex-1" loading={busy === 'reject'} disabled={!!busy} onClick={() => respond(false)}>Tetap jadwal lama</Button>
+              </div>
+            )}
+          </section>
+        )}
+
         {next ? (
           <Notice tone="info" title="Langkah berikutnya">{next.label}.</Notice>
         ) : t.status === 'Terjadwal' || t.status === 'Diserahkan' ? (
@@ -227,7 +269,7 @@ export function TransferDetail() {
 
         <section aria-labelledby="jadwal" className="card p-4">
           <h2 id="jadwal" className="sr-only">Jadwal dan lokasi</h2>
-          <ul className="flex flex-col gap-3">
+          <ul className="stagger flex flex-col gap-3">
             <li className="flex gap-3">
               <CalendarBlank size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
               <div>
@@ -239,13 +281,12 @@ export function TransferDetail() {
               <MapPin size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
                 <p className="text-meta text-ink-secondary">Lokasi pengambilan</p>
-                <p className="font-semibold">{t.donorName}, Coblong, Kota Bandung</p>
+                <p className="font-semibold">{t.donorName}{t.area ? `, ${t.area}` : ''}</p>
                 <div className="mt-2 rounded-control border border-line bg-page p-3">
                   <p className="flex items-center gap-1.5 text-caption font-semibold text-ink-secondary">
                     <LockSimple size={16} aria-hidden="true" /> Alamat lengkap, hanya untuk pihak yang terlibat
                   </p>
-                  <p className="mt-1">Jl. Contoh No. 12, Coblong</p>
-                  <p className="text-caption text-ink-secondary">Alamat demo</p>
+                  <p className="mt-1">{t.donorAddress ?? 'Alamat belum tersedia'}</p>
                 </div>
               </div>
             </li>
@@ -309,6 +350,12 @@ export function TransferDetail() {
             title="Koordinasi"
             subtitle={`Hubungi ${donor ? t.recipientName : t.donorName}`}
           />
+          <MenuRow to={`/aktivitas/${t.id}/status`} icon={<Truck size={20} />} title="Status penyaluran" subtitle="Linimasa serah terima" />
+          {t.status === 'Terjadwal' && <MenuRow to={`/aktivitas/${t.id}/metode`} icon={<Package size={20} />} title="Metode dan biaya" subtitle={`${t.method} · pangan Rp0`} />}
+          {donor && t.status === 'Terjadwal' && <MenuRow to={`/aktivitas/${t.id}/persiapan`} icon={<Tray size={20} />} title="Persiapan pangan" subtitle={`${t.prep?.length ?? 0}/4 daftar periksa`} />}
+          {issues.map((i) => (
+            <MenuRow key={i.id} to={`/masalah/${i.id}`} icon={<Flag size={20} />} title={`Laporan ${i.id}`} subtitle={`${i.status} · ${i.category}`} />
+          ))}
           <MenuRow to={`/aktivitas/${t.id}/masalah`} icon={<Flag size={20} />} title="Laporkan masalah" subtitle="Tidak datang, terlambat, atau jumlah berbeda" />
         </nav>
       </main>
@@ -345,7 +392,8 @@ function ActivitySummary({ t, children }: { t: Transfer; children?: React.ReactN
 
 export function Handover() {
   const { id } = useParams()
-  const { state, dispatch } = useApp()
+  const { state } = useApp()
+  const run = useCommand()
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
   const [qty, setQty] = useState(t?.agreed ?? 0)
@@ -358,10 +406,12 @@ export function Handover() {
     if (qty <= 0) return setError('Isi jumlah yang benar-benar diserahkan.')
     if (qty > t.agreed) return setError(`Melebihi jumlah disepakati (${t.agreed} ${t.unit}).`)
     setBusy(true)
-    window.setTimeout(() => {
-      dispatch({ type: 'handover', id: t.id, quantity: qty, note: note.trim() || undefined })
-      navigate(`/aktivitas/${t.id}`, { replace: true })
-    }, 600)
+    run({ type: 'handover', id: t.id, quantity: qty, note: note.trim() || undefined })
+      .then(() => navigate(`/aktivitas/${t.id}`, { replace: true }))
+      .catch((err) => {
+        setError(messageOf(err))
+        setBusy(false)
+      })
   }
   return (
     <>
@@ -395,16 +445,13 @@ export function Handover() {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 text-label">Cara pencatatan</legend>
           <RadioCard name="bukti" checked onChange={() => {}} title="Diperiksa bersama di lokasi" description="Kedua pihak melihat jumlah dan kondisi pangan saat serah terima." />
-          <p className="text-caption text-ink-secondary">Kode atau tanda tangan digital belum tersedia di prototipe.</p>
+          <p className="text-caption text-ink-secondary">Kode atau tanda tangan digital belum tersedia.</p>
         </fieldset>
 
         <Notice tone="info">Penyerahan belum berarti diterima. {t.recipientName} akan mengonfirmasi jumlah yang diterima, dan selisih tidak dikenai sanksi.</Notice>
       </main>
       <StickyFooter>
-        <div className="flex flex-col gap-2">
-          <Button block loading={busy} onClick={submit}>Konfirmasi penyerahan ({qty} {t.unit})</Button>
-          <Button block variant="ghost" onClick={() => navigate(-1)}>Kembali</Button>
-        </div>
+        <Button block loading={busy} onClick={submit}>Konfirmasi penyerahan ({qty} {t.unit})</Button>
       </StickyFooter>
     </>
   )
@@ -421,7 +468,8 @@ const RECEIVE_REASONS = [
 
 export function Receive() {
   const { id } = useParams()
-  const { state, dispatch } = useApp()
+  const { state } = useApp()
+  const run = useCommand()
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
   const base = t ? t.handedOver ?? t.agreed : 0
@@ -438,10 +486,12 @@ export function Receive() {
     if (notReceived > 0 && !reason) return setError('Pilih alasan agar pemberi memahami selisihnya.')
     if (reason === 'Alasan lain' && !note.trim()) return setError('Tulis catatan singkat untuk alasan lain.')
     setBusy(true)
-    window.setTimeout(() => {
-      dispatch({ type: 'receive', id: t.id, received: qty, reason: notReceived > 0 ? reason.toLowerCase() : undefined, note: note.trim() || undefined })
-      navigate(`/aktivitas/${t.id}`, { replace: true })
-    }, 600)
+    run({ type: 'receive', id: t.id, received: qty, reason: notReceived > 0 ? reason.toLowerCase() : undefined, note: note.trim() || undefined })
+      .then(() => navigate(`/aktivitas/${t.id}`, { replace: true }))
+      .catch((err) => {
+        setError(messageOf(err))
+        setBusy(false)
+      })
   }
 
   return (
@@ -521,7 +571,8 @@ export function Receive() {
 
 export function Distribution() {
   const { id } = useParams()
-  const { state, dispatch } = useApp()
+  const { state } = useApp()
+  const run = useCommand()
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
   const [v, setV] = useState({ distributed: '', used: '', wasted: '' })
@@ -592,10 +643,12 @@ export function Distribution() {
             disabled={invalid || total === 0}
             onClick={() => {
               setBusy(true)
-              window.setTimeout(() => {
-                dispatch({ type: 'reportDistribution', id: t.id, distributed: n(v.distributed), used: n(v.used), wasted: n(v.wasted) })
-                navigate(`/aktivitas/${t.id}`, { replace: true })
-              }, 500)
+              run({ type: 'reportDistribution', id: t.id, distributed: n(v.distributed), used: n(v.used), wasted: n(v.wasted) })
+                .then(() => navigate(`/aktivitas/${t.id}`, { replace: true }))
+                .catch((err) => {
+                  toast(messageOf(err), 'info')
+                  setBusy(false)
+                })
             }}
           >
             Simpan laporan
@@ -617,7 +670,8 @@ const notifStyle = {
 } as const
 
 export function Notifications() {
-  const { state, dispatch } = useApp()
+  const { state } = useApp()
+  const run = useCommand()
   const navigate = useNavigate()
   const [filter, setFilter] = useState<NotifFilter>('Semua')
   const all = state.notifications.filter((n) => n.role === state.role)
@@ -629,23 +683,23 @@ export function Notifications() {
         title="Notifikasi"
         actions={
           unread > 0 ? (
-            <button type="button" onClick={() => dispatch({ type: 'readAllNotifications' })} className="tap mr-1 min-h-12 rounded-control px-3 text-[0.875rem] font-semibold text-primary hover:bg-primary-container">
+            <button type="button" onClick={() => run({ type: 'readAllNotifications' }).catch((err) => toast(messageOf(err), 'info'))} className="tap mr-1 min-h-12 rounded-control px-3 text-[0.875rem] font-semibold text-primary hover:bg-primary-container">
               Tandai dibaca
             </button>
           ) : undefined
         }
       />
       <main className="flex flex-col gap-3 pb-10">
-      <div className="flex gap-2 overflow-x-auto border-b border-line bg-surface px-4 py-2" role="group" aria-label="Saring notifikasi">
+      <ChipRow className="flex gap-2 overflow-x-auto border-b border-line bg-surface px-4 py-2" role="group" aria-label="Saring notifikasi">
         {(['Semua', 'Kegiatan', 'Reward', 'Sistem'] as const).map((f) => (
           <Chip key={f} selected={filter === f} onClick={() => setFilter(f)}>
             {f === 'Semua' ? `Semua (${all.length})` : f === 'Reward' ? 'Apresiasi' : f === 'Sistem' ? 'Info' : 'Kegiatan'}
           </Chip>
         ))}
-      </div>
-      <div className="flex flex-col gap-3 px-4 pt-1">
+      </ChipRow>
+      <div className="stagger flex flex-col gap-3 px-4 pt-1">
         {list.length === 0 && <StatePanel icon={<Bell size={40} className="text-ink-secondary" />} title="Belum ada notifikasi" />}
-        <ul className="flex flex-col gap-3">
+        <ul className="stagger flex flex-col gap-3">
           {list.map((n) => {
             const st = notifStyle[n.kind]
             return (
@@ -653,7 +707,7 @@ export function Notifications() {
                 <button
                   type="button"
                   onClick={() => {
-                    dispatch({ type: 'readNotification', id: n.id })
+                    if (!n.read) run({ type: 'readNotification', id: n.id }).catch(() => {}) // gagal tandai dibaca tidak menghalangi navigasi
                     navigate(n.to)
                   }}
                   className={`tap card flex w-full gap-3 p-4 text-left hover:bg-page ${n.read ? '' : 'border-primary/40 ring-1 ring-primary/20'}`}
@@ -717,19 +771,29 @@ const ISSUE_CATEGORIES = [
 export function ReportIssue() {
   const { id } = useParams()
   const { state } = useApp()
+  const { refresh } = useLiveData()
+  const [clientId] = useState(() => crypto.randomUUID())
   const navigate = useNavigate()
   const t = state.transfers.find((x) => x.id === id)
   const [cat, setCat] = useState('')
   const [desc, setDesc] = useState('')
-  const [sent, setSent] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const send = async () => {
+    setBusy(true)
+    try {
+      const code = await reportIssue(clientId, id ?? '', cat, desc.trim())
+      await refresh()
+      toast('Laporan terkirim. Tim meninjau dalam 60 menit.')
+      navigate(`/masalah/${code}`, { replace: true })
+    } catch (err) {
+      toast(messageOf(err), 'info')
+      setBusy(false)
+    }
+  }
   return (
     <>
       <AppBar title="Laporkan masalah" />
       <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-40 pt-4">
-        {sent ? (
-          <Notice tone="success" title="Laporan terkirim">Status awal: Dikirim. Tim akan meninjau dan memberi kabar lewat notifikasi.</Notice>
-        ) : (
-          <>
             <section className="card p-4">
               <p className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">Kegiatan terkait</p>
               <p className="mt-1 font-semibold">{t ? `${t.foodName} (${t.agreed} ${t.unit})` : id}</p>
@@ -754,19 +818,116 @@ export function ReportIssue() {
             <PolicyNote title="Pelaporan tanpa hukuman">
               Laporan kendala dipakai untuk memperbaiki koordinasi, bukan untuk menghukum siapa pun.
             </PolicyNote>
-          </>
-        )}
       </main>
       <StickyFooter>
-        {sent ? (
-          <Button block variant="secondary" onClick={() => navigate(-1)}>Kembali</Button>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <Button block disabled={!cat || !desc.trim()} onClick={() => setSent(true)}>Kirim laporan</Button>
-            <Button block variant="ghost" onClick={() => navigate(-1)}>Batal</Button>
-          </div>
-        )}
+        <div className="flex flex-col gap-2">
+          <Button block disabled={!cat || desc.trim().length < 10} loading={busy} onClick={send}>Kirim laporan</Button>
+          {(!cat || desc.trim().length < 10) && <p className="text-center text-caption text-ink-secondary">Pilih kategori dan tulis minimal 10 karakter.</p>}
+        </div>
       </StickyFooter>
+    </>
+  )
+}
+
+/* ---------- L11 Detail dan tindak lanjut masalah ---------- */
+
+export function IssueDetail() {
+  const { id } = useParams()
+  const { state } = useApp()
+  const run = useCommand()
+  const issue = state.issues.find((i) => i.id === id)
+  const [open, setOpen] = useState(false)
+  const [note, setNote] = useState('')
+  const [busy, setBusy] = useState(false)
+  if (!issue) return <NotAvailable />
+  const t = state.transfers.find((x) => x.id === issue.transferId)
+  const step = { Dikirim: 0, 'Sedang ditinjau': 1, Selesai: 3, 'Keberatan diajukan': 1 }[issue.status]
+  return (
+    <>
+      <AppBar title="Tindak lanjut masalah" />
+      <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-10 pt-4">
+        <section className="card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge tone={issue.status === 'Selesai' ? 'success' : issue.status === 'Dikirim' ? 'info' : 'warning'}>{issue.status}</Badge>
+            <span className="text-caption text-ink-secondary">{issue.id} · {issue.at}</span>
+          </div>
+          <h1 className="mt-2 text-card-title">{issue.category}</h1>
+          <p className="mt-1 text-body text-ink-secondary">{issue.description}</p>
+          {t && (
+            <Link to={`/aktivitas/${t.id}`} className="tap mt-3 flex items-center gap-3 rounded-control bg-page p-3 hover:bg-primary-container">
+              <FoodPhoto src={t.photo} alt="" className="h-10 w-10 shrink-0 rounded-control" iconSize={18} />
+              <span className="min-w-0 flex-1 text-meta"><span className="block font-semibold">{t.foodName}</span>{t.id} · {t.agreed} {t.unit} disepakati{t.received !== undefined && `, ${t.received} diterima`}</span>
+              <CaretRight size={18} aria-hidden="true" className="text-ink-secondary" />
+            </Link>
+          )}
+        </section>
+        <section className="card p-4">
+          <h2 className="mb-3 text-card-title">Tahap penanganan</h2>
+          <StageList
+            label="Tahap penanganan"
+            current={step}
+            stages={[
+              { title: 'Laporan diterima', detail: issue.at },
+              { title: 'Ditinjau tim operasional', detail: 'Target respons 60 menit untuk pangan siap santap' },
+              { title: 'Resolusi', detail: issue.resolution ? 'Hasil tersedia di bawah' : 'Belum ada' },
+            ]}
+          />
+        </section>
+        <section className="card p-4">
+          <h2 className="mb-3 text-card-title">Kronologi</h2>
+          <ol className="relative flex flex-col gap-4 border-l-2 border-line pl-5">
+            {issue.timeline.map((e, i) => (
+              <li key={i} className="relative">
+                <span aria-hidden="true" className={`absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-surface ${i === issue.timeline.length - 1 ? 'bg-primary' : 'bg-line-control'}`} />
+                <p className="font-semibold">{e.label}</p>
+                <p className="text-meta text-ink-secondary">{e.at} · {e.by}</p>
+                {e.note && <p className="text-meta">{e.note}</p>}
+              </li>
+            ))}
+          </ol>
+        </section>
+        {issue.resolution && <PolicyNote title="Resolusi operasional">{issue.resolution}</PolicyNote>}
+        {issue.status === 'Selesai' && (
+          <section className="card flex flex-col gap-3 p-4">
+            <p className="font-semibold">Punya sanggahan atas kronologi?</p>
+            <p className="text-meta text-ink-secondary">Keberatan ditinjau ulang oleh staf yang berbeda.</p>
+            <Button variant="secondary" onClick={() => setOpen(true)}>Ajukan keberatan</Button>
+          </section>
+        )}
+        <div className="flex flex-col gap-2">
+          <ButtonLink to="/aktivitas" variant="ghost" block>Kembali ke Aktivitas</ButtonLink>
+          <ButtonLink to="/dampak" variant="ghost" block>Lihat dampak terkoreksi</ButtonLink>
+        </div>
+      </main>
+      <BottomSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Ajukan keberatan"
+        footer={
+          <Button
+            block
+            disabled={note.trim().length < 10}
+            loading={busy}
+            onClick={() => {
+              setBusy(true)
+              run({ type: 'objectIssue', id: issue.id, note: note.trim() })
+                .then(() => {
+                  setOpen(false)
+                  setNote('')
+                  toast('Keberatan dikirim untuk ditinjau ulang.')
+                })
+                .catch((err) => toast(messageOf(err), 'info'))
+                .finally(() => setBusy(false))
+            }}
+          >
+            Kirim keberatan
+          </Button>
+        }
+      >
+        <Field label="Bagian mana yang tidak sesuai?" hint="Minimal 10 karakter. Sertakan jumlah atau waktu yang benar.">
+          {(p) => <textarea {...p} rows={4} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} />}
+        </Field>
+      </BottomSheet>
     </>
   )
 }

@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Camera, Check } from '@phosphor-icons/react'
-import { AppBar, BottomSheet, Button, Chip, Field, inputCls, Notice, StickyFooter } from '../components/ui'
-import { useApp, useProfile } from '../state/AppState'
-import type { FoodCategory, Offer, Unit } from '../data/types'
-import { isoToLabel, timeLabel } from '../lib/format'
+import { AppBar, BottomSheet, Button, Chip, Field, inputCls, Notice, StickyFooter, toast } from '../../components/ui'
+import { useApp } from '../../state/AppState'
+import type { FoodCategory, Offer, Unit } from '../../data/types'
+import { isoToLabel, timeLabel } from '../../lib/format'
+import { messageOf } from '../../lib/supabase/errors'
+import { publishOffer } from '../../services/donation'
+import { useLiveData } from '../../state/LiveData'
+import { useProfile } from '../../state/useProfile'
+import { AreaField } from '../../components/AreaField'
 
 /** D02 Form penawaran tiga langkah (design.md §11.1). */
 
@@ -28,6 +33,12 @@ interface Draft {
   instructions: string
 }
 
+/** Tanggal hari ini (zona perangkat) sebagai YYYY-MM-DD. */
+function todayIso() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 const empty: Draft = {
   name: '',
   category: '',
@@ -40,8 +51,8 @@ const empty: Draft = {
   allergensKnown: '',
   allergens: '',
   description: '',
-  area: 'Kec. Coblong, Bandung',
-  date: '2026-10-10',
+  area: '',
+  date: todayIso(),
   start: '16:00',
   end: '18:00',
   methods: ['Ambil sendiri'],
@@ -51,22 +62,25 @@ const empty: Draft = {
 const steps = ['Informasi pangan', 'Penyaluran', 'Tinjauan']
 
 export default function OfferForm() {
-  const { state, dispatch } = useApp()
-  const profile = useProfile()
+  const { state } = useApp()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const fromRecord = state.records.find((r) => r.id === params.get('dari'))
   const [step, setStep] = useState(0)
+  const profile = useProfile()
+  const base = { ...empty, area: profile.area }
   const [d, setD] = useState<Draft>(() =>
     fromRecord
-      ? { ...empty, name: fromRecord.name, category: fromRecord.category, quantity: String(fromRecord.quantity), unit: fromRecord.unit, estimate: fromRecord.estimate, storage: fromRecord.storage }
-      : empty,
+      ? { ...base, name: fromRecord.name, category: fromRecord.category, quantity: String(fromRecord.quantity), unit: fromRecord.unit, estimate: fromRecord.estimate, storage: fromRecord.storage }
+      : base,
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [clientId] = useState(() => crypto.randomUUID()) // kirim ulang tidak membuat penawaran ganda
+  const { refresh } = useLiveData()
   const [leaving, setLeaving] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const dirty = JSON.stringify(d) !== JSON.stringify(empty)
+  const dirty = JSON.stringify(d) !== JSON.stringify(base)
 
   useEffect(() => {
     headingRef.current?.focus()
@@ -92,9 +106,11 @@ export default function OfferForm() {
       if (d.allergensKnown === 'ya' && !d.allergens.trim()) e.allergens = 'Tulis bahan atau alergen yang diketahui.'
     }
     if (s === 1) {
+      if (!d.area) e.area = 'Pilih kabupaten/kota dari daftar.'
       if (!d.date) e.date = 'Pilih tanggal pengambilan.'
       if (!d.start || !d.end) e.end = 'Isi jam mulai dan selesai.'
       else if (d.end <= d.start) e.end = 'Jam selesai harus setelah jam mulai.'
+      else if (d.date && new Date(`${d.date}T${d.end}`) <= new Date()) e.end = 'Jam selesai sudah lewat. Pilih waktu yang akan datang.'
       if (d.methods.length === 0) e.methods = 'Pilih minimal satu cara penyaluran.'
     }
     setErrors(e)
@@ -105,37 +121,33 @@ export default function OfferForm() {
     if (validate(step)) setStep(step + 1)
   }
 
-  const publish = (asDraft: boolean) => {
+  const publish = async () => {
     setSubmitting(true)
-    // Simulasi respons server; status baru tampil setelah "server" menerima.
-    window.setTimeout(() => {
-      dispatch({
-        type: 'publishOffer',
-        recordId: fromRecord?.id,
-        offer: {
-          name: d.name.trim(),
-          category: d.category as FoodCategory,
-          unit: d.unit,
-          initial: Number(d.quantity.replace(',', '.')),
-          estimate: d.estimate,
-          storage: d.storage,
-          preparedAt: d.preparedAt ? d.preparedAt.replace('T', ', ').replace(':', '.') + ' WIB' : undefined,
-          labelDate: d.labelDate ? isoToLabel(d.labelDate) : undefined,
-          allergens: d.allergensKnown === 'ya' ? d.allergens : null,
-          description: d.description || undefined,
-          donorName: profile.name,
-          donorType: 'UMKM',
-          donorVerified: true,
-          area: d.area,
-          pickupDate: isoToLabel(d.date),
-          pickupStart: timeLabel(d.start),
-          pickupEnd: timeLabel(d.end),
-          methods: d.methods,
-          status: asDraft ? 'Draf' : 'Tersedia',
-        },
+    try {
+      await publishOffer({
+        clientId,
+        name: d.name.trim(),
+        category: d.category,
+        unit: d.unit,
+        quantity: Number(d.quantity.replace(',', '.')),
+        storage: d.storage,
+        area: d.area,
+        pickupStart: new Date(`${d.date}T${d.start}`),
+        pickupEnd: new Date(`${d.date}T${d.end}`),
+        methods: d.methods,
+        estimate: d.estimate,
+        preparedAt: d.preparedAt ? new Date(d.preparedAt) : undefined,
+        labelDate: d.labelDate || undefined,
+        allergens: d.allergensKnown === 'ya' ? d.allergens : null,
+        description: [d.description.trim(), d.instructions.trim() && `Petunjuk pengambilan: ${d.instructions.trim()}`].filter(Boolean).join('. ') || undefined,
+        recordCode: fromRecord?.id,
       })
+      await refresh()
       navigate('/donasi', { replace: true })
-    }, 700)
+    } catch (err) {
+      toast(messageOf(err), 'info')
+      setSubmitting(false)
+    }
   }
 
   const back = () => {
@@ -156,9 +168,6 @@ export default function OfferForm() {
             <svg aria-hidden="true" viewBox="0 0 256 256" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round"><path d="M216 128H40M112 56l-72 72 72 72" /></svg>
           </button>
           <p className="flex-1 text-[1.125rem] font-semibold">Tawarkan Pangan</p>
-          <Button variant="ghost" className="min-h-12 text-[0.875rem]" onClick={() => validate(0) && publish(true)}>
-            Simpan draf
-          </Button>
         </div>
         <div className="px-4 pb-3">
           <p className="text-meta text-ink-secondary">
@@ -166,7 +175,10 @@ export default function OfferForm() {
           </p>
           <div className="mt-2 flex gap-1.5" aria-hidden="true">
             {steps.map((s, i) => (
-              <span key={s} className={`h-1.5 flex-1 rounded-full transition-colors duration-micro ${i <= step ? 'bg-primary' : 'bg-line'}`} />
+              <span key={s} className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+                {/* Segmen terisi dari kiri saat maju, mengosong ke kiri saat mundur. */}
+                <span className={`block h-full origin-left rounded-full bg-primary transition-transform duration-page ease-enter ${i <= step ? 'scale-x-100' : 'scale-x-0'}`} />
+              </span>
             ))}
           </div>
         </div>
@@ -231,7 +243,7 @@ export default function OfferForm() {
               <Camera size={28} aria-hidden="true" className="text-primary" />
               <div className="flex-1">
                 <p className="font-semibold">Foto pangan (opsional)</p>
-                <p className="text-meta text-ink-secondary">Unggah foto belum tersedia di prototipe.</p>
+                <p className="text-meta text-ink-secondary">Unggah foto belum tersedia.</p>
               </div>
             </div>
             <Field label="Penyimpanan saat ini" error={errors.storage}>
@@ -276,9 +288,8 @@ export default function OfferForm() {
 
         {step === 1 && (
           <>
-            <Field label="Area umum" hint="Area ini terlihat oleh penerima. Alamat lengkap dibuka setelah permintaan disetujui.">
-              {(p) => <input {...p} className={inputCls} value={d.area} onChange={(e) => set('area', e.target.value)} />}
-            </Field>
+            <AreaField value={d.area} onChange={(a) => set('area', a)} error={errors.area} />
+            <p className="-mt-2 text-caption text-ink-secondary">Area terlihat oleh penerima. Alamat lengkap dibuka setelah permintaan disetujui.</p>
             <Field label="Tanggal pengambilan" error={errors.date}>
               {(p) => <input {...p} type="date" className={inputCls} value={d.date} onChange={(e) => set('date', e.target.value)} />}
             </Field>
@@ -356,7 +367,7 @@ export default function OfferForm() {
               Lanjut
             </Button>
           ) : (
-            <Button className="flex-[2]" loading={submitting} loadingLabel="Menerbitkan…" icon={<Check size={20} weight="bold" />} onClick={() => (declared ? publish(false) : setDeclareError(true))}>
+            <Button className="flex-[2]" loading={submitting} loadingLabel="Menerbitkan…" icon={<Check size={20} weight="bold" />} onClick={() => (declared ? publish() : setDeclareError(true))}>
               Terbitkan penawaran
             </Button>
           )}
@@ -367,9 +378,6 @@ export default function OfferForm() {
         <p className="mb-4 text-body text-ink-secondary">Perubahan belum tersimpan.</p>
         <div className="flex flex-col gap-2">
           <Button onClick={() => setLeaving(false)}>Lanjut mengedit</Button>
-          <Button variant="secondary" onClick={() => (validate(0) ? publish(true) : setLeaving(false))}>
-            Simpan draf
-          </Button>
           <Button variant="danger" onClick={() => navigate(-1)}>
             Buang perubahan
           </Button>

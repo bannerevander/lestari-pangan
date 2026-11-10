@@ -1,0 +1,8 @@
+# Tidak diunggah saat deploy lewat Vercel CLI. Env diisi di dashboard/CLI Vercel, bukan dari berkas.
+.env
+.env.*
+!.env.example
+node_modules
+dist
+dist-static
+scripts

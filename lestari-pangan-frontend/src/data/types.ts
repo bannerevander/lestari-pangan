@@ -53,6 +53,8 @@ export interface FoodRequest {
   status: RequestStatus
   reason?: string
   createdAt: string
+  /** Usulan penyesuaian jumlah dari pemberi (Q05); menunggu jawaban penerima. */
+  proposal?: { quantity: number; reason: string; at: string }
 }
 
 export type TransferStatus =
@@ -76,6 +78,9 @@ export interface Transfer {
   foodName: string
   photo?: string
   donorName: string
+  /** Area umum penawaran dan alamat lengkap pemberi (hanya untuk pihak penyaluran). */
+  area?: string
+  donorAddress?: string
   recipientName: string
   agreed: number
   handedOver?: number
@@ -90,6 +95,24 @@ export interface Transfer {
   distributionReported: boolean
   distribution?: { distributed: number; used: number; wasted: number }
   timeline: TimelineEvent[]
+  /** Usulan jadwal baru dari pemberi (D04); kesepakatan lama berlaku sampai penerima setuju. */
+  pendingSchedule?: { date: string; timeStart: string; timeEnd: string; reason?: string }
+  /** Daftar periksa persiapan yang sudah dicentang pemberi (L04). */
+  prep?: string[]
+}
+
+export type IssueStatus = 'Dikirim' | 'Sedang ditinjau' | 'Selesai' | 'Keberatan diajukan'
+
+export interface Issue {
+  id: string
+  transferId: string
+  role: Role
+  category: string
+  description: string
+  status: IssueStatus
+  at: string
+  timeline: TimelineEvent[]
+  resolution?: string
 }
 
 export type RecordStatus = 'Masih tersedia' | 'Ditawarkan' | 'Digunakan' | 'Didistribusikan' | 'Terbuang'
@@ -106,6 +129,8 @@ export interface FoodRecord {
   storage: string
   status: RecordStatus
   source?: string
+  /** Riwayat pergerakan dan koreksi (C03–C05); saldo = quantity. */
+  history?: { label: string; delta: number; at: string; note?: string; kind: 'masuk' | 'keluar' | 'koreksi' }[]
 }
 
 export interface Notification {

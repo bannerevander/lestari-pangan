@@ -8,11 +8,13 @@
     "build": "tsc -b && vite build",
     "build:static": "tsc -b && VITE_HASH_ROUTER=1 vite build --base=./ --outDir dist-static",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:config": "node --test \"config/*.test.ts\""
   },
   "dependencies": {
     "@fontsource/inter": "^5.1.0",
     "@phosphor-icons/react": "^2.1.7",
+    "@supabase/supabase-js": "^2.117.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"

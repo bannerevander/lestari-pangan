@@ -27,3 +27,10 @@ export function qty(n: number, unit: string) {
 export function asset(path: string) {
   return `${import.meta.env.BASE_URL}${path}`
 }
+
+/** "10 Okt 2026" → "2026-10-10"; string kosong bila format tidak dikenali. */
+export function labelToIso(label: string) {
+  const [d, m, y] = label.split(' ')
+  const i = MONTHS.indexOf(m)
+  return i < 0 || !y ? '' : `${y}-${String(i + 1).padStart(2, '0')}-${d.padStart(2, '0')}`
+}

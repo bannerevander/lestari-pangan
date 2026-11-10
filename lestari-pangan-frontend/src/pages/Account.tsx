@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  Bell,
+  Gear,
   BookOpen,
   ChartBar,
   ChefHat,
@@ -17,12 +17,13 @@ import {
   SignOut,
   Storefront,
   Trophy,
+  Truck,
   UsersThree,
 } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { Button, DemoNote, MenuRow, Notice } from '../components/ui'
-import { DemoControls } from '../components/DemoPanel'
-import { useApp, useProfile } from '../state/AppState'
+import { Button, MenuRow, Notice } from '../components/ui'
+import { useApp } from '../state/AppState'
+import { useProfile } from '../state/useProfile'
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -42,7 +43,7 @@ export function AccountTab() {
   return (
     <>
       <RootHeader title="Akun" />
-      <div className="flex flex-col gap-4 px-4 pt-4">
+      <div className="stagger flex flex-col gap-4 px-4 pt-4">
         <section className="card p-4">
           <div className="flex items-center gap-3">
             <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-[1.375rem] font-bold text-white">{profile.initials}</span>
@@ -77,6 +78,7 @@ export function AccountTab() {
         <Group title="Aktivitas dan dampak">
           <MenuRow to="/dampak" icon={<ChartBar size={20} />} title="Dashboard dampak" subtitle="Ringkasan per periode dan sumber data" />
           <MenuRow to="/aktivitas" icon={<BookOpen size={20} />} title="Riwayat penyaluran" />
+          <MenuRow to="/tugas" icon={<Truck size={20} />} title="Tugas pengantaran" subtitle="Khusus mitra atau relawan yang ditugaskan" />
         </Group>
 
         <Group title="Resep, tips, dan tantangan">
@@ -92,14 +94,10 @@ export function AccountTab() {
         </Group>
 
         <Group title="Pengaturan dan bantuan">
-          <MenuRow to="/pengaturan/notifikasi" icon={<Bell size={20} />} title="Notifikasi" />
+          <MenuRow to="/pengaturan" icon={<Gear size={20} />} title="Pengaturan" subtitle="Notifikasi, privasi, keamanan, tampilan" />
           <MenuRow to="/bantuan" icon={<Lifebuoy size={20} />} title="Pusat bantuan" />
           <MenuRow to="/tentang" icon={<Info size={20} />} title="Tentang, ketentuan, dan privasi" />
         </Group>
-
-        <div className="lg:hidden">
-          <DemoControls />
-        </div>
 
         <Button
           variant="secondary"
@@ -112,7 +110,6 @@ export function AccountTab() {
         >
           Keluar
         </Button>
-        <DemoNote />
       </div>
     </>
   )

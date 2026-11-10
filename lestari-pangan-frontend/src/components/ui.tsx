@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -6,6 +7,7 @@ import {
   CaretRight,
   Check,
   CheckCircle,
+  CircleNotch,
   ImageSquare,
   Minus,
   Plus,
@@ -21,16 +23,18 @@ import {
 
 /* ---------- Tombol ---------- */
 
-type BtnVariant = 'primary' | 'secondary' | 'tonal' | 'ghost' | 'danger'
+type BtnVariant = 'primary' | 'secondary' | 'tonal' | 'ghost' | 'danger' | 'ghost-danger'
 
 const btnBase =
-  'tap inline-flex min-h-[52px] items-center justify-center gap-2 rounded-control px-4 py-2 text-center text-[1rem] font-semibold leading-6 disabled:cursor-not-allowed'
+  'tap inline-flex min-h-[52px] items-center justify-center gap-2 rounded-control px-4 py-2 text-center text-[1rem] font-semibold leading-6 disabled:cursor-not-allowed disabled:active:scale-100'
 const btnVariants: Record<BtnVariant, string> = {
   primary: 'bg-primary text-white hover:bg-primary-pressed active:bg-primary-pressed disabled:bg-disabled-bg disabled:text-disabled-fg',
   secondary: 'border border-line-control bg-surface text-ink hover:bg-page active:bg-primary-container disabled:text-disabled-fg',
-  tonal: 'bg-primary-container text-primary hover:bg-[#DCEFDF] active:bg-[#D0E9D4]',
-  ghost: 'text-primary hover:bg-primary-container',
-  danger: 'border border-danger bg-surface text-danger hover:bg-danger-container',
+  tonal: 'bg-primary-container text-primary hover:bg-primary-hover active:bg-primary-active disabled:bg-disabled-bg disabled:text-disabled-fg',
+  ghost: 'text-primary hover:bg-primary-container disabled:text-disabled-fg disabled:hover:bg-transparent',
+  danger: 'border border-danger bg-surface text-danger hover:bg-danger-container disabled:border-line disabled:text-disabled-fg',
+  // Aksi destruktif sekunder (batalkan, hentikan) tanpa bingkai.
+  'ghost-danger': 'text-danger hover:bg-danger-container disabled:text-disabled-fg disabled:hover:bg-transparent',
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -60,7 +64,7 @@ export function Button({
       aria-busy={loading || undefined}
       className={`${btnBase} ${btnVariants[variant]} ${block ? 'w-full' : ''} ${className}`}
     >
-      {icon && !loading && <span aria-hidden="true">{icon}</span>}
+      {loading ? <CircleNotch size={20} weight="bold" aria-hidden="true" className="animate-spin" /> : icon && <span aria-hidden="true">{icon}</span>}
       {loading ? loadingLabel : children}
     </button>
   )
@@ -91,15 +95,44 @@ export function ButtonLink({
 
 /* ---------- App bar halaman detail ---------- */
 
-export function AppBar({ title, actions, back = true }: { title: string; actions?: ReactNode; back?: boolean | string }) {
+/** true setelah halaman digulir melewati `offset` px (untuk elevasi header). */
+export function useScrolled(offset = 4) {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > offset)
+    on()
+    window.addEventListener('scroll', on, { passive: true })
+    return () => window.removeEventListener('scroll', on)
+  }, [offset])
+  return scrolled
+}
+
+/**
+ * App bar halaman detail. `dirty` = ada isian yang belum disimpan: tombol kembali meminta
+ * konfirmasi dan menutup/muat ulang tab memunculkan peringatan browser.
+ */
+export function AppBar({ title, actions, back = true, dirty = false }: { title: string; actions?: ReactNode; back?: boolean | string; dirty?: boolean }) {
   const navigate = useNavigate()
+  const scrolled = useScrolled()
+  const [confirm, setConfirm] = useState(false)
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+  const leave = () => (typeof back === 'string' ? navigate(back) : navigate(-1))
   return (
-    <header className="sticky top-0 z-30 flex min-h-14 items-center gap-1 border-b border-line bg-surface px-1">
+    <header
+      className={`sticky top-0 z-30 flex min-h-14 items-center gap-1 border-b bg-surface/95 px-1 backdrop-blur transition-[box-shadow,border-color] duration-micro ease-standard ${
+        scrolled ? 'border-line shadow-card' : 'border-transparent'
+      }`}
+    >
       {back && (
         <button
           type="button"
           aria-label="Kembali"
-          onClick={() => (typeof back === 'string' ? navigate(back) : navigate(-1))}
+          onClick={() => (dirty ? setConfirm(true) : leave())}
           className="tap flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-ink hover:bg-page"
         >
           <ArrowLeft size={24} aria-hidden="true" />
@@ -107,6 +140,19 @@ export function AppBar({ title, actions, back = true }: { title: string; actions
       )}
       <h1 className={`min-w-0 flex-1 py-3 text-[1.125rem] font-semibold leading-[1.625rem] ${back ? '' : 'pl-3'}`}>{title}</h1>
       {actions && <div className="flex shrink-0 items-center">{actions}</div>}
+      <BottomSheet
+        open={confirm}
+        onClose={() => setConfirm(false)}
+        title="Buang perubahan?"
+        footer={
+          <div className="flex flex-col gap-2">
+            <Button variant="danger" block onClick={() => (setConfirm(false), leave())}>Buang dan keluar</Button>
+            <Button variant="ghost" block onClick={() => setConfirm(false)}>Lanjut mengisi</Button>
+          </div>
+        }
+      >
+        <p className="text-body text-ink-secondary">Isian di halaman ini belum disimpan dan akan hilang.</p>
+      </BottomSheet>
     </header>
   )
 }
@@ -138,7 +184,7 @@ const toneCls: Record<Tone, string> = {
   warning: 'bg-warning-container text-warning',
   danger: 'bg-danger-container text-danger',
   info: 'bg-info-container text-info',
-  neutral: 'bg-[#EEF1EF] text-ink-secondary',
+  neutral: 'bg-neutral-soft text-ink-secondary',
   accent: 'bg-accent-soft text-ink',
 }
 
@@ -266,8 +312,28 @@ export function Segmented<T extends string>({
   options: { value: T; label: string; count?: number }[]
   label: string
 }) {
+  const wrap = useRef<HTMLDivElement>(null)
+  const [pill, setPill] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
+  // Pil hijau bergeser ke tab aktif; posisi diukur ulang saat ukuran berubah (teks besar membuat tab membungkus).
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = wrap.current?.querySelector<HTMLElement>('[aria-selected="true"]')
+      if (el) setPill({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight })
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    if (wrap.current) ro.observe(wrap.current)
+    return () => ro.disconnect()
+  }, [value])
   return (
-    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1 rounded-control border border-line bg-[#EEF1EF] p-1">
+    <div ref={wrap} role="tablist" aria-label={label} className="relative flex flex-wrap gap-1 rounded-control border border-line bg-neutral-soft p-1">
+      {pill && (
+        <span
+          aria-hidden="true"
+          className="absolute left-0 top-0 rounded-[10px] bg-primary shadow-card transition-[transform,width,height] duration-enter ease-enter"
+          style={{ transform: `translate(${pill.x}px, ${pill.y}px)`, width: pill.w, height: pill.h }}
+        />
+      )}
       {options.map((o) => {
         const active = o.value === value
         return (
@@ -277,13 +343,13 @@ export function Segmented<T extends string>({
             type="button"
             aria-selected={active}
             onClick={() => onChange(o.value)}
-            className={`tap flex min-h-11 min-w-[6rem] flex-auto flex-wrap items-center justify-center gap-1.5 rounded-[10px] px-1.5 text-[0.875rem] font-semibold leading-5 ${
-              active ? 'bg-primary text-white shadow-card' : 'text-ink-secondary hover:text-ink'
+            className={`tap relative flex min-h-11 min-w-[6rem] flex-auto flex-wrap items-center justify-center gap-1.5 rounded-[10px] px-1.5 text-[0.875rem] font-semibold leading-5 ${
+              active ? `text-white ${pill ? '' : 'bg-primary'}` : 'text-ink-secondary hover:text-ink'
             }`}
           >
             <span>{o.label}</span>
             {o.count !== undefined && (
-              <span className={`min-w-5 rounded-full px-1.5 text-[0.75rem] leading-5 ${active ? 'bg-white text-primary' : 'bg-surface text-ink-secondary'}`}>
+              <span className={`min-w-5 rounded-full px-1.5 text-[0.75rem] leading-5 transition-colors duration-micro ${active ? 'bg-white text-primary' : 'bg-surface text-ink-secondary'}`}>
                 {o.count}
               </span>
             )}
@@ -304,9 +370,77 @@ export function Chip({ selected, onClick, children }: { selected?: boolean; onCl
         selected ? 'border-primary bg-primary text-white' : 'border-line bg-surface text-ink hover:border-line-control'
       }`}
     >
-      {selected && <CheckCircle size={16} weight="fill" aria-hidden="true" />}
+      {selected && <CheckCircle size={16} weight="fill" aria-hidden="true" className="animate-pop" />}
       {children}
     </button>
+  )
+}
+
+let chipPeekDone = false
+export const reduceMotion = () => 'reduceMotion' in document.documentElement.dataset || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/**
+ * Baris chip geser horizontal: tepi memudar saat ada chip tersembunyi, chip terpilih
+ * bergeser ke tengah, roda mouse ikut menggeser, dan sekali per sesi baris "mengintip".
+ */
+export function ChipRow({ className = '', children, ...rest }: { className?: string; children: ReactNode; role?: string; 'aria-label'?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ start: false, end: false })
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const update = () =>
+      setEdges({ start: el.scrollLeft > 4, end: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 })
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    // Roda mouse vertikal → geser horizontal, kecuali baris sudah di ujung (halaman tetap bisa digulir).
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
+      const atEnd = e.deltaY > 0 ? el.scrollLeft + el.clientWidth >= el.scrollWidth - 1 : el.scrollLeft <= 0
+      if (atEnd) return
+      e.preventDefault()
+      el.scrollLeft += e.deltaY
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    let t1 = 0
+    let t2 = 0
+    if (!chipPeekDone && !reduceMotion() && el.scrollWidth > el.clientWidth) {
+      // Snap dimatikan sementara agar intipan tidak tertarik ke chip berikutnya.
+      t1 = window.setTimeout(() => {
+        chipPeekDone = true
+        el.style.scrollSnapType = 'none'
+        el.scrollTo({ left: 48, behavior: 'smooth' })
+      }, 700)
+      t2 = window.setTimeout(() => {
+        el.scrollTo({ left: 0, behavior: 'smooth' })
+        window.setTimeout(() => (el.style.scrollSnapType = ''), 500)
+      }, 1150)
+    }
+    return () => {
+      el.removeEventListener('scroll', update)
+      el.removeEventListener('wheel', onWheel)
+      ro.disconnect()
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      {...rest}
+      data-fade-start={edges.start || undefined}
+      data-fade-end={edges.end || undefined}
+      onClick={(e) =>
+        (e.target as HTMLElement).closest('button')?.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', inline: 'center', block: 'nearest' })
+      }
+      className={`chip-row stagger ${className}`}
+    >
+      {children}
+    </div>
   )
 }
 
@@ -359,6 +493,16 @@ export const inputCls =
 export function BottomSheet({ open, onClose, title, children, footer }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const trigger = useRef<Element | null>(null)
+  // Tetap terpasang selama animasi keluar (lebih singkat dari masuk), lalu dilepas.
+  const [mounted, setMounted] = useState(open)
+  const last = useRef({ children, footer, title })
+  if (open) last.current = { children, footer, title }
+  if (open && !mounted) setMounted(true)
+  useEffect(() => {
+    if (open || !mounted) return
+    const t = window.setTimeout(() => setMounted(false), reduceMotion() ? 0 : 200)
+    return () => window.clearTimeout(t)
+  }, [open, mounted])
   useEffect(() => {
     if (!open) return
     trigger.current = document.activeElement
@@ -372,42 +516,43 @@ export function BottomSheet({ open, onClose, title, children, footer }: { open: 
       ;(trigger.current as HTMLElement | null)?.focus?.()
     }
   }, [open, onClose])
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 animate-fade-in bg-[rgba(18,33,43,0.40)]" onClick={onClose} aria-hidden="true" />
+  if (!mounted) return null
+  // Saat menutup, isi terakhir tetap tampil agar sheet tidak kosong ketika meluncur turun.
+  const view = last.current
+  return createPortal(
+    <div className={`fixed inset-0 z-50 flex items-end justify-center ${open ? '' : 'pointer-events-none'}`}>
+      <div className={`absolute inset-0 bg-[rgba(18,33,43,0.40)] ${open ? 'animate-fade-in' : 'animate-fade-out'}`} onClick={onClose} aria-hidden="true" />
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={view.title}
         tabIndex={-1}
-        className="relative flex max-h-[88vh] w-full max-w-app animate-sheet-in flex-col rounded-t-sheet bg-surface shadow-overlay focus:outline-none"
+        className={`relative flex max-h-[88vh] w-full max-w-app flex-col rounded-t-sheet bg-surface shadow-overlay focus:outline-none ${open ? 'animate-sheet-in' : 'animate-sheet-out'}`}
       >
+        <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-line" />
         <div className="flex items-center gap-2 border-b border-line px-4 py-2">
-          <h2 className="flex-1 text-card-title">{title}</h2>
+          <h2 className="flex-1 text-card-title">{view.title}</h2>
           <IconButton label="Tutup" onClick={onClose}>
             <X size={22} aria-hidden="true" />
           </IconButton>
         </div>
-        <div className="overflow-y-auto px-4 py-4">{children}</div>
-        {footer && <div className="border-t border-line px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3">{footer}</div>}
+        <div className="overflow-y-auto px-4 py-4">{view.children}</div>
+        {view.footer && <div className="border-t border-line px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3">{view.footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
 /** Area CTA bawah yang menempel (detail/formulir; bottom tab disembunyikan). */
 export function StickyFooter({ children }: { children: ReactNode }) {
-  return (
-    <div role="region" aria-label="Tindakan utama" className="fixed bottom-0 left-1/2 z-30 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 shadow-nav">
+  return createPortal(
+    <div role="region" aria-label="Tindakan utama" className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-app -translate-x-1/2 animate-footer-in flex-col gap-2 border-t border-line bg-surface/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-3 shadow-nav backdrop-blur">
       {children}
-    </div>
+    </div>,
+    document.body,
   )
-}
-
-export function DemoNote({ children = 'Data demo' }: { children?: ReactNode }) {
-  return <p className="py-6 text-center text-caption text-ink-secondary">{children} · Lestari Pangan v0.1</p>
 }
 
 /* ---------- Pola tambahan dari ekspor Stitch 2026-10-09 ---------- */
@@ -557,5 +702,215 @@ export function PhotoUploadPlaceholder({ label, hint }: { label: string; hint: s
       <p className="font-semibold">{label}</p>
       <p className="text-caption text-ink-secondary">{hint}</p>
     </div>
+  )
+}
+
+/* ---------- Motion dan umpan balik (tahap 2) ---------- */
+
+/** Toast global: panggil toast('…') dari mana saja; <Toaster /> dipasang sekali di AppFrame. */
+type ToastMsg = { id: number; text: string; tone: 'success' | 'info' }
+const TOAST_EVENT = 'lp-toast'
+let toastSeq = 0
+export function toast(text: string, tone: ToastMsg['tone'] = 'success') {
+  window.dispatchEvent(new CustomEvent<ToastMsg>(TOAST_EVENT, { detail: { id: ++toastSeq, text, tone } }))
+}
+
+export function Toaster() {
+  const [msg, setMsg] = useState<ToastMsg | null>(null)
+  const [leaving, setLeaving] = useState(false)
+  useEffect(() => {
+    let t1 = 0
+    let t2 = 0
+    const on = (e: Event) => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      setLeaving(false)
+      setMsg((e as CustomEvent<ToastMsg>).detail)
+      t1 = window.setTimeout(() => setLeaving(true), 3600)
+      t2 = window.setTimeout(() => setMsg(null), 3800)
+    }
+    window.addEventListener(TOAST_EVENT, on)
+    return () => {
+      window.removeEventListener(TOAST_EVENT, on)
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [])
+  // Wadah live selalu ada agar pembaca layar mengumumkan pesan tanpa memindahkan fokus.
+  return createPortal(
+    <div aria-live="polite" role="status" className="pointer-events-none fixed inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom,0px))] z-[60] flex justify-center px-4">
+      {msg && (
+        <div
+          key={msg.id}
+          className={`pointer-events-auto flex w-full max-w-[448px] items-center gap-3 rounded-card bg-ink px-4 py-3 text-white shadow-overlay ${leaving ? 'animate-toast-out' : 'animate-toast-in'}`}
+        >
+          {msg.tone === 'success' ? (
+            <CheckCircle size={22} weight="fill" aria-hidden="true" className="shrink-0 animate-pop text-leaf" />
+          ) : (
+            <Info size={22} weight="fill" aria-hidden="true" className="shrink-0 text-on-ink-info" />
+          )}
+          <p className="min-w-0 flex-1 text-[0.9375rem] font-medium leading-5">{msg.text}</p>
+        </div>
+      )}
+    </div>,
+    document.body,
+  )
+}
+
+/** Sakelar aksesibel (role="switch") dengan kenop yang "mendarat" memakai kurva pegas. */
+export function Toggle({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description?: string }) {
+  const id = useId()
+  return (
+    <div className="flex min-h-16 items-center gap-3 px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <p id={`${id}-l`} className="font-medium leading-6">{label}</p>
+        {description && <p id={`${id}-d`} className="text-meta text-ink-secondary">{description}</p>}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-labelledby={`${id}-l`}
+        aria-describedby={description ? `${id}-d` : undefined}
+        onClick={() => onChange(!checked)}
+        className="tap -m-2 flex h-12 w-[68px] shrink-0 items-center justify-center rounded-full"
+      >
+        <span className={`relative h-8 w-[52px] rounded-full transition-colors duration-micro ease-standard ${checked ? 'bg-primary' : 'bg-line-control'}`}>
+          <span
+            className={`absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-card transition-transform duration-enter ease-spring ${checked ? 'translate-x-5' : ''}`}
+          >
+            {checked && <Check size={14} weight="bold" aria-hidden="true" className="animate-pop text-primary" />}
+          </span>
+        </span>
+      </button>
+    </div>
+  )
+}
+
+/** Akordeon: tombol dengan aria-expanded; isi membuka lewat .collapse-grid. */
+export function Disclosure({ title, children, defaultOpen = false }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  const id = useId()
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((o) => !o)}
+        className="tap flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left hover:bg-page"
+      >
+        <span className="min-w-0 flex-1 font-semibold leading-6">{title}</span>
+        <CaretRight size={18} weight="bold" aria-hidden="true" className={`shrink-0 text-ink-secondary transition-transform duration-enter ease-enter ${open ? 'rotate-90' : ''}`} />
+      </button>
+      <div id={id} className="collapse-grid" data-open={open || undefined} aria-hidden={!open}>
+        <div>
+          <div className="px-4 pb-4 text-body text-ink-secondary">{children}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Muncul saat elemen masuk viewport (sekali). */
+export function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || !('IntersectionObserver' in window)) return setShown(true)
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setShown(true)
+          io.disconnect()
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+  return (
+    <div ref={ref} className={`reveal ${className}`} data-shown={shown || undefined} style={{ transitionDelay: `${delay}ms` }}>
+      {children}
+    </div>
+  )
+}
+
+/** Angka yang menghitung naik saat terlihat; nilai akhir langsung tampil bila reduced motion. */
+export function CountUp({ value, format = (n: number) => n.toLocaleString('id-ID'), duration = 900 }: { value: number; format?: (n: number) => string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [n, setN] = useState(() => (reduceMotion() ? value : 0))
+  useEffect(() => {
+    if (reduceMotion()) return setN(value)
+    const el = ref.current
+    let raf = 0
+    const run = () => {
+      const t0 = performance.now()
+      const step = (t: number) => {
+        const p = Math.min(1, (t - t0) / duration)
+        setN(Math.round(value * (1 - Math.pow(1 - p, 3))))
+        if (p < 1) raf = requestAnimationFrame(step)
+      }
+      raf = requestAnimationFrame(step)
+    }
+    if (!el || !('IntersectionObserver' in window)) {
+      run()
+      return () => cancelAnimationFrame(raf)
+    }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        io.disconnect()
+        run()
+      }
+    })
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      cancelAnimationFrame(raf)
+    }
+  }, [value, duration])
+  // Pembaca layar membaca nilai akhir, bukan angka yang sedang berjalan.
+  return (
+    <span ref={ref} className="tabular">
+      <span aria-hidden="true">{format(n)}</span>
+      <span className="sr-only">{format(value)}</span>
+    </span>
+  )
+}
+
+/** Lingkaran centang yang "tergambar" untuk layar sukses. */
+export function SuccessMark({ size = 72 }: { size?: number }) {
+  return (
+    <span aria-hidden="true" className="relative inline-flex animate-pop items-center justify-center rounded-full bg-primary-container" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+        <path d="M5 12.5l4.5 4.5L19 7.5" pathLength={1} strokeDasharray={1} className="animate-draw" />
+      </svg>
+    </span>
+  )
+}
+
+/** Banner saat perangkat offline; data terakhir tetap ditampilkan, aksi baru perlu koneksi. */
+export function OfflineBanner() {
+  const [online, setOnline] = useState(() => navigator.onLine)
+  const [back, setBack] = useState(false)
+  useEffect(() => {
+    let t = 0
+    const on = () => (setOnline(true), setBack(true), (t = window.setTimeout(() => setBack(false), 2500)))
+    const off = () => (setOnline(false), setBack(false))
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => (window.removeEventListener('online', on), window.removeEventListener('offline', off), window.clearTimeout(t))
+  }, [])
+  if (online && !back) return null
+  return createPortal(
+    <div role="status" className={`fixed inset-x-0 top-0 z-[70] flex animate-rise-in justify-center px-4 pt-[calc(8px+env(safe-area-inset-top,0px))]`}>
+      <p className={`flex max-w-[448px] items-center gap-2 rounded-full px-4 py-2 text-[0.875rem] font-semibold shadow-overlay ${online ? 'bg-primary text-white' : 'bg-ink text-white'}`}>
+        {online ? <CheckCircle size={18} weight="fill" aria-hidden="true" /> : <WarningCircle size={18} weight="fill" aria-hidden="true" />}
+        {online ? 'Kembali online' : 'Offline. Perubahan disimpan di perangkat ini.'}
+      </p>
+    </div>,
+    document.body,
   )
 }

@@ -1,10 +1,12 @@
+import { PromoBanner } from '../components/PromoBanner'
+import { cityOf, shortCity } from '../lib/area'
 import { Link, useNavigate } from 'react-router-dom'
 import { CaretDown, CaretRight, Check, Clock, Gift, HandHeart, MagnifyingGlass, MapPin, Tray } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { DemoNote, SectionHeader } from '../components/ui'
+import { CountUp, SectionHeader } from '../components/ui'
 import { FoodCardCompact, FoodCardSearch } from '../components/FoodCard'
-import { useApp, useProfile } from '../state/AppState'
-import { tips } from '../data/mock'
+import { useApp } from '../state/AppState'
+import { useProfile } from '../state/useProfile'
 import { asset } from '../lib/format'
 
 /** Daun dekoratif pada modul sapaan (H01 botanical greeting). */
@@ -28,7 +30,8 @@ function Shortcut({ to, img, label }: { to: string; img: string; label: string }
 }
 
 function InspirationSection() {
-  const tip = tips[0]
+  const tip = useApp().state.tips[0]
+  if (!tip) return null
   return (
     <section aria-labelledby="inspirasi" className="flex flex-col gap-3">
       <h2 id="inspirasi" className="text-section-title">Inspirasi untukmu</h2>
@@ -68,40 +71,40 @@ function DonorHome() {
     .reduce((s, t) => s + (t.received ?? 0), 0)
 
   return (
-    <div className="flex flex-col gap-6 px-4 pt-4">
+    <div className="stagger flex flex-col gap-6 px-4 pt-4">
       <section aria-label="Sapaan" className="relative overflow-hidden rounded-greet border border-line bg-gradient-to-br from-primary-container to-surface p-4">
         <LeafDecor />
         <h1 className="relative text-page-title">Halo, {profile.name}</h1>
         <p className="relative text-body text-ink-secondary">Siap berbagi hari ini?</p>
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full border border-primary/30 bg-primary-container px-3 py-1 text-[0.875rem] font-semibold text-primary">Pemberi</span>
-          <Link to="/akun/lokasi" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
-            <MapPin size={18} aria-hidden="true" /> Bandung <CaretDown size={14} aria-hidden="true" />
+          <Link to="/area" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
+            <MapPin size={18} aria-hidden="true" /> {profile.area ? shortCity(cityOf(profile.area)) : 'Pilih area'} <CaretDown size={14} aria-hidden="true" />
           </Link>
-          <span className="ml-auto rounded-full border border-line bg-surface px-2.5 py-0.5 text-caption text-ink-secondary">Data demo</span>
         </div>
         {pending.length > 0 && (
           <div className="relative mt-3 flex items-center gap-3 rounded-card border border-line bg-surface p-2 pl-3">
             <Tray size={24} aria-hidden="true" className="shrink-0 text-primary" />
             <p className="min-w-0 flex-1 text-[1rem] font-medium">{pending.length} permintaan baru</p>
-            <Link to="/aktivitas/permintaan" className="tap inline-flex min-h-12 items-center rounded-control bg-primary-container px-4 text-[1rem] font-semibold text-primary hover:bg-[#DCEFDF]">
+            <Link to="/aktivitas/permintaan" className="tap inline-flex min-h-12 items-center rounded-control bg-primary-container px-4 text-[1rem] font-semibold text-primary hover:bg-primary-hover">
               Tinjau
             </Link>
           </div>
         )}
       </section>
+      <PromoBanner placement="beranda" />
 
       <section aria-label="Tawarkan pangan" className="rounded-card border border-primary/20 bg-primary-container/60 p-4">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-card-title">Punya pangan berlebih?</h2>
           <img src={asset('illustrations/keranjang.svg')} alt="" className="h-12 w-12" />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => navigate('/donasi/baru')} className="tap inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-control bg-primary px-3 text-[1rem] font-semibold text-white hover:bg-primary-pressed">
-            <HandHeart size={22} aria-hidden="true" className="shrink-0 max-[359px]:hidden" /> Tawarkan Pangan
+        <div className="mt-3 flex flex-col gap-1">
+          <button type="button" onClick={() => navigate('/donasi/baru')} className="tap inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-control bg-primary px-3 text-[1rem] font-semibold text-white shadow-card hover:bg-primary-pressed">
+            <HandHeart size={22} aria-hidden="true" className="shrink-0" /> Tawarkan Pangan
           </button>
-          <button type="button" onClick={() => navigate('/pangan')} className="tap min-h-[52px] w-[7.25rem] grow-0 rounded-control border border-line-control bg-surface px-3 text-[0.9375rem] font-medium leading-5 hover:bg-page">
-            Dari Catat Pangan
+          <button type="button" onClick={() => navigate('/pangan')} className="tap inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-control px-3 text-[0.9375rem] font-semibold text-primary hover:bg-primary-container">
+            atau pilih dari Catat Pangan <CaretRight size={16} weight="bold" aria-hidden="true" />
           </button>
         </div>
       </section>
@@ -126,7 +129,7 @@ function DonorHome() {
         <SectionHeader id="dampak-berbagi" title="Dampak berbagi" to="/dampak" linkLabel="Lihat dampak" />
         <div className="relative flex items-center gap-3 overflow-hidden rounded-card border border-line bg-gradient-to-br from-primary-container/70 to-surface p-4">
           <div className="min-w-0 flex-1">
-            <p className="text-display text-primary">{received} porsi</p>
+            <p className="text-display text-primary"><CountUp value={received} /> porsi</p>
             <p className="text-[1rem] font-medium">diterima penerima</p>
             <p className="mt-1 flex items-center gap-1 text-meta text-primary">
               <Check size={16} weight="bold" aria-hidden="true" /> Terkonfirmasi · Oktober 2026
@@ -138,7 +141,6 @@ function DonorHome() {
       </section>
 
       <InspirationSection />
-      <DemoNote />
     </div>
   )
 }
@@ -154,18 +156,19 @@ function RecipientHome() {
     .reduce((s, t) => s + (t.received ?? 0), 0)
 
   return (
-    <div className="flex flex-col gap-6 px-4 pt-4">
+    <div className="stagger flex flex-col gap-6 px-4 pt-4">
       <section aria-label="Sapaan" className="relative overflow-hidden rounded-greet border border-line bg-gradient-to-br from-primary-container to-surface p-4">
         <LeafDecor />
         <div className="relative flex flex-wrap items-center gap-2">
           <span className="rounded-full border border-primary/30 bg-primary-container px-3 py-1 text-[0.875rem] font-semibold text-primary">Penerima</span>
-          <Link to="/akun/lokasi" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
+          <Link to="/area" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
             <MapPin size={18} aria-hidden="true" /> {profile.area} <CaretDown size={14} aria-hidden="true" />
           </Link>
         </div>
         <h1 className="relative mt-2 text-page-title">Halo, {profile.name}</h1>
         <p className="relative text-body text-ink-secondary">Cek jadwal dan pangan yang tersedia di sekitar Anda.</p>
       </section>
+      <PromoBanner placement="beranda" />
 
       {next && (
         <section aria-labelledby="jadwal" className="card border-primary/40 p-4">
@@ -220,7 +223,7 @@ function RecipientHome() {
         <SectionHeader id="dampak-diterima" title="Pangan diterima" to="/dampak" linkLabel="Lihat dampak" />
         <div className="flex items-center gap-3 rounded-card border border-line bg-gradient-to-br from-primary-container/70 to-surface p-4">
           <div className="min-w-0 flex-1">
-            <p className="text-display text-primary">{received} porsi</p>
+            <p className="text-display text-primary"><CountUp value={received} /> porsi</p>
             <p className="text-[1rem] font-medium">diterima aktual · Oktober 2026</p>
             <p className="text-meta text-ink-secondary">Sumber: konfirmasi penerimaan Anda</p>
           </div>
@@ -234,7 +237,6 @@ function RecipientHome() {
         <span className="flex-1 text-meta">Dukung operasional Lestari Pangan secara sukarela.</span>
         <CaretRight size={18} aria-hidden="true" className="text-ink-secondary" />
       </Link>
-      <DemoNote />
     </div>
   )
 }

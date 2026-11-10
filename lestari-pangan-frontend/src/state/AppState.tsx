@@ -1,245 +1,157 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
-import * as mock from '../data/mock'
-import type { FoodRecord, FoodRequest, Notification, Offer, Role, Transfer } from '../data/types'
-import { nowLabel } from '../lib/format'
+import type { Recipe } from '../data/recipes'
+import type { Challenge, ChallengeEntry, RewardPack } from '../data/engagement'
+import type { FundSummary } from '../services/funding'
+import type { Promotion } from '../services/promotions'
+import type { Ticket } from '../services/support'
+import type { FoodRecord, FoodRequest, Issue, Notification, Offer, Role, Tip, Transfer } from '../data/types'
 
 /**
- * Store demo di sisi klien. Tidak ada backend: semua hasil "server" disimulasikan
- * agar alur UI dapat dicoba. Keputusan bisnis yang masih terbuka (OD-01 dst.)
- * tidak ditetapkan oleh logika di sini.
+ * Store aplikasi. Data kegiatan selalu dari Supabase lewat aksi `hydrate`
+ * (state/LiveData.tsx) dan diubah lewat RPC (state/useCommand.ts), tidak pernah oleh reducer ini.
+ * Yang disimpan di perangkat hanya status sesi, peran, dan preferensi.
  */
+
+/** Semua state kecuali status sesi; data selain `prefs` berasal dari Supabase dan tidak disimpan di perangkat. */
+export type LiveData = Omit<State, 'signedIn' | 'onboarded' | 'role'>
 
 interface State {
   signedIn: boolean
   onboarded: boolean
   role: Role
+  prefs: Record<string, boolean>
   offers: Offer[]
   requests: FoodRequest[]
   transfers: Transfer[]
   records: FoodRecord[]
   notifications: Notification[]
+  issues: Issue[]
+  /** Tugas relawan/mitra pengiriman (K01–K04); hanya untuk akun kurir. */
+  tasks: CourierTask[]
+  tips: Tip[]
+  recipes: Recipe[]
   savedTips: string[]
-  seq: number
+  savedRecipes: string[]
+  challenges: Challenge[]
+  /** Keikutsertaan + progres dari server, per kode challenge. */
+  challengeEntries: Record<string, ChallengeEntry>
+  joinedChallenges: string[]
+  rewardPacks: RewardPack[]
+  rewardClaim: string | null
+  claimStatus: string | null
+  /** Kode keikutsertaan yang lolos dan belum dipakai klaim. */
+  claimRight: string | null
+  /** Persetujuan mitra atas materi apresiasi (E08/E09); appreciationId null = belum ada materi. */
+  appreciation: 'Draf' | 'Disetujui' | 'Revisi diminta'
+  appreciationId: number | null
+  /** Teks dan gambar materi apresiasi terbaru dari tim program. */
+  appreciationCaption: string | null
+  appreciationImage: string | null
+  supports: Support[]
+  recurring: { amount: number; day: number } | null
+  inKind: { id: string; kind: string; amount: string; at: string; status: string }[]
+  fundSummary: FundSummary[]
+  promotions: Promotion[]
+  tickets: Ticket[]
 }
 
-const initial: State = {
-  signedIn: false,
-  onboarded: false,
-  role: 'pemberi',
-  offers: mock.offers,
-  requests: mock.requests,
-  transfers: mock.transfers,
-  records: mock.records,
-  notifications: mock.notifications,
+export interface CourierTask {
+  id: string
+  transferId: string
+  food: string
+  agreed: number
+  unit: string
+  from: { name: string; pic: string; phone: string; address: string; note: string }
+  to: { name: string; pic: string; phone: string; address: string; note: string }
+  window: string
+  cost: string
+  status: 'Menunggu kurir' | 'Menunggu ambil' | 'Dalam perjalanan' | 'Selesai' | 'Gagal'
+  picked?: number
+  delivered?: number
+  timeline: { label: string; at: string; note?: string }[]
+}
+
+export type ProfileFields = { pic: string; phone: string; address: string; hours: string; area: string; capacity: string; storage: string }
+export interface Support {
+  id: string
+  amount: number
+  allocation: string
+  at: string
+  status: 'Menunggu verifikasi' | 'Tervalidasi' | 'Dibatalkan'
+  note?: string
+}
+
+export type OfferChanges = Pick<Offer, 'pickupDate' | 'pickupStart' | 'pickupEnd' | 'available' | 'storage' | 'description'>
+
+const empty: Omit<LiveData, 'prefs'> = {
+  offers: [],
+  requests: [],
+  transfers: [],
+  records: [],
+  notifications: [],
+  issues: [],
+  tasks: [],
+  tips: [],
+  recipes: [],
   savedTips: [],
-  seq: 900,
+  savedRecipes: [],
+  challenges: [],
+  challengeEntries: {},
+  joinedChallenges: [],
+  rewardPacks: [],
+  rewardClaim: null,
+  claimStatus: null,
+  claimRight: null,
+  appreciation: 'Draf',
+  appreciationId: null,
+  appreciationCaption: null,
+  appreciationImage: null,
+  supports: [],
+  recurring: null,
+  inKind: [],
+  fundSummary: [],
+  promotions: [],
+  tickets: [],
 }
 
-type Action =
+const initial: State = { signedIn: false, onboarded: false, role: 'pemberi', prefs: {}, ...empty }
+
+/** Aksi lokal. Perubahan data kegiatan memakai perintah RPC di state/useCommand.ts. */
+export type Action =
+  | { type: 'hydrate'; data: Partial<LiveData> }
   | { type: 'signIn'; role?: Role }
   | { type: 'signOut' }
   | { type: 'onboarded' }
   | { type: 'setRole'; role: Role }
-  | { type: 'publishOffer'; offer: Omit<Offer, 'id' | 'createdAt' | 'reserved' | 'handedOver' | 'available'>; recordId?: string }
-  | { type: 'closeOffer'; id: string }
-  | { type: 'submitRequest'; request: Omit<FoodRequest, 'id' | 'status' | 'createdAt'> }
-  | { type: 'decideRequest'; id: string; decision: 'approve' | 'reject'; reason?: string }
-  | { type: 'cancelRequest'; id: string; reason: string }
-  | { type: 'handover'; id: string; quantity: number; note?: string }
-  | { type: 'receive'; id: string; received: number; reason?: string; note?: string }
-  | { type: 'reportDistribution'; id: string; distributed: number; used: number; wasted: number }
-  | { type: 'addRecord'; record: Omit<FoodRecord, 'id'> }
-  | { type: 'readNotification'; id: string }
-  | { type: 'readAllNotifications' }
-  | { type: 'toggleTip'; id: string }
-  | { type: 'reset' }
+  | { type: 'setPref'; key: string; value: boolean }
 
 function reducer(s: State, a: Action): State {
-  const at = nowLabel()
   switch (a.type) {
+    case 'hydrate':
+      return { ...s, ...a.data }
     case 'signIn':
       return { ...s, signedIn: true, onboarded: true, role: a.role ?? s.role }
     case 'signOut':
-      return { ...s, signedIn: false }
+      // Data akun sebelumnya tidak boleh terlihat oleh akun berikutnya di perangkat yang sama.
+      return { ...s, ...empty, signedIn: false, prefs: {} }
     case 'onboarded':
       return { ...s, onboarded: true }
     case 'setRole':
       return { ...s, role: a.role }
-    case 'publishOffer': {
-      const seq = s.seq + 1
-      const offer: Offer = {
-        ...a.offer,
-        id: `PGR-${seq}`,
-        available: a.offer.initial,
-        reserved: 0,
-        handedOver: 0,
-        createdAt: at,
-      }
-      const records = a.recordId
-        ? s.records.map((r) => (r.id === a.recordId ? { ...r, status: 'Ditawarkan' as const } : r))
-        : s.records
-      return { ...s, seq, offers: [offer, ...s.offers], records }
-    }
-    case 'closeOffer':
-      return { ...s, offers: s.offers.map((o) => (o.id === a.id ? { ...o, status: 'Ditutup' } : o)) }
-    case 'submitRequest': {
-      const seq = s.seq + 1
-      const req: FoodRequest = { ...a.request, id: `REQ-${seq}`, status: 'Diajukan', createdAt: at }
-      return { ...s, seq, requests: [req, ...s.requests] }
-    }
-    case 'decideRequest': {
-      const req = s.requests.find((r) => r.id === a.id)
-      if (!req || req.status !== 'Diajukan') return s
-      if (a.decision === 'reject') {
-        return {
-          ...s,
-          requests: s.requests.map((r) => (r.id === a.id ? { ...r, status: 'Ditolak', reason: a.reason } : r)),
-        }
-      }
-      const offer = s.offers.find((o) => o.id === req.offerId)
-      if (!offer || req.quantity > offer.available) return s
-      const seq = s.seq + 1
-      const [date, time] = req.pickupTime.split(', ')
-      const transfer: Transfer = {
-        id: `LP-${seq}`,
-        requestId: req.id,
-        offerId: offer.id,
-        foodName: offer.name,
-        photo: offer.photo,
-        donorName: offer.donorName,
-        recipientName: req.recipientName,
-        agreed: req.quantity,
-        unit: req.unit,
-        method: req.method,
-        date: date ?? offer.pickupDate,
-        timeStart: offer.pickupStart,
-        timeEnd: offer.pickupEnd,
-        status: 'Terjadwal',
-        distributionReported: false,
-        timeline: [
-          { label: 'Permintaan diajukan', at: req.createdAt, by: req.recipientName },
-          { label: 'Permintaan disetujui', at, by: offer.donorName, note: `${req.quantity} ${req.unit}, ${time ?? ''}`.trim() },
-        ],
-      }
-      return {
-        ...s,
-        seq,
-        requests: s.requests.map((r) => (r.id === a.id ? { ...r, status: 'Disetujui' } : r)),
-        offers: s.offers.map((o) =>
-          o.id === offer.id ? { ...o, available: o.available - req.quantity, reserved: o.reserved + req.quantity } : o,
-        ),
-        transfers: [transfer, ...s.transfers],
-      }
-    }
-    case 'cancelRequest':
-      return {
-        ...s,
-        requests: s.requests.map((r) =>
-          r.id === a.id && r.status === 'Diajukan' ? { ...r, status: 'Dibatalkan', reason: a.reason } : r,
-        ),
-      }
-    case 'handover':
-      return {
-        ...s,
-        transfers: s.transfers.map((t) =>
-          t.id === a.id && t.status === 'Terjadwal'
-            ? {
-                ...t,
-                status: 'Diserahkan',
-                handedOver: a.quantity,
-                timeline: [...t.timeline, { label: 'Diserahkan', at, by: t.donorName, note: `${a.quantity} ${t.unit} diserahkan${a.note ? `. ${a.note}` : ''}` }],
-              }
-            : t,
-        ),
-      }
-    case 'receive': {
-      const target = s.transfers.find((t) => t.id === a.id)
-      const seq = s.seq + 1
-      const record: FoodRecord | null =
-        target && a.received > 0
-          ? {
-              id: `CP-${seq}`,
-              owner: 'penerima',
-              name: target.foodName,
-              category: 'Makanan matang',
-              quantity: a.received,
-              unit: target.unit,
-              estimate: false,
-              date: at,
-              storage: 'Posko penerima',
-              status: 'Masih tersedia',
-              source: `Diterima dari ${target.donorName} (${target.id})`,
-            }
-          : null
-      return {
-        ...s,
-        seq: record ? seq : s.seq,
-        records: record ? [record, ...s.records] : s.records,
-        transfers: s.transfers.map((t) => {
-          if (t.id !== a.id || (t.status !== 'Diserahkan' && t.status !== 'Terjadwal')) return t
-          const base = t.handedOver ?? t.agreed
-          const status: Transfer['status'] = a.received === 0 ? 'Ditolak' : a.received < base ? 'Diterima sebagian' : 'Diterima penuh'
-          const note =
-            status === 'Diterima penuh'
-              ? `${a.received} ${t.unit} diterima`
-              : `${a.received} ${t.unit} diterima, ${base - a.received} ${t.unit} tidak diterima${a.reason ? `: ${a.reason}` : ''}`
-          return {
-            ...t,
-            status,
-            handedOver: base,
-            received: a.received,
-            rejected: base - a.received,
-            timeline: [...t.timeline, { label: status, at, by: t.recipientName, note: a.note ? `${note}. ${a.note}` : note }],
-          }
-        }),
-      }
-    }
-    case 'reportDistribution':
-      return {
-        ...s,
-        transfers: s.transfers.map((t) =>
-          t.id === a.id
-            ? {
-                ...t,
-                distributionReported: true,
-                distribution: { distributed: a.distributed, used: a.used, wasted: a.wasted },
-                timeline: [
-                  ...t.timeline,
-                  {
-                    label: 'Laporan distribusi disimpan',
-                    at,
-                    by: t.recipientName,
-                    note: `${a.distributed} didistribusikan, ${a.used} digunakan, ${a.wasted} terbuang`,
-                  },
-                ],
-              }
-            : t,
-        ),
-      }
-    case 'addRecord': {
-      const seq = s.seq + 1
-      return { ...s, seq, records: [{ ...a.record, id: `CP-${seq}` }, ...s.records] }
-    }
-    case 'readNotification':
-      return { ...s, notifications: s.notifications.map((n) => (n.id === a.id ? { ...n, read: true } : n)) }
-    case 'readAllNotifications':
-      return { ...s, notifications: s.notifications.map((n) => (n.role === s.role ? { ...n, read: true } : n)) }
-    case 'toggleTip':
-      return {
-        ...s,
-        savedTips: s.savedTips.includes(a.id) ? s.savedTips.filter((t) => t !== a.id) : [...s.savedTips, a.id],
-      }
-    case 'reset':
-      return { ...initial, signedIn: s.signedIn, onboarded: true, role: s.role }
+    case 'setPref':
+      return { ...s, prefs: { ...s.prefs, [a.key]: a.value } }
   }
 }
 
-const KEY = 'lestari-pangan-demo-v2'
+const KEY = 'lestari-pangan-v4'
 
 function load(): State {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return { ...initial, ...JSON.parse(raw) }
+    if (raw) {
+      const saved = JSON.parse(raw) as Partial<State>
+      return { ...initial, signedIn: !!saved.signedIn, onboarded: !!saved.onboarded, role: saved.role ?? initial.role, prefs: saved.prefs ?? {} }
+    }
   } catch {
     /* penyimpanan tidak tersedia: pakai data awal */
   }
@@ -257,7 +169,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, load)
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(state))
+      const { signedIn, onboarded, role, prefs } = state
+      localStorage.setItem(KEY, JSON.stringify({ signedIn, onboarded, role, prefs }))
     } catch {
       /* abaikan */
     }
@@ -270,9 +183,4 @@ export function useApp() {
   const ctx = useContext(AppStateContext)
   if (!ctx) throw new Error('useApp harus dipakai di dalam AppStateProvider')
   return ctx
-}
-
-export function useProfile() {
-  const { state } = useApp()
-  return state.role === 'pemberi' ? mock.DONOR : mock.RECIPIENT
 }

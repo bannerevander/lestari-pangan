@@ -1,6 +1,6 @@
-# Lestari Pangan — Front End (prototipe v0.1)
+# Lestari Pangan — Front End
 
-Front end mobile-first Lestari Pangan, dibangun dari `design.md`, `REQUIREMENTS.md`, `GAYA-HOME-TERKUNCI.md`, dan ekspor layar Google Stitch (H01 terkunci sebagai acuan utama). Layar sudah dicocokkan dengan ekspor lengkap Stitch 9 Okt 2026 (`output/stitch/export-2026-10-09/`); lihat ULASAN-UX.md.
+Front end mobile-first Lestari Pangan, dibangun dari `docs/design.md`, `docs/REQUIREMENTS.md`, `docs/GAYA-HOME-TERKUNCI.md` (di root proyek), dan ekspor layar Google Stitch (H01 terkunci sebagai acuan utama). Layar sudah dicocokkan dengan ekspor lengkap Stitch 9 Okt 2026 (`output/stitch/export-2026-10-09/`); lihat ULASAN-UX.md.
 
 Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.
 
@@ -8,25 +8,39 @@ Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # type-check + build produksi ke dist/
-npm run preview    # melayani dist/
-npm run build:static  # build statis (hash routing) ke dist-static/
+cp .env.example .env.local   # isi URL + publishable key Supabase (wajib)
+npm run dev                  # http://localhost:5173
+npm run build                # type-check + build produksi ke dist/ (gagal bila ada kunci rahasia di env)
+npm run preview              # melayani dist/ dengan header keamanan yang sama seperti Vercel
+npm run test:config          # tes pengaman env
+npm run lint
 ```
 
-Butuh Node.js 18 atau lebih baru.
+Butuh Node.js 18 atau lebih baru (`test:config` butuh Node 23.6+ karena menjalankan TypeScript langsung).
+
+**Tanpa mode demo.** Aplikasi selalu memakai Supabase; tanpa env tampil layar "Konfigurasi belum lengkap". Versi demo (data lokal, pemilih peran) ada di [`../prototype`](../prototype).
+
+**Deploy ke Vercel.** Produksi: https://lestari-pangan.vercel.app (proyek `lestari-pangan`, env sudah terisi di Vercel). Dari folder ini:
+
+```bash
+npx vercel@latest login              # sekali per komputer
+npx vercel@latest deploy --prod      # build di server Vercel lalu terbit
+```
+
+`vercel.json` berisi rewrite SPA dan header keamanan; `.vercelignore` mencegah berkas env ikut terunggah. Jangan menaruh kunci lain di env Vercel ([docs/SECURITY.md](../docs/SECURITY.md)).
 
 ## Teknologi
 
 - React 18 + TypeScript + Vite 5
 - Tailwind CSS 3 dengan token dari design.md §4–5 (`tailwind.config.js`)
 - React Router 6
+- Supabase (`@supabase/supabase-js`): login email OTP, RPC, storage
 - Ikon Phosphor (`@phosphor-icons/react`), sesuai design.md §6; ikon tab bawah memakai geometri SVG dari H01
 - Font Inter dibundel lokal (`@fontsource/inter`), tanpa CDN
 
 ## Yang sudah bisa dicoba
 
-Masuk lewat pengenalan → pilih peran (Pemberi atau Penerima). Peran bisa ditukar dari panel "Skenario demo" (di samping layar pada desktop, atau di bawah halaman Akun pada ponsel).
+Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat mendaftar; untuk menguji dua peran, pakai dua akun. Akun admin dan kurir dibuat lewat SQL ([supabase/README.md](../supabase/README.md)).
 
 | Kode | Layar | Rute |
 | --- | --- | --- |
@@ -57,22 +71,30 @@ Alur lengkap yang sudah teruji otomatis: pemberi menerbitkan penawaran → pener
 
 ## Batas prototipe
 
-- Belum ada backend. Data demo ada di `src/data/mock.ts`, state di `src/state/AppState.tsx`, dan disimpan di `localStorage` browser. "Atur ulang data demo" mengembalikan data awal.
-- Respons server disimulasikan dengan jeda singkat; tidak ada autentikasi, unggah foto, pembayaran, suara, atau peta yang nyata.
+- Semua layar memakai Supabase. Status per kelompok layar: [docs/PROGRESS.md](../docs/PROGRESS.md) §2.
+- Pembayaran memakai transfer bank manual (QRIS menyusul). Resep suara, push notification, dan peta belum ada.
 - Keputusan terbuka (OD-01 s.d. OD-10 di design.md) tidak ditetapkan oleh kode ini. Contoh: alur penyesuaian permintaan (Q05) dan bentuk koordinasi (L08) masih berupa placeholder berlabel.
 - Layar yang belum dibangun (reward, pendanaan F01–F09, profil/verifikasi A02–A12/U08–U11, admin AD01–AD22, mitra K01–K04) menampilkan halaman "Layar ini belum dibangun".
 
 ## Struktur
 
+Aturan pembagian berkas: [docs/CONVENTIONS.md](../docs/CONVENTIONS.md).
+
 ```
+config/           publicEnvGuard.ts (build gagal bila ada kunci rahasia) + tes
 src/
-  components/   ui.tsx (Button, Badge, Notice, Field, BottomSheet, …), FoodCard, BottomTabBar, Layouts
-  pages/        Home, Donasi, OfferForm, Requests, Activities, Pangan, Account, Explore, Auth
-  state/        AppState.tsx (reducer + localStorage)
-  data/         types.ts, mock.ts
+  lib/supabase/   client.ts, errors.ts, database.types.ts (dibuat otomatis dari skema)
+  services/       auth.ts, identity.ts — satu berkas per modul backend
+  state/          AppState.tsx (sesi + data hasil muat Supabase), SessionSync.tsx (sesi Supabase)
+  pages/auth/     alur masuk/daftar, satu layar per berkas
+  pages/*.tsx     layar lain (dipecah saat disambungkan ke backend)
+  components/     ui.tsx (Button, Badge, Notice, Field, …), FoodCard, BottomTabBar, Layouts
+  admin/          konsol admin, chunk terpisah
+  data/           types.ts, kota.json (514 kab/kota), recipes.ts/engagement.ts (tipe)
 public/
   illustrations/  ilustrasi SVG dari aset Stitch
-  img/            logo (dipotong dari PNG asli), foto pangan dan tips dari Stitch
+  img/            logo, foto pangan dan tips dari Stitch
+vercel.json       rewrite SPA + header keamanan (CSP, HSTS, dll.)
 ```
 
 ## Aksesibilitas yang sudah diperiksa
