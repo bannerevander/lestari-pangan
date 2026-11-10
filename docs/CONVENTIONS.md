@@ -52,3 +52,10 @@ lestari-pangan-frontend/
 - Teks UI, komentar, dan dokumen: Bahasa Indonesia.
 - Nama tabel, kolom, fungsi, dan variabel: Bahasa Inggris `snake_case` (SQL) / `camelCase` (TypeScript). Nilai status: teks Indonesia persis seperti di UI.
 - Komentar hanya menjelaskan *mengapa*, bukan mengulang kode.
+
+## 6 Git dan deploy
+
+- Satu repo di root (`lestari-pangan-frontend/`, `supabase/`, `prototype/`, `docs/`). Push ke `main` = deploy produksi Vercel otomatis (Root Directory `lestari-pangan-frontend`).
+- Pesan commit wajib berawalan `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, atau `chore:` dan menjelaskan perubahan (aturan LOGICODIX 2026). Jangan `update`/`final`.
+- Commit harus atas nama akun GitHub `bannerevander` (email noreply di `git config user.email` repo ini). Commit dari akun lain diblokir Vercel Hobby.
+- Jangan force push, rebase, squash, atau mengubah tanggal commit yang sudah di-push.
