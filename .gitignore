@@ -1,0 +1,24 @@
+# Dependensi dan hasil build (semua sub-proyek)
+node_modules/
+dist/
+dist-ssr/
+dist-static/
+*.log
+
+# Env lokal: hanya .env.example yang boleh di-commit
+.env
+.env.*
+!.env.example
+
+# Konfigurasi lokal Vercel CLI dan alat bantu lokal
+.vercel/
+.playwright-cli/
+.claude/settings.local.json
+
+# Ekspor desain Stitch dan arsip (68 MB, bukan kode sumber)
+output/
+
+# Cadangan riwayat git lama front end
+.backup-frontend-git/
+
+.DS_Store
