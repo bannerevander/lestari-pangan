@@ -14,7 +14,8 @@ Status: ✅ selesai · 🟡 sebagian · ⬜ belum · ⛔ menunggu keputusan
 | Backend Supabase (skema, RLS, RPC, job) | ✅ | 9 migrasi (termasuk data awal, Realtime, tiket bantuan, promosi), 70 asersi tes lulus ([supabase/README.md](../supabase/README.md)) |
 | Keamanan | 🟡 | Kode selesai dan teruji; **langkah manual dashboard belum** ([SECURITY.md](SECURITY.md) §3) |
 | Sambungan front end ke Supabase | ✅ | Semua kelompok layar aplikasi dan konsol admin tersambung (§2); **menunggu pengecekan pengguna** dengan akun nyata |
-| Hosting Vercel | ✅ | https://lestari-pangan.vercel.app (proyek `lestari-pangan`, deploy lewat Vercel CLI) |
+| Hosting Vercel | ✅ | https://lestari-pangan.vercel.app (proyek `lestari-pangan`). Deploy otomatis setiap push ke `main` di GitHub (Root Directory `lestari-pangan-frontend`) |
+| Repo GitHub | ✅ | https://github.com/bannerevander/lestari-pangan (**private**; LOGICODIX mewajibkan public saat submission) |
 | Resep suara (Edge Function) | ⛔ | Menunggu AO-04 (penyedia speech-to-speech) |
 | Pembayaran | 🟡 | Transfer manual ke SeaBank 901335870147 a.n. BANNER EVANDER SALIM (instruksi + kode referensi di aplikasi), divalidasi admin keuangan. QRIS menyusul |
 
@@ -56,7 +57,7 @@ Status: ✅ selesai · 🟡 sebagian · ⬜ belum · ⛔ menunggu keputusan
 
 ## 4 Keputusan yang menunggu Anda
 
-Lihat [architecture.md](architecture.md) §11: AO-04 (suara), AO-05 (pembayaran), AO-06 (push web), AO-07 (format lomba), AO-08 (OD-01 s.d. OD-05), AO-09 (verifikasi sebelum berkegiatan).
+Lihat [architecture.md](architecture.md) §11: AO-04 (suara), AO-05 (pembayaran), AO-06 (push web), AO-08 (OD-01 s.d. OD-05), AO-09 (verifikasi sebelum berkegiatan). AO-07 (format lomba) terjawab oleh guidebook LOGICODIX 2026: aplikasi Web ter-deploy + repo GitHub public + video YouTube 3–5 menit + surat orisinalitas, code freeze 14 Nov 2026 23.59 WIB.
 
 ## 5 Log
 
@@ -73,3 +74,4 @@ Lihat [architecture.md](architecture.md) §11: AO-04 (suara), AO-05 (pembayaran)
 | 13 Okt 2026 | Skenario demo dihapus: pemilih peran Pemberi/Penerima, panel samping, tombol atur ulang data demo, dan semua label "Data demo". Peran hanya dari profil akun. |
 | 13 Okt 2026 | Sambungan selesai untuk seluruh layar: penyaluran, Catat Pangan, kendala, notifikasi + Realtime, kurir, tips/resep, challenge, reward, apresiasi, dukungan dana, transparansi, preferensi, pilih area, dan konsol admin (OTP + RPC `admin_*`). Migrasi `engagement_seed_realtime` (konten, challenge, reward awal; notifikasi masuk publikasi Realtime). Tes engagement diperbarui agar tidak bentrok dengan data awal; 60 asersi lulus. Semua query PostgREST diperiksa terhadap Supabase. |
 | 13 Okt 2026 | Hanya tema terang (mode gelap/sistem dihapus). Profil asli di semua layar (`useProfile` + `MyProfileProvider`), simpan profil dan unggah verifikasi lewat RPC. Lapisan data live: `LiveDataProvider` (hydrate) + `useCommand` (aksi → RPC). Alur penawaran, cari pangan, dan permintaan tersambung. `Donasi.tsx`, `Requests.tsx`, `OfferForm.tsx` dipecah per layar. |
+| 10 Nov 2026 | Repo git dipindah ke root (monorepo: front end, supabase, prototype, docs); riwayat front end lama dipertahankan. Repo GitHub private `bannerevander/lestari-pangan`. Proyek Vercel disambungkan ke GitHub: push ke `main` = deploy produksi otomatis. |
