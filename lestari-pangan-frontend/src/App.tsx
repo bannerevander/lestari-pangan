@@ -40,6 +40,7 @@ import {
   SettingsHome,
 } from './pages/Settings'
 import { VerificationStatus } from './pages/account/VerificationStatus'
+import { AssistantChat } from './pages/assistant/AssistantChat'
 import { Login, Onboarding, ProfileSetup, ProofSubmit, Recover, Register, RolePick, VerifyCode } from './pages/auth'
 
 // Konsol admin terpisah (src/admin) dan tidak ikut bundle aplikasi mobile.
@@ -114,6 +115,7 @@ export default function App() {
           <Route path="permintaan/:id/penyesuaian" element={<RequestAdjustment />} />
           <Route path="masalah/:id" element={<IssueDetail />} />
           <Route path="notifikasi" element={<Notifications />} />
+          <Route path="asisten" element={<AssistantChat />} />
           <Route path="fitur" element={<Features />} />
           <Route path="dampak" element={<Impact />} />
           <Route path="tips" element={<Tips />} />

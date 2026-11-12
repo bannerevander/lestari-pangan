@@ -9,6 +9,9 @@ const RPC_MESSAGES: Record<string, string> = {
   SALDO_TIDAK_CUKUP: 'Saldo dana tujuan tidak mencukupi.',
   DATA_TIDAK_VALID: 'Isian belum sesuai. Periksa kembali.',
   BELUM_TERVERIFIKASI: 'Kegiatan ini memerlukan akun terverifikasi.',
+  BATAS_AI: 'Batas 40 pesan Asisten Dapur per jam tercapai. Coba lagi nanti.',
+  AI_BELUM_SIAP: 'Asisten Dapur AI belum diaktifkan pengelola. Coba lagi nanti.',
+  AI_SIBUK: 'Asisten Dapur sedang sibuk. Coba lagi sebentar.',
 }
 
 export class AppError extends Error {

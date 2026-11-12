@@ -55,6 +55,10 @@ Bagian ini tidak bisa dilakukan lewat kode. Centang setelah selesai.
 
 - [ ] MFA aktif pada akun Supabase pemilik proyek.
 
+**Supabase → Edge Functions → Secrets**
+
+- [ ] `GEMINI_API_KEY` diisi (Google AI Studio). Kunci tidak pernah ditaruh di front end atau repo.
+
 **Vercel**
 
 - [x] Proyek `lestari-pangan` dibuat; env `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY` terisi untuk Production + Preview (13 Okt 2026). Jangan menambahkan kunci lain.

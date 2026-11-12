@@ -92,7 +92,10 @@ Informasi penawaran meliputi jenis pangan, jumlah, foto opsional, waktu persiapa
 
 Sistem perlu menyediakan reservasi jumlah, penyaluran sebagian, pembatalan, penolakan, dan laporan masalah. Detail permintaan dengan persetujuan versus klaim langsung masih akan diputuskan.
 
-### 4 Resep dari Sisa dengan speech to speech
+### 4 Resep dari Sisa dan Asisten Dapur AI (suara + chat)
+
+**Asisten Dapur AI** (tombol "Tanya AI" di setiap tab) adalah chat khusus seputar makanan yang bisa dipakai dengan mengetik atau **ngobrol pakai suara**: aplikasi mendengarkan, AI menjawab, jawaban dibacakan, lalu aplikasi mendengarkan lagi. Jawaban memakai bahan di Catat Pangan dan katalog resep terkurasi sebagai konteks. Pertanyaan di luar topik makanan dijawab dengan penolakan baku. Detail teknis: [docs/architecture.md](docs/architecture.md) AR-21.
+
 
 Rekomendasi resep mendukung **percakapan suara dua arah melalui API**. Pengguna menyebut bahan yang tersedia, menerima jawaban suara, lalu dapat bertanya kembali mengenai pilihan atau langkah memasak.
 
@@ -186,6 +189,15 @@ Alur permintaan di atas merupakan dasar pembahasan; persetujuan versus klaim lan
 - Challenge, bukti, poin atau klaim langsung, nilai reward, kuota, sponsor, dan durasi publikasi.
 - Anggaran operasional, cadangan, penggunaan surplus, dan jadwal laporan.
 - Target perangkat/platform, batas layanan suara, retensi data, serta target kualitas dan performa.
+
+## Penggunaan AI
+
+| Layanan / model | Dipakai untuk | Data yang dikirim |
+| --- | --- | --- |
+| Google Gemini API, `gemini-3.5-flash-lite` (cadangan `gemini-3.1-flash-lite`), tier gratis | Asisten Dapur AI: ide resep dari bahan, cara menyimpan, mengolah sisa makanan | 12 pesan terakhir, daftar bahan Catat Pangan pengguna, judul resep terkurasi. Lewat Edge Function `ai-chat`; kunci API hanya di secret server. Data tier gratis dapat dipakai Google untuk pengembangan produk, dan ini disampaikan di layar. |
+| Web Speech API bawaan browser | Mengubah ucapan jadi teks (`id-ID`) dan membacakan jawaban | Audio diproses layanan suara browser (Google pada Chrome), tidak dikirim ke server Lestari Pangan. |
+
+Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat waktu permintaan untuk kuota 40 pesan per jam per akun. Asisten tidak menyatakan makanan aman hanya dari deskripsi, tanggal, atau foto. Alat bantu pengembangan: kode ditulis dengan bantuan asisten AI (Claude Code).
 
 ## Akun demo untuk juri
 

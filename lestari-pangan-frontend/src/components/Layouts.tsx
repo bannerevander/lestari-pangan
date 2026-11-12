@@ -55,7 +55,8 @@ export function TabLayout() {
   const { pathname } = useLocation()
   return (
     <>
-      <main key={pathname} className="animate-fade-in pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
+      {/* Ruang untuk tab bar + tombol Tanya AI agar konten terakhir tidak tertutup. */}
+      <main key={pathname} className="animate-fade-in pb-[calc(160px+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </main>
       <BottomTabBar />

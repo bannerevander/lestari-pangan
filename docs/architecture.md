@@ -38,6 +38,7 @@ Dokumen ini mencatat keputusan arsitektur backend dan database yang **sudah dise
 | AR-18 | OD-03: kategori tetap 3. **Data wajib per kategori**: semua wajib penyimpanan; Makanan matang wajib waktu dimasak; Produk kemasan wajib tanggal label yang belum lewat (`private.check_offer_fields`). Penerimaan **sebagian/penolakan wajib alasan (≥10 karakter) dan diverifikasi staf ops** (status `Menunggu verifikasi`, `admin_verify_receipt`) sebelum dampak dan catatan pangan tercatat. | Mencegah penolakan sepihak tanpa alasan dan data dampak yang keliru. |
 | AR-19 | OD-04: ongkir hanya untuk **Mitra pengiriman**, bawaan **ditanggung penerima**; penerima bisa mengajukan ke pemberi (`fulfillment_request_fee` / `fulfillment_respond_fee`). Ongkir dibayar langsung ke mitra, tidak lewat aplikasi; aplikasi mencatat siapa pembayarnya. Ambil sendiri dan Antar pemberi tanpa ongkir untuk penerima. Kegagalan pengiriman dan tanpa refund tetap. | Tanpa aliran uang baru sebelum code freeze. |
 | AR-20 | OD-05: challenge yang **lolos memberi poin** (`challenges.points`), poin **ditukar paket reward** (`reward_packs.cost`, saldo dihitung server `private.points_balance`); klaim ditolak mengembalikan poin. Challenge bisa diikuti lagi **di periode berikutnya** (periode disalin ke `challenge_participants`; admin menggeser periode setelah periode lama selesai). Sponsor memakai nama fiksi. | Sesuai keputusan pemilik produk 10 Nov 2026. |
+| AR-21 | AO-04: **Asisten Dapur AI** = chat teks + mode suara. Teks: Edge Function `ai-chat` → Google Gemini (`gemini-3.5-flash-lite`, cadangan `gemini-3.1-flash-lite`, tier gratis; kunci di secret `GEMINI_API_KEY`). Suara: Web Speech API browser (pengenalan `id-ID` + pembacaan), bukan speech-to-speech server. Hanya topik makanan: keluaran JSON `{on_topic, reply}`; bila `on_topic=false` server mengganti jawaban dengan penolakan baku. Kuota 40 pesan/jam/akun (`ai_take_quota`, hanya waktu yang disimpan). Riwayat obrolan hanya di perangkat. | Rp0 dan bisa dibangun sebelum code freeze; data tier gratis Gemini dapat dipakai Google untuk pengembangan produk, sehingga pengguna diberi tahu di layar. |
 
 ## 3 Gambaran sistem
 
@@ -328,7 +329,7 @@ Semua RPC: `security definer`, `set search_path = ''`, memeriksa `auth.uid()` da
 
 #### Edge Functions (dirancang kemudian)
 
-`voice-session` (AO-04), `payment-webhook` (AO-05), `push-send` (AO-06).
+`ai-chat` (AR-21, sudah ada), `payment-webhook` (AO-05, tidak dikerjakan), `push-send` (AO-06, ditunda).
 
 #### Contoh pola: reservasi atomik
 
@@ -411,7 +412,7 @@ Lapisan `src/lib/supabase/` (klien, RPC, kode galat, tipe hasil generate) dan `s
 
 | ID | Topik | Catatan |
 | --- | --- | --- |
-| AO-04 | Penyedia resep suara (speech-to-speech) | OD-06; token sesi diberikan Edge Function. |
+| AO-04 | ~~Penyedia resep suara~~ | Terjawab AR-21 (Gemini + suara browser). |
 | AO-05 | ~~Penyedia pembayaran~~ | Terjawab AR-14 (transfer manual). |
 | AO-06 | ~~Push notification web~~ | Terjawab AR-15 (ditunda). |
 | AO-07 | ~~Format yang diwajibkan lomba~~ | Terjawab guidebook LOGICODIX 2026 (lihat PROGRESS.md §4). |

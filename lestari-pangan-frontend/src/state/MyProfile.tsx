@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useApp } from './AppState'
 import { fetchMyProfile, type MyProfile } from '../services/identity'
-import { hasSession } from '../services/auth'
+import { hasSession, onSignedIn } from '../services/auth'
 
 /** Profil akun yang sedang masuk, dibaca dari Supabase. null sebelum termuat atau sebelum onboarding. */
 interface Ctx {
@@ -26,6 +26,8 @@ export function MyProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refresh()
+    // Ganti akun tanpa keluar (status masuk aplikasi tetap true) juga memuat profil akun baru.
+    return onSignedIn(() => void refresh())
   }, [refresh])
 
   const value = useMemo(() => ({ profile, refresh }), [profile, refresh])

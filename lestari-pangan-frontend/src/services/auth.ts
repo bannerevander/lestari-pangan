@@ -37,6 +37,14 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut()
 }
 
+/** Dipanggil setiap ada sesi masuk baru, termasuk ganti akun tanpa keluar dulu. */
+export function onSignedIn(callback: () => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN') callback()
+  })
+  return () => data.subscription.unsubscribe()
+}
+
 /** Dipanggil saat sesi berakhir di tab lain atau token tidak bisa diperbarui. */
 export function onSignedOut(callback: () => void): () => void {
   const { data } = supabase.auth.onAuthStateChange((event) => {

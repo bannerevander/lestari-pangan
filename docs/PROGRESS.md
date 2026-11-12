@@ -11,12 +11,12 @@ Status: ✅ selesai · 🟡 sebagian · ⬜ belum · ⛔ menunggu keputusan
 | Requirement dan desain | ✅ | [REQUIREMENTS.md](REQUIREMENTS.md), [design.md](design.md) |
 | Prototipe (126 layar Stitch, mode demo) | ✅ | Dipisah ke folder `prototype/` (selalu demo, ada pemilih peran). Aplikasi utama tidak punya mode demo lagi |
 | Arsitektur | ✅ | [architecture.md](architecture.md) v0.3, AR-01 s.d. AR-12 |
-| Backend Supabase (skema, RLS, RPC, job) | ✅ | 11 migrasi diterapkan; 5 berkas tes, 90 asersi lulus pada 11 Nov 2026 ([supabase/README.md](../supabase/README.md)) |
+| Backend Supabase (skema, RLS, RPC, job) | ✅ | 12 migrasi diterapkan; 6 berkas tes, 95 asersi lulus; Edge Function `ai-chat` ([supabase/README.md](../supabase/README.md)) |
 | Keamanan | 🟡 | Kode selesai dan teruji; **langkah manual dashboard belum** ([SECURITY.md](SECURITY.md) §3) |
 | Sambungan front end ke Supabase | ✅ | Semua kelompok layar aplikasi dan konsol admin tersambung (§2); **menunggu pengecekan pengguna** dengan akun nyata |
 | Hosting Vercel | ✅ | https://lestari-pangan.vercel.app (proyek `lestari-pangan`). Deploy otomatis setiap push ke `main` di GitHub (Root Directory `lestari-pangan-frontend`) |
 | Repo GitHub | ✅ | https://github.com/bannerevander/lestari-pangan (**private**; LOGICODIX mewajibkan public saat submission) |
-| Resep suara (Edge Function) | ⛔ | Menunggu AO-04 (penyedia speech-to-speech) |
+| Asisten Dapur AI (chat + suara) | 🟡 | Layar `/asisten`, tombol "Tanya AI" di semua tab, Edge Function `ai-chat` ter-deploy (AR-21). **Menunggu secret `GEMINI_API_KEY`** di Supabase; suara asli belum diuji di HP |
 | Akun uji juri | ✅ | Pemberi, penerima, kurir, admin semua lingkup; masuk dengan kata sandi ([AKUN-UJI.md](AKUN-UJI.md)). Ganti/hapus setelah penjurian |
 | Pembayaran | 🟡 | Transfer manual ke SeaBank 901335870147 a.n. BANNER EVANDER SALIM (instruksi + kode referensi di aplikasi), divalidasi admin keuangan. QRIS tidak dikerjakan untuk lomba (AR-14) |
 
@@ -57,7 +57,7 @@ Status: ✅ selesai · 🟡 sebagian · ⬜ belum · ⛔ menunggu keputusan
 
 ## 4 Keputusan yang menunggu Anda
 
-Lihat [architecture.md](architecture.md) §11: AO-04 (suara). AO-08 terjawab 11 Nov 2026 (AR-16 s.d. AR-20). Terjawab 10 Nov 2026: AO-05 transfer manual (AR-14), AO-06 push web ditunda (AR-15), AO-09 boleh berkegiatan sebelum verifikasi (AR-13). AO-07 (format lomba) terjawab oleh guidebook LOGICODIX 2026: aplikasi Web ter-deploy + repo GitHub public + video YouTube 3–5 menit + surat orisinalitas, code freeze 14 Nov 2026 23.59 WIB.
+Semua keputusan arsitektur terjawab (AO-04 → AR-21 pada 12 Nov 2026). AO-08 terjawab 11 Nov 2026 (AR-16 s.d. AR-20). Terjawab 10 Nov 2026: AO-05 transfer manual (AR-14), AO-06 push web ditunda (AR-15), AO-09 boleh berkegiatan sebelum verifikasi (AR-13). AO-07 (format lomba) terjawab oleh guidebook LOGICODIX 2026: aplikasi Web ter-deploy + repo GitHub public + video YouTube 3–5 menit + surat orisinalitas, code freeze 14 Nov 2026 23.59 WIB.
 
 ## 5 Log
 
@@ -78,3 +78,4 @@ Lihat [architecture.md](architecture.md) §11: AO-04 (suara). AO-08 terjawab 11 
 | 10 Nov 2026 | Keputusan AO-05, AO-06, AO-09 dicatat sebagai AR-13 s.d. AR-15. Perilaku server sudah sesuai (tanpa cek verifikasi); komentar `shortcut:` AO-09 di migrasi donation yang sudah diterapkan dibiarkan agar migrasi tidak berubah. |
 | 11 Nov 2026 | Keputusan OD-01 s.d. OD-05 (AR-16 s.d. AR-20): migrasi `product_decisions` + tes 19 asersi; tes lama disesuaikan. Front end: batas per penerima dan data wajib per kategori di form penawaran, batas tanggapan 2 jam di permintaan, status `Menunggu verifikasi` + panel verifikasi admin, ajukan/tanggapi ongkir, saldo poin dan tukar poin di Reward, poin di editor challenge/paket admin, daftar tanpa langkah bukti. Migrasi diterapkan ke proyek; 90 asersi lulus; advisor tanpa temuan baru selain peringatan RPC yang disengaja. `database.types.ts` di-generate ulang. Tes dana dibuat aman terhadap data asli (saldo dibanding saldo awal). |
 | 12 Nov 2026 | Akun uji juri per peran (`*@example.com`, dibuat lewat SQL dengan kata sandi) + tombol "Masuk dengan kata sandi" di layar masuk aplikasi dan konsol admin (`signInWithPassword`). Diuji: login API keempat akun + login UI pemberi dan admin di localhost. |
+| 12 Nov 2026 | Asisten Dapur AI (AR-21): migrasi `ai_assistant` (kuota 40 pesan/jam, tes 5 asersi), Edge Function `ai-chat` (Gemini, jawaban terstruktur `on_topic` agar hanya topik makanan, katalog resep terkurasi + Catat Pangan sebagai konteks), layar chat dengan mode suara (Web Speech API: dengar, pikir, bicara, sela, ulangi, ketik), tombol mengambang "Tanya AI" di semua tab, kartu di Resep dan Semua fitur. Perbaikan: profil dimuat ulang saat ganti akun tanpa keluar (`onSignedIn`). |

@@ -13,6 +13,7 @@ import {
   Plus,
   Question,
   Receipt,
+  Sparkle,
   X,
 } from '@phosphor-icons/react'
 import { matchRecipes } from '../data/recipes'
@@ -39,6 +40,7 @@ const featureGroups: { title: string; note?: string; items: Feature[] }[] = [
   {
     title: 'Ide dan kebiasaan',
     items: [
+      { to: '/asisten', icon: Sparkle, title: 'Asisten Dapur AI', desc: 'Ngobrol pakai suara atau ketik: ide masakan dari bahan yang ada', badge: 'Baru' },
       { to: '/resep', img: 'illustrations/resep.svg', title: 'Resep dari Sisa', desc: 'Olahan dari bahan yang masih ada' },
       { to: '/tips', icon: Lightbulb, title: 'Tips Anti Food Waste', desc: 'Penyimpanan, perencanaan, dan donasi' },
       { to: '/tantangan', img: 'illustrations/medali-daun.svg', title: 'Eco Challenge', desc: 'Langkah kecil untuk kebiasaan baru' },
@@ -341,14 +343,14 @@ export function Recipes() {
       />
       <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-32 pt-4">
         <PromoBanner placement="resep" />
-        <section className="flex items-center gap-3 rounded-card border border-line bg-primary-container p-4">
-          <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface text-primary"><Microphone size={24} /></span>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold">Bingung mau masak apa?</p>
-            <p className="text-meta text-ink-secondary">Asisten suara belum tersedia. Gunakan isian di bawah.</p>
-          </div>
-          <Badge tone="neutral" icon={false}>Segera</Badge>
-        </section>
+        <Link to="/asisten" className="tap flex items-center gap-3 rounded-card bg-primary p-4 text-white shadow-card hover:bg-primary-pressed">
+          <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink"><Microphone size={24} weight="fill" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">Bingung mau masak apa? Tanya Asisten Dapur AI</span>
+            <span className="block text-meta text-white/85">Sebut bahanmu lewat suara atau ketik, dapat ide masakan.</span>
+          </span>
+          <CaretRight size={20} aria-hidden="true" className="shrink-0" />
+        </Link>
 
         <section aria-labelledby="bahan" className="card flex flex-col gap-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">

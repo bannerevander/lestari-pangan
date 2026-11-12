@@ -24,6 +24,7 @@ Proyek: **Lestari Pangan** (`nuikazqzrdtaxkywwfvm`, region Singapura, Postgres 1
 | `20261013110000_tickets_promotions` | Tiket bantuan/hapus data, promosi, bucket publik `media` (unggah hanya admin konten) |
 | `20261013120000_admin_scope_all` | Lingkup admin `semua` (satu akun memegang ops, keuangan, konten) |
 | `20261110100000_product_decisions` | OD-01 s.d. OD-05: batas konfirmasi 2 jam, batas per penerima, data wajib per kategori, verifikasi penerimaan sebagian, ongkir penerima/pemberi, poin challenge dan periode berikutnya |
+| `20261112100000_ai_assistant` | Kuota Asisten Dapur AI (`ai_requests`, `ai_take_quota`) |
 
 ## Menjalankan tes
 
@@ -35,7 +36,16 @@ Tanpa Supabase CLI: buka **SQL Editor**, tempel seluruh isi satu berkas dari `te
 | `issues_engagement_funding.test.sql` | 26 | AT-04, AT-07, AT-08, AT-09, kendala, challenge, konten, ledger, admin |
 | `security.test.sql` | 12 | Hak `anon`/`authenticated`, RLS, view, `search_path`, kolom privat, storage |
 | `tickets_promotions.test.sql` | 10 | Tiket idempoten + privat, balasan admin, promosi hanya admin konten, tautan internal, periode tayang |
+| `ai_assistant.test.sql` | 5 | Kuota 40 pesan/jam, pulih setelah sejam, kurir ditolak, hak akses |
 | `product_decisions.test.sql` | 19 | Data wajib kategori, batas per penerima, batal otomatis 2 jam, ongkir, verifikasi penerimaan, poin, periode berikutnya |
+
+## Edge Function
+
+| Fungsi | Isi |
+| --- | --- |
+| `functions/ai-chat` | Asisten Dapur AI (AR-21): validasi input, kuota lewat `ai_take_quota` atas nama pengguna, panggil Gemini, hanya topik makanan. `verify_jwt` mati karena fungsi memeriksa sesi sendiri lewat RPC. |
+
+Secret yang wajib diisi di Dashboard → Edge Functions → Secrets: `GEMINI_API_KEY` (dari Google AI Studio). Opsional `GEMINI_MODEL` (bawaan `gemini-3.5-flash-lite`). Deploy ulang: Supabase MCP `deploy_edge_function` atau `supabase functions deploy ai-chat --no-verify-jwt`.
 
 ## Akun admin
 

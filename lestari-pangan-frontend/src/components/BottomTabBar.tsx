@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
+import { AssistantFab } from './AssistantFab'
 
 /** Geometri ikon diambil dari H01 / Pemberi / Home • LOCKED v1 (Stitch). */
 const icons: Record<string, JSX.Element> = {
@@ -44,6 +45,8 @@ const tabs = [
 
 export function BottomTabBar() {
   return createPortal(
+    <>
+    <AssistantFab />
     <nav
       aria-label="Navigasi utama"
       className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-app -translate-x-1/2 border-t border-line bg-surface pb-[env(safe-area-inset-bottom,0px)] shadow-nav"
@@ -84,7 +87,8 @@ export function BottomTabBar() {
           )}
         </NavLink>
       ))}
-    </nav>,
+    </nav>
+    </>,
     document.body,
   )
 }
