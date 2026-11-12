@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react'
 import { Badge, Button, CountUp, Field, inputCls, RadioCard, toast, type Tone } from '../components/ui'
@@ -62,11 +62,28 @@ export function Stat({ label, value, unit, hint, to, cta, format }: { label: str
 }
 
 /** Tabel data: menggulir horizontal di dalam kartu bila sempit, bukan seluruh halaman. */
+type Row = ReactElement<{ className?: string; children?: ReactNode }>
+
+/**
+ * Layar lebar: tabel biasa (geser ke samping bila sempit). HP (< md): setiap baris menjadi kartu,
+ * nama kolom tampil di atas nilainya lewat data-label, jadi semua kolom terlihat tanpa geser.
+ */
 export function Table({ head, children, label }: { head: string[]; children: ReactNode; label: string }) {
+  const rows = Children.map(children, (row) =>
+    isValidElement(row) && row.type === 'tr'
+      ? cloneElement(
+          row as Row,
+          { className: `block px-4 py-3 md:table-row md:p-0 ${(row as Row).props.className ?? ''}` },
+          Children.map((row as Row).props.children, (cell, i) =>
+            isValidElement(cell) ? cloneElement(cell as ReactElement<Record<string, unknown>>, { 'data-label': head[i] ?? '' }) : cell,
+          ),
+        )
+      : row,
+  )
   return (
-    <div className="-mx-4 overflow-x-auto md:-mx-5" role="region" aria-label={label} tabIndex={0}>
-      <table className="w-full min-w-[640px] border-collapse text-left">
-        <thead>
+    <div className="-mx-4 md:-mx-5 md:overflow-x-auto" role="region" aria-label={label} tabIndex={0}>
+      <table className="block w-full border-collapse text-left md:table md:min-w-[640px]">
+        <thead className="hidden md:table-header-group">
           <tr className="border-y border-line bg-page">
             {head.map((h) => (
               <th key={h} scope="col" className="px-4 py-2.5 text-caption font-semibold uppercase tracking-wide text-ink-secondary first:pl-4 md:first:pl-5">
@@ -75,13 +92,15 @@ export function Table({ head, children, label }: { head: string[]; children: Rea
             ))}
           </tr>
         </thead>
-        <tbody className="stagger divide-y divide-line">{children}</tbody>
+        <tbody className="stagger block border-y border-line md:table-row-group md:border-0 divide-y divide-line">{rows}</tbody>
       </table>
     </div>
   )
 }
 
-export const td = 'px-4 py-3 align-top text-meta first:pl-4 md:first:pl-5'
+/** Sel tabel admin. Di HP sel menjadi blok dengan label kolom (data-label) di atasnya. */
+export const td =
+  "block py-1.5 align-top text-meta before:block before:text-caption before:uppercase before:tracking-wide before:text-ink-secondary before:content-[attr(data-label)] md:table-cell md:px-4 md:py-3 md:first:pl-5 md:before:content-none"
 
 export function adminTone(status: string): Tone {
   if (/Terverifikasi|Selesai|Terbit|Aktif|Tervalidasi|Diserahkan|Disetujui|Valid|Siap disalurkan/.test(status)) return 'success'

@@ -9,7 +9,7 @@ Kata sandi semua akun: `test123`
 | Pemberi | `pemberi@example.com` | https://lestari-pangan.vercel.app/masuk | Warung Uji Juri (UMKM), Coblong, Kota Bandung |
 | Penerima | `penerima@example.com` | https://lestari-pangan.vercel.app/masuk | Dapur Komunitas Uji Juri, kapasitas 30 porsi/hari |
 | Kurir | `kurir@example.com` | https://lestari-pangan.vercel.app/masuk | Kurir Uji Juri (relawan), diarahkan ke `/tugas` |
-| Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Admin Uji Juri |
+| Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Admin Uji Juri. Konsol menyesuaikan perangkat: laptop = menu samping + tabel, HP = menu ☰ + kartu |
 
 Cara masuk (pilih salah satu):
 

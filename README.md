@@ -203,6 +203,13 @@ Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat wakt
 
 Satu akun per peran (pemberi, penerima, kurir, admin). Pilih metode **Kode verifikasi** lalu ketuk Kirim kode (akun uji langsung masuk), atau metode **Kata sandi**. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
 
+| Bagian | Alamat | Perangkat |
+| --- | --- | --- |
+| Aplikasi pengguna (pemberi, penerima, kurir) | https://lestari-pangan.vercel.app | Dirancang untuk HP. Di laptop tampil sebagai kolom HP di tengah layar. |
+| Konsol staf (admin) | https://lestari-pangan.vercel.app/admin/masuk | **Menyesuaikan perangkat yang dipakai.** Di laptop: menu di samping kiri dan data dalam tabel. Di HP: menu lewat tombol ☰ dan setiap baris tabel tampil sebagai kartu. Fungsinya sama di keduanya. |
+
+Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf operasional** di bawah halaman masuk.
+
 ## Struktur folder
 
 | Folder | Isi |

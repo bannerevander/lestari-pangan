@@ -372,7 +372,7 @@ export function Rewards() {
   const used = rewardPacks.reduce((s, r) => s + r.claimed, 0)
   return (
     <>
-      <PageHeader title="Reward dan klaim" desc="Kuota paket apresiasi dan antrean klaim. Satu hak klaim per akun terverifikasi." actions={<Button variant="secondary" className="min-h-11" icon={<Plus size={18} />} onClick={() => setAdding(!adding)}>Tambah paket</Button>} />
+      <PageHeader title="Reward dan klaim" desc="Kuota paket apresiasi dan antrean klaim. Paket ditukar dengan poin dari challenge yang lolos." actions={<Button variant="secondary" className="min-h-11" icon={<Plus size={18} />} onClick={() => setAdding(!adding)}>Tambah paket</Button>} />
       {adding && (
         <Panel title="Paket reward baru" desc="Dari sponsor yang sudah berkomitmen. Kuota tidak bisa dialokasikan berlebih.">
           <div className="grid gap-4 md:grid-cols-2">
