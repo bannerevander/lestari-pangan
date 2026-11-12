@@ -16,10 +16,27 @@ export async function verifyEmailOtp(email: string, token: string): Promise<void
   if (error) throw toAppError(error)
 }
 
-/** Hanya untuk akun uji juri yang dibuat dengan kata sandi (docs/AKUN-UJI.md); akun biasa tetap OTP. */
+/** Metode masuk kedua: kata sandi. Pengguna yang mendaftar lewat kode membuatnya di Pengaturan → Keamanan akses. */
 export async function signInWithPassword(email: string, password: string): Promise<void> {
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
   if (error) throw toAppError(error)
+}
+
+/** Membuat atau mengganti kata sandi akun yang sedang masuk. */
+export async function setPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw toAppError(error)
+}
+
+/** Akun uji juri memakai domain cadangan example.com yang tidak menerima email (docs/AKUN-UJI.md). */
+export const isDemoEmail = (email: string) => /@example\.com$/i.test(email.trim())
+
+/** "Kirim kode" untuk akun uji langsung masuk: Edge Function demo-login memberi token sekali pakai. */
+export async function demoSignIn(email: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke<{ token_hash: string }>('demo-login', { body: { email: email.trim() } })
+  if (error || !data?.token_hash) throw toAppError({ message: 'TIDAK_BERHAK' })
+  const res = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'email' })
+  if (res.error) throw toAppError(res.error)
 }
 
 export async function hasSession(): Promise<boolean> {

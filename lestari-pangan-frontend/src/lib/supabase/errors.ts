@@ -41,6 +41,12 @@ export function toAppError(e: RawError): AppError {
     // SMTP bawaan Supabase hanya mengirim ke anggota tim; pasang SMTP sendiri (docs/SECURITY.md §3).
     return new AppError('EMAIL_DITOLAK', 'Email ini belum bisa menerima kode. Hubungi pengelola Lestari Pangan.')
   }
+  if (/invalid login credentials/i.test(message)) {
+    return new AppError('SANDI_SALAH', 'Email atau kata sandi salah. Belum punya kata sandi? Masuk dengan kode verifikasi.')
+  }
+  if (/password/i.test(message) && /(weak|short|least|characters)/i.test(message)) {
+    return new AppError('SANDI_LEMAH', 'Kata sandi terlalu lemah. Pakai minimal 8 karakter berisi huruf dan angka.')
+  }
   if (/email/i.test(message) && /invalid/i.test(message)) {
     return new AppError('EMAIL_TIDAK_VALID', 'Alamat email tidak valid. Periksa kembali penulisannya.')
   }

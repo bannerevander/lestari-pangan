@@ -201,7 +201,7 @@ Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat wakt
 
 ## Akun demo untuk juri
 
-Satu akun per peran (pemberi, penerima, kurir, admin) yang masuk dengan kata sandi, tanpa kode email. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+Satu akun per peran (pemberi, penerima, kurir, admin). Pilih metode **Kode verifikasi** lalu ketuk Kirim kode (akun uji langsung masuk), atau metode **Kata sandi**. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
 
 ## Struktur folder
 

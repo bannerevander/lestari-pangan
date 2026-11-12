@@ -1,6 +1,6 @@
 # Akun uji untuk juri
 
-Satu akun per peran, dibuat 12 Nov 2026 di proyek Supabase produksi. Akun ini masuk dengan **kata sandi**, tidak perlu kode email. Akun pengguna biasa tetap memakai kode OTP email.
+Satu akun per peran, dibuat 12 Nov 2026 di proyek Supabase produksi. Halaman masuk punya dua metode untuk semua pengguna: **Kode verifikasi** dan **Kata sandi**. Akun uji bisa memakai keduanya.
 
 Kata sandi semua akun: `test123`
 
@@ -11,7 +11,12 @@ Kata sandi semua akun: `test123`
 | Kurir | `kurir@example.com` | https://lestari-pangan.vercel.app/masuk | Kurir Uji Juri (relawan), diarahkan ke `/tugas` |
 | Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Admin Uji Juri |
 
-Cara masuk: buka halaman masuk, ketuk **"Akun uji juri? Masuk dengan kata sandi"**, isi email dan kata sandi di atas.
+Cara masuk (pilih salah satu):
+
+- **Kode verifikasi**: isi email akun uji, ketuk **Kirim kode**. Akun uji langsung masuk tanpa kode, karena alamatnya tidak bisa menerima email (Edge Function `demo-login`).
+- **Kata sandi**: pilih tab **Kata sandi**, isi email dan kata sandi di atas.
+
+Kata sandi akun uji tidak bisa diubah dari aplikasi agar tetap sama untuk semua juri.
 
 Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima email, jadi tidak ada email yang terkirim ke pihak lain.
 
@@ -27,7 +32,7 @@ Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima
 
 ## Catatan keamanan
 
-- Akun dan kata sandi ini akan publik di repo. Akun admin melihat data seluruh pengguna di produksi; setelah penjurian selesai, ganti kata sandinya atau hapus akun-akun ini (SQL di bawah).
+- Akun dan kata sandi ini akan publik di repo. Akun admin melihat data seluruh pengguna di produksi; setelah penjurian selesai, hapus Edge Function `demo-login` (Dashboard → Edge Functions) lalu ganti kata sandinya atau hapus akun-akun ini (SQL di bawah).
 - Membuat ulang atau menghapus: akun dibuat lewat SQL Editor (insert `auth.users` + `auth.identities` dengan kata sandi bcrypt, lalu `identity_complete_onboarding`). Untuk menonaktifkan kata sandi tanpa menghapus data:
 
 ```sql

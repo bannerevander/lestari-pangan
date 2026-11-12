@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, CheckCircle, FilePdf, MagnifyingGlass, MapPin, Phone, ShieldCheck, Truck, Warning } from '@phosphor-icons/react'
-import { Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, StageList, Toaster, toast } from '../../components/ui'
+import { Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, Segmented, StageList, Toaster, toast } from '../../components/ui'
 import { asset } from '../../lib/format'
 import { useAdmin } from '../store'
 import type { Chain } from '../data'
 import { messageOf } from '../../lib/supabase/errors'
-import { sendEmailOtp, signInWithPassword, signOut, verifyEmailOtp } from '../../services/auth'
+import { demoSignIn, isDemoEmail, sendEmailOtp, signInWithPassword, signOut, verifyEmailOtp } from '../../services/auth'
 import { fetchMyProfile } from '../../services/identity'
 import { verificationDocUrl } from '../../services/admin'
 import { assignCourier, verifyReceipt } from '../../services/adminActions'
@@ -20,8 +20,9 @@ export function AdminLogin() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
-  // Akun uji juri memakai kata sandi (docs/AKUN-UJI.md); staf biasa tetap kode email.
-  const [withPassword, setWithPassword] = useState(false)
+  // Dua metode masuk: kode verifikasi email atau kata sandi.
+  const [method, setMethod] = useState<'kode' | 'sandi'>('kode')
+  const withPassword = method === 'sandi'
   const [err, setErr] = useState<{ email?: string; code?: string }>({})
   const [busy, setBusy] = useState(false)
   if (state.signedIn) return <Navigate to="/admin" replace />
@@ -30,18 +31,19 @@ export function AdminLogin() {
   // Mode live: email + kode OTP, lalu profil harus berperan admin.
   const submitLive = async () => {
     if (!emailOk) return setErr({ email: 'Isi email staf yang valid.' })
-    if (withPassword && !code) return setErr({ code: 'Isi kata sandi akun uji.' })
+    if (withPassword && !code) return setErr({ code: 'Isi kata sandi.' })
     if (!withPassword && sent && !/^\d{6}$/.test(code.trim())) return setErr({ code: 'Isi 6 angka kode dari email.' })
     setErr({})
     setBusy(true)
     try {
-      if (!withPassword && !sent) {
+      if (!withPassword && !sent && !isDemoEmail(email)) {
         await sendEmailOtp(email)
         setSent(true)
         toast('Kode masuk dikirim ke email staf.', 'info')
       } else {
         if (withPassword) await signInWithPassword(email, code)
-        else await verifyEmailOtp(email, code.trim())
+        else if (sent) await verifyEmailOtp(email, code.trim())
+        else await demoSignIn(email) // akun uji tidak menerima email: langsung masuk
         const me = await fetchMyProfile()
         if (me?.role !== 'admin') {
           await signOut()
@@ -84,11 +86,22 @@ export function AdminLogin() {
           <h1 className="text-page-title">Masuk staf operasional</h1>
           <p className="mt-1 text-body text-ink-secondary">Akses khusus pengelolaan verifikasi, penyaluran, dan transparansi.</p>
           <div className="mt-6 flex flex-col gap-4">
+            {!sent && (
+              <Segmented
+                label="Metode masuk"
+                value={method}
+                onChange={(m) => (setMethod(m), setCode(''), setErr({}))}
+                options={[
+                  { value: 'kode', label: 'Kode verifikasi' },
+                  { value: 'sandi', label: 'Kata sandi' },
+                ]}
+              />
+            )}
             <Field label="Email staf" error={err.email}>
               {(p) => <input {...p} type="email" autoComplete="username" className={inputCls} value={email} disabled={sent} onChange={(e) => setEmail(e.target.value)} />}
             </Field>
             {withPassword && (
-              <Field label="Kata sandi akun uji" error={err.code}>
+              <Field label="Kata sandi" error={err.code}>
                 {(p) => <input {...p} type="password" autoComplete="current-password" className={inputCls} value={code} onChange={(e) => setCode(e.target.value)} />}
               </Field>
             )}
@@ -98,11 +111,6 @@ export function AdminLogin() {
               </Field>
             )}
             <Button type="submit" block loading={busy} loadingLabel="Memeriksa…">{sent || withPassword ? 'Masuk ke konsol' : 'Kirim kode masuk'}</Button>
-            {!sent && (
-              <button type="button" onClick={() => (setWithPassword(!withPassword), setCode(''), setErr({}))} className="text-center text-[0.875rem] font-semibold text-primary hover:underline">
-                {withPassword ? 'Masuk dengan kode email' : 'Akun uji juri? Masuk dengan kata sandi'}
-              </button>
-            )}
             {sent && <button type="button" onClick={() => (setSent(false), setCode(''))} className="text-center text-[0.875rem] font-semibold text-primary hover:underline">Ganti email</button>}
             <Link to="/" className="text-center text-[0.875rem] font-semibold text-primary hover:underline">Kembali ke aplikasi</Link>
           </div>

@@ -43,7 +43,7 @@ import { useMyProfile } from '../state/MyProfile'
 import { useCommand } from '../state/useCommand'
 import { AreaField } from '../components/AreaField'
 import { saveProfile } from '../services/identity'
-import { currentEmail } from '../services/auth'
+import { currentEmail, isDemoEmail, setPassword } from '../services/auth'
 import { messageOf } from '../lib/supabase/errors'
 import { asset } from '../lib/format'
 
@@ -490,6 +490,7 @@ export function SecuritySettings() {
             </span>
             <Badge tone="success">Aktif</Badge>
           </div>
+          <PasswordRow email={email} />
         </Group>
         <Group title="Sesi aktif">
           <div className="flex min-h-16 items-center gap-3 px-4 py-3">
@@ -505,7 +506,7 @@ export function SecuritySettings() {
             </span>
           </div>
         </Group>
-        <Notice tone="info">Autentikasi dua faktor dan protokol masuk produksi menunggu keputusan operasional.</Notice>
+        <Notice tone="info">Masuk bisa dengan kode verifikasi email atau kata sandi. Autentikasi dua faktor menyusul.</Notice>
         <div className="mt-4 border-t border-line pt-4">
           <Button
             variant="danger"
@@ -522,6 +523,64 @@ export function SecuritySettings() {
         </div>
       </main>
     </>
+  )
+}
+
+/** Metode masuk kedua: kata sandi (opsional) untuk akun yang mendaftar lewat kode verifikasi. */
+function PasswordRow({ email }: { email: string }) {
+  const [open, setOpen] = useState(false)
+  const [pw, setPw] = useState('')
+  const [pw2, setPw2] = useState('')
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  // Akun uji dipakai bersama banyak juri: kata sandinya tidak boleh diganti dari aplikasi.
+  const demo = isDemoEmail(email)
+  const save = async () => {
+    if (pw.length < 8 || !/[a-z]/i.test(pw) || !/\d/.test(pw)) return setErr('Minimal 8 karakter, berisi huruf dan angka.')
+    if (pw !== pw2) return setErr('Ulangi kata sandi yang sama.')
+    setBusy(true)
+    try {
+      await setPassword(pw)
+      toast('Kata sandi disimpan. Sekarang Anda bisa masuk dengan kode verifikasi atau kata sandi.')
+      setOpen(false)
+      setPw('')
+      setPw2('')
+      setErr('')
+    } catch (e) {
+      setErr(messageOf(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="flex flex-col gap-3 px-4 py-3">
+      <div className="flex min-h-10 items-center gap-3">
+        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-primary"><LockKey size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-medium">Kata sandi</span>
+          <span className="block text-meta text-ink-secondary">{demo ? 'Akun uji: kata sandi tidak bisa diubah.' : 'Opsional. Masuk tanpa menunggu kode email.'}</span>
+        </span>
+        {!open && !demo && (
+          <Button variant="tonal" className="min-h-12 px-4" onClick={() => setOpen(true)}>
+            Atur
+          </Button>
+        )}
+      </div>
+      {open && (
+        <div className="flex flex-col gap-3">
+          <Field label="Kata sandi baru" hint="Minimal 8 karakter, berisi huruf dan angka.">
+            {(f) => <input {...f} type="password" autoComplete="new-password" className={inputCls} value={pw} onChange={(e) => (setPw(e.target.value), setErr(''))} />}
+          </Field>
+          <Field label="Ulangi kata sandi" error={err}>
+            {(f) => <input {...f} type="password" autoComplete="new-password" className={inputCls} value={pw2} onChange={(e) => (setPw2(e.target.value), setErr(''))} />}
+          </Field>
+          <div className="flex gap-2">
+            <Button className="flex-1" loading={busy} loadingLabel="Menyimpan…" onClick={save}>Simpan kata sandi</Button>
+            <Button variant="secondary" disabled={busy} onClick={() => (setOpen(false), setErr(''))}>Batal</Button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

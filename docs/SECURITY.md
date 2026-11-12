@@ -58,6 +58,7 @@ Bagian ini tidak bisa dilakukan lewat kode. Centang setelah selesai.
 **Supabase → Edge Functions → Secrets**
 
 - [ ] `GEMINI_API_KEY` diisi (Google AI Studio). Kunci tidak pernah ditaruh di front end atau repo.
+- [ ] **Setelah penjurian**: hapus Edge Function `demo-login` dan nonaktifkan akun uji (docs/AKUN-UJI.md). Selama aktif, siapa pun bisa masuk sebagai akun uji, termasuk admin.
 
 **Vercel**
 
