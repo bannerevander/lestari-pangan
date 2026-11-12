@@ -17,6 +17,7 @@ Status: ✅ selesai · 🟡 sebagian · ⬜ belum · ⛔ menunggu keputusan
 | Hosting Vercel | ✅ | https://lestari-pangan.vercel.app (proyek `lestari-pangan`). Deploy otomatis setiap push ke `main` di GitHub (Root Directory `lestari-pangan-frontend`) |
 | Repo GitHub | ✅ | https://github.com/bannerevander/lestari-pangan (**private**; LOGICODIX mewajibkan public saat submission) |
 | Resep suara (Edge Function) | ⛔ | Menunggu AO-04 (penyedia speech-to-speech) |
+| Akun uji juri | ✅ | Pemberi, penerima, kurir, admin semua lingkup; masuk dengan kata sandi ([AKUN-UJI.md](AKUN-UJI.md)). Ganti/hapus setelah penjurian |
 | Pembayaran | 🟡 | Transfer manual ke SeaBank 901335870147 a.n. BANNER EVANDER SALIM (instruksi + kode referensi di aplikasi), divalidasi admin keuangan. QRIS tidak dikerjakan untuk lomba (AR-14) |
 
 ## 2 Sambungan layar ke backend
@@ -76,3 +77,4 @@ Lihat [architecture.md](architecture.md) §11: AO-04 (suara). AO-08 terjawab 11 
 | 10 Nov 2026 | Repo git dipindah ke root (monorepo: front end, supabase, prototype, docs); riwayat front end lama dipertahankan. Repo GitHub private `bannerevander/lestari-pangan`. Proyek Vercel disambungkan ke GitHub: push ke `main` = deploy produksi otomatis. |
 | 10 Nov 2026 | Keputusan AO-05, AO-06, AO-09 dicatat sebagai AR-13 s.d. AR-15. Perilaku server sudah sesuai (tanpa cek verifikasi); komentar `shortcut:` AO-09 di migrasi donation yang sudah diterapkan dibiarkan agar migrasi tidak berubah. |
 | 11 Nov 2026 | Keputusan OD-01 s.d. OD-05 (AR-16 s.d. AR-20): migrasi `product_decisions` + tes 19 asersi; tes lama disesuaikan. Front end: batas per penerima dan data wajib per kategori di form penawaran, batas tanggapan 2 jam di permintaan, status `Menunggu verifikasi` + panel verifikasi admin, ajukan/tanggapi ongkir, saldo poin dan tukar poin di Reward, poin di editor challenge/paket admin, daftar tanpa langkah bukti. Migrasi diterapkan ke proyek; 90 asersi lulus; advisor tanpa temuan baru selain peringatan RPC yang disengaja. `database.types.ts` di-generate ulang. Tes dana dibuat aman terhadap data asli (saldo dibanding saldo awal). |
+| 12 Nov 2026 | Akun uji juri per peran (`*@example.com`, dibuat lewat SQL dengan kata sandi) + tombol "Masuk dengan kata sandi" di layar masuk aplikasi dan konsol admin (`signInWithPassword`). Diuji: login API keempat akun + login UI pemberi dan admin di localhost. |

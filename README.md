@@ -187,6 +187,10 @@ Alur permintaan di atas merupakan dasar pembahasan; persetujuan versus klaim lan
 - Anggaran operasional, cadangan, penggunaan surplus, dan jadwal laporan.
 - Target perangkat/platform, batas layanan suara, retensi data, serta target kualitas dan performa.
 
+## Akun demo untuk juri
+
+Satu akun per peran (pemberi, penerima, kurir, admin) yang masuk dengan kata sandi, tanpa kode email. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+
 ## Struktur folder
 
 | Folder | Isi |

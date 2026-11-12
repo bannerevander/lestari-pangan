@@ -16,6 +16,12 @@ export async function verifyEmailOtp(email: string, token: string): Promise<void
   if (error) throw toAppError(error)
 }
 
+/** Hanya untuk akun uji juri yang dibuat dengan kata sandi (docs/AKUN-UJI.md); akun biasa tetap OTP. */
+export async function signInWithPassword(email: string, password: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+  if (error) throw toAppError(error)
+}
+
 export async function hasSession(): Promise<boolean> {
   const { data } = await supabase.auth.getSession()
   return data.session !== null

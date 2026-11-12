@@ -6,7 +6,7 @@ import { asset } from '../../lib/format'
 import { useAdmin } from '../store'
 import type { Chain } from '../data'
 import { messageOf } from '../../lib/supabase/errors'
-import { sendEmailOtp, signOut, verifyEmailOtp } from '../../services/auth'
+import { sendEmailOtp, signInWithPassword, signOut, verifyEmailOtp } from '../../services/auth'
 import { fetchMyProfile } from '../../services/identity'
 import { verificationDocUrl } from '../../services/admin'
 import { assignCourier, verifyReceipt } from '../../services/adminActions'
@@ -20,6 +20,8 @@ export function AdminLogin() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
+  // Akun uji juri memakai kata sandi (docs/AKUN-UJI.md); staf biasa tetap kode email.
+  const [withPassword, setWithPassword] = useState(false)
   const [err, setErr] = useState<{ email?: string; code?: string }>({})
   const [busy, setBusy] = useState(false)
   if (state.signedIn) return <Navigate to="/admin" replace />
@@ -28,16 +30,18 @@ export function AdminLogin() {
   // Mode live: email + kode OTP, lalu profil harus berperan admin.
   const submitLive = async () => {
     if (!emailOk) return setErr({ email: 'Isi email staf yang valid.' })
-    if (sent && !/^\d{6}$/.test(code.trim())) return setErr({ code: 'Isi 6 angka kode dari email.' })
+    if (withPassword && !code) return setErr({ code: 'Isi kata sandi akun uji.' })
+    if (!withPassword && sent && !/^\d{6}$/.test(code.trim())) return setErr({ code: 'Isi 6 angka kode dari email.' })
     setErr({})
     setBusy(true)
     try {
-      if (!sent) {
+      if (!withPassword && !sent) {
         await sendEmailOtp(email)
         setSent(true)
         toast('Kode masuk dikirim ke email staf.', 'info')
       } else {
-        await verifyEmailOtp(email, code.trim())
+        if (withPassword) await signInWithPassword(email, code)
+        else await verifyEmailOtp(email, code.trim())
         const me = await fetchMyProfile()
         if (me?.role !== 'admin') {
           await signOut()
@@ -47,7 +51,7 @@ export function AdminLogin() {
         navigate('/admin', { replace: true })
       }
     } catch (e) {
-      setErr({ [sent ? 'code' : 'email']: e instanceof Error && !('code' in e) ? e.message : messageOf(e) })
+      setErr({ [sent || withPassword ? 'code' : 'email']: e instanceof Error && !('code' in e) ? e.message : messageOf(e) })
     } finally {
       setBusy(false)
     }
@@ -83,12 +87,22 @@ export function AdminLogin() {
             <Field label="Email staf" error={err.email}>
               {(p) => <input {...p} type="email" autoComplete="username" className={inputCls} value={email} disabled={sent} onChange={(e) => setEmail(e.target.value)} />}
             </Field>
-            {sent && (
+            {withPassword && (
+              <Field label="Kata sandi akun uji" error={err.code}>
+                {(p) => <input {...p} type="password" autoComplete="current-password" className={inputCls} value={code} onChange={(e) => setCode(e.target.value)} />}
+              </Field>
+            )}
+            {!withPassword && sent && (
               <Field label="Kode masuk" hint="6 angka dari email. Berlaku beberapa menit." error={err.code}>
                 {(p) => <input {...p} inputMode="numeric" autoComplete="one-time-code" maxLength={6} className={`${inputCls} tabular tracking-[0.3em]`} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />}
               </Field>
             )}
-            <Button type="submit" block loading={busy} loadingLabel="Memeriksa…">{sent ? 'Masuk ke konsol' : 'Kirim kode masuk'}</Button>
+            <Button type="submit" block loading={busy} loadingLabel="Memeriksa…">{sent || withPassword ? 'Masuk ke konsol' : 'Kirim kode masuk'}</Button>
+            {!sent && (
+              <button type="button" onClick={() => (setWithPassword(!withPassword), setCode(''), setErr({}))} className="text-center text-[0.875rem] font-semibold text-primary hover:underline">
+                {withPassword ? 'Masuk dengan kode email' : 'Akun uji juri? Masuk dengan kata sandi'}
+              </button>
+            )}
             {sent && <button type="button" onClick={() => (setSent(false), setCode(''))} className="text-center text-[0.875rem] font-semibold text-primary hover:underline">Ganti email</button>}
             <Link to="/" className="text-center text-[0.875rem] font-semibold text-primary hover:underline">Kembali ke aplikasi</Link>
           </div>
