@@ -1,10 +1,16 @@
-// Asisten Dapur AI (AR-21, FR-RS). Kunci Gemini hanya ada di secret Edge Function GEMINI_API_KEY;
+// Asisten Dapur AI (AR-21, FR-RS). Kunci Gemini hanya ada di secret Edge Function GEMINI_API_KEY (boleh lebih dari satu: GEMINI_API_KEY_2, dst.);
 // klien memanggil lewat supabase.functions.invoke('ai-chat') dengan sesi penggunanya.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const ORIGINS = ['https://lestari-pangan.vercel.app', 'http://localhost:5173', 'http://localhost:4173']
-// Model gratis tercepat dulu; model kedua punya kuota terpisah bila yang pertama penuh.
-const MODELS = [Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
+// Tercepat dulu (diukur 12 Nov 2026: flash-lite ±2 dtk; 3.8 Flash sering 503 di tier gratis). Urutan bisa diganti lewat secret GEMINI_MODEL (dipisah koma) tanpa deploy ulang.
+const MODELS = (Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash').split(',').map((m) => m.trim()).filter(Boolean)
+// Semua secret berawalan GEMINI_API_KEY dipakai bergiliran bila satu kunci terkena batas.
+const KEYS = Object.entries(Deno.env.toObject())
+  .filter(([name, value]) => name.startsWith('GEMINI_API_KEY') && value)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, value]) => value)
+console.log('ai-chat: jumlah kunci Gemini', KEYS.length)
 const MAX_TURNS = 12
 const MAX_CHARS = 2000
 
@@ -46,8 +52,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers })
   if (req.method !== 'POST') return reply(405, { error: 'DATA_TIDAK_VALID' })
 
-  const key = Deno.env.get('GEMINI_API_KEY')
-  if (!key) return reply(503, { error: 'AI_BELUM_SIAP' })
+  if (!KEYS.length) return reply(503, { error: 'AI_BELUM_SIAP' })
 
   // Validasi di batas kepercayaan: hanya teks pendek, peran dikenal, pesan terakhir dari pengguna.
   let turns: Turn[]
@@ -102,22 +107,34 @@ Deno.serve(async (req) => {
     },
   })
 
-  for (const model of MODELS) {
+  // Diukur 12 Nov 2026: saat padat, semua kunci gagal untuk model yang sama, sedangkan model lain sering langsung menjawab.
+  // Jadi model dan kunci diselang-seling: (m1,k1) (m2,k2) (m3,k3) (m1,k2) ... Total paling lama 20 detik.
+  const attempts = KEYS.flatMap((_, round) => MODELS.map((model, m) => ({ model, k: (round + m) % KEYS.length })))
+  const skip = new Set<string>()
+  const started = Date.now()
+  for (const { model, k } of attempts) {
+    const left = 20_000 - (Date.now() - started)
+    if (left < 2_000) break
+    if (skip.has(model)) continue
+    const key = KEYS[k]
     let res: Response
+    const t0 = Date.now()
     try {
       res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: 'POST',
         headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
         body: payload,
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(Math.min(6_000, left)),
       })
     } catch {
-      continue // waktu habis atau jaringan: coba model berikutnya
+      console.error('gemini', model, `kunci#${k + 1}`, 'timeout', Date.now() - t0, 'ms')
+      continue
     }
+    console.log('gemini', model, `kunci#${k + 1}`, res.status, Date.now() - t0, 'ms')
     if (!res.ok) {
-      console.error('gemini', model, res.status, (await res.text()).slice(0, 300))
-      if ([404, 429, 500, 503].includes(res.status)) continue
-      return reply(502, { error: 'AI_SIBUK' })
+      console.error('gemini', model, `kunci#${k + 1}`, res.status, (await res.text()).slice(0, 200))
+      if (res.status === 404) skip.add(model) // model tidak ada untuk semua kunci
+      continue // 429 kuota, 503 padat, kunci salah: percobaan berikutnya
     }
     const data = await res.json()
     const parts: { text?: string; thought?: boolean }[] = data.candidates?.[0]?.content?.parts ?? []
