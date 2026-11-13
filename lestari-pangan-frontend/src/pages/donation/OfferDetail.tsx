@@ -110,7 +110,7 @@ export function OfferDetail() {
                         ? 'Tanpa biaya pengiriman dari platform. Transportasi Anda sendiri.'
                         : m === 'Antar pemberi'
                           ? 'Pemberi mengantar sesuai kesepakatan.'
-                          : 'Biaya belum tersedia. Akan ditampilkan sebelum disetujui.'}
+                          : 'Kurir ditugaskan tim operasional; ongkir dibayar penerima langsung ke mitra, atau pemberi bila disepakati.'}
                     </p>
                   </div>
                 </li>

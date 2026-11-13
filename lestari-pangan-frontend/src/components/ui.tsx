@@ -8,7 +8,6 @@ import {
   Check,
   CheckCircle,
   CircleNotch,
-  ImageSquare,
   Minus,
   Plus,
   ShieldCheck,
@@ -690,19 +689,6 @@ export function StageList({ stages, current, label }: { stages: { title: string;
         )
       })}
     </ol>
-  )
-}
-
-/** Kartu unggah foto yang belum aktif di prototipe. */
-export function PhotoUploadPlaceholder({ label, hint }: { label: string; hint: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-control border-2 border-dashed border-line bg-page px-4 py-6 text-center">
-      <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-primary">
-        <ImageSquare size={22} />
-      </span>
-      <p className="font-semibold">{label}</p>
-      <p className="text-caption text-ink-secondary">{hint}</p>
-    </div>
   )
 }
 

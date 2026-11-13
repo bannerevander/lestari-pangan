@@ -190,7 +190,7 @@ export function RequestForm() {
                 checked={method === m}
                 onChange={() => setMethod(m)}
                 title={m}
-                description={m === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : m === 'Mitra pengiriman' ? 'Biaya belum tersedia' : 'Sesuai kesepakatan dengan pemberi'}
+                description={m === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : m === 'Mitra pengiriman' ? 'Kurir ditugaskan tim; ongkir dibayar langsung ke mitra' : 'Sesuai kesepakatan dengan pemberi'}
               />
             ))}
           </div>

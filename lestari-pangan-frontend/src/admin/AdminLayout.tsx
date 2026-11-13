@@ -218,11 +218,11 @@ export function AdminLayout() {
       <a href="#admin-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-control focus:bg-surface focus:px-4 focus:py-2 focus:shadow-overlay">
         Lewati ke konten
       </a>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-line bg-surface lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-line bg-surface lg:block print:!hidden">
         <SideNav />
       </aside>
       <header
-        className={`sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b bg-surface/95 px-2 backdrop-blur transition-[box-shadow,border-color] duration-micro lg:hidden ${scrolled ? 'border-line shadow-card' : 'border-transparent'}`}
+        className={`sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b bg-surface/95 px-2 backdrop-blur transition-[box-shadow,border-color] duration-micro lg:hidden print:hidden ${scrolled ? 'border-line shadow-card' : 'border-transparent'}`}
       >
         <IconButton label="Buka menu" onClick={() => setMenu(true)}>
           <List size={24} aria-hidden="true" />
@@ -230,7 +230,7 @@ export function AdminLayout() {
         <Brand />
       </header>
       <Drawer open={menu} onClose={() => setMenu(false)} />
-      <div className="lg:pl-72">
+      <div className="lg:pl-72 print:!pl-0">
         <main id="admin-main" key={pathname} className="mx-auto flex max-w-[1200px] animate-rise-in flex-col gap-5 px-4 pb-16 pt-5 md:px-8 md:pt-8">
           <Outlet />
         </main>

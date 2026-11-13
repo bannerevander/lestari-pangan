@@ -250,7 +250,7 @@ Kolom `id`, `code`, `created_at` ada di semua tabel dan tidak diulang.
 | `ledger_entries`, `programs` | Ringkasan lewat view publik; rincian: admin keuangan | Hanya lewat RPC admin atau webhook |
 | `audit_log` | Admin | Tidak ada (hanya ditulis RPC) |
 
-Storage: `offer-photos` (baca publik, tulis pemilik), `verification-docs` (privat, pemilik dan admin, URL bertanda tangan), `appreciation` (privat sampai disetujui).
+Storage: `offer-photos` (baca publik, tulis pemilik), `verification-docs` dan `issue-photos` (privat, pemilik dan admin ops, URL bertanda tangan), `appreciation` (privat sampai disetujui).
 
 ### 9.5 View untuk pembacaan
 

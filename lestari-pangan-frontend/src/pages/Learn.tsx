@@ -27,7 +27,6 @@ import {
   IconButton,
   inputCls,
   Notice,
-  PhotoUploadPlaceholder,
   PolicyNote,
   QtyStepper,
   Segmented,
@@ -488,10 +487,6 @@ export function ChallengeProgress() {
             </div>
           )}
         </section>
-        <div className="flex flex-col gap-1.5">
-          <p className="text-label">Bukti kondisi <span className="font-normal text-ink-secondary">(opsional)</span></p>
-          <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Cukup foto kemasan atau tempat penyimpanan. Foto wajah tidak diperlukan." />
-        </div>
         <StageList
           label="Status pemeriksaan"
           current={entry?.status === 'Lolos' ? 3 : done >= c.target ? 1 : 0}

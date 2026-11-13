@@ -241,6 +241,20 @@ export function Programs() {
 
 /* ---------- AD21 Laporan terbuka ---------- */
 
+/** Buku kas sebagai CSV (UTF-8 dengan BOM agar Excel membaca huruf Indonesia dengan benar). */
+function downloadLedgerCsv(txns: Txn[]) {
+  const cell = (v: string | number | undefined) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const rows = [
+    ['Kode', 'Tanggal', 'Jenis', 'Tujuan', 'Sumber', 'Jumlah (Rp)', 'Barang', 'Terkait', 'Status'],
+    ...txns.map((t) => [t.id, t.date, t.kind, t.purpose, t.source, t.kind === 'Barang' ? '' : t.amount, t.goods, t.linked, t.status]),
+  ]
+  const csv = '\ufeff' + rows.map((r) => r.map(cell).join(',')).join('\r\n')
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+  const a = Object.assign(document.createElement('a'), { href: url, download: `buku-kas-lestari-pangan-${new Date().toISOString().slice(0, 10)}.csv` })
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function Reports() {
   const { data } = useAdmin()
   const [period, setPeriod] = useState('Semua periode')
@@ -255,8 +269,9 @@ export function Reports() {
         desc="Agregat dana dan dampak fisik untuk publik dan sponsor."
         actions={
           <>
-            <Button variant="secondary" className="min-h-11" icon={<DownloadSimple size={18} />} onClick={() => toast('Ekspor CSV belum tersedia.', 'info')}>Ekspor CSV</Button>
-            <Button className="min-h-11" onClick={() => toast('Pratinjau PDF belum tersedia.', 'info')}>Pratinjau PDF</Button>
+            <Button variant="secondary" className="min-h-11 print:hidden" icon={<DownloadSimple size={18} />} onClick={() => downloadLedgerCsv(data.txns)}>Ekspor CSV</Button>
+            {/* Dialog cetak browser punya pilihan "Simpan sebagai PDF"; menu admin disembunyikan lewat kelas print:. */}
+            <Button className="min-h-11 print:hidden" onClick={() => window.print()}>Cetak / simpan PDF</Button>
           </>
         }
       />

@@ -27,3 +27,6 @@ output/
 android-release/
 *.keystore
 *.jks
+
+# Hasil mentah ChatGPT (PNG besar); hanya versi WebP jadi yang di-commit
+assets/_mentah/

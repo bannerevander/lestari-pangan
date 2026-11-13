@@ -19,7 +19,7 @@ Prinsip utama: **front end dianggap tidak tepercaya.** Semua aturan (hak akses, 
 | Riwayat tidak bisa dipalsukan | `audit_log`, `transfer_events`, `record_movements`, `issue_events`, `ledger_entries` dilindungi trigger append-only. | `security.test.sql` #8 |
 | Integritas data | Reservasi atomik, idempotensi `client_id`, `UNIQUE(provider_ref)`, constraint `CHECK` stok/kuota/saldo. | AT-01, AT-02, AT-07, AT-09 |
 | Admin tidak bisa dibuat dari aplikasi | `identity_complete_onboarding` menolak peran `admin`; admin dibuat manual (§4). Setiap aksi admin tercatat di `audit_log`. | `security.test.sql` #12 |
-| Berkas | Bucket `verification-docs` privat (pemilik + admin ops), `offer-photos` publik-baca. Batas ukuran dan jenis berkas ditegakkan server (5 MB PDF/JPG/PNG; 2 MB JPG/PNG/WebP). Pengguna hanya bisa mengunggah ke folder `<uid>/` miliknya; nama asli berkas tidak disimpan. | `security.test.sql` #9 |
+| Berkas | Bucket `verification-docs` dan `issue-photos` privat (pemilik + admin ops, tautan bertanda tangan 5 menit), `offer-photos` publik-baca. Foto diperkecil di perangkat (≤ 1280 px, JPEG) sehingga EXIF termasuk lokasi GPS ikut terbuang sebelum diunggah. Batas ukuran dan jenis berkas ditegakkan server (5 MB PDF/JPG/PNG; 2 MB JPG/PNG/WebP). Pengguna hanya bisa mengunggah ke folder `<uid>/` miliknya; nama asli berkas tidak disimpan. | `security.test.sql` #9 |
 
 Peringatan Supabase advisor "SECURITY DEFINER dapat dipanggil pengguna login" untuk RPC `public.*` **disengaja**: itulah satu-satunya jalur tulis.
 

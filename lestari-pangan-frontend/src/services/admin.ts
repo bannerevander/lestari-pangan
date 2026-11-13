@@ -50,10 +50,10 @@ export async function loadAdminData(): Promise<AdminData> {
       q<{ id: number; profile_id: number; doc_path: string; status: string; created_at: string }>(
         db.from('verifications').select('id, profile_id, doc_path, status, created_at').order('created_at', { ascending: false }).limit(LIMIT),
       ),
-      q<{ code: string; category: string; description: string; priority: string; status: string; resolution: string | null; created_at: string; reporter: { org_name: string; role: string } | null; transfer: { code: string; offer: { name: string } | null; donor: Name; recipient: Name } | null; events: { label: string; at: string; note: string | null }[] }>(
+      q<{ code: string; category: string; description: string; priority: string; status: string; resolution: string | null; photo_path: string | null; created_at: string; reporter: { org_name: string; role: string } | null; transfer: { code: string; offer: { name: string } | null; donor: Name; recipient: Name } | null; events: { label: string; at: string; note: string | null }[] }>(
         db
           .from('issues')
-          .select('code, category, description, priority, status, resolution, created_at, reporter:profiles!issues_reporter_id_fkey(org_name, role), transfer:transfers!issues_transfer_id_fkey(code, offer:offers!transfers_offer_id_fkey(name), donor:profiles!transfers_donor_id_fkey(org_name), recipient:profiles!transfers_recipient_id_fkey(org_name)), events:issue_events(label, at, note)')
+          .select('code, category, description, priority, status, resolution, photo_path, created_at, reporter:profiles!issues_reporter_id_fkey(org_name, role), transfer:transfers!issues_transfer_id_fkey(code, offer:offers!transfers_offer_id_fkey(name), donor:profiles!transfers_donor_id_fkey(org_name), recipient:profiles!transfers_recipient_id_fkey(org_name)), events:issue_events(label, at, note)')
           .order('created_at', { ascending: false })
           .limit(LIMIT),
       ),
@@ -258,6 +258,7 @@ export async function loadAdminData(): Promise<AdminData> {
         priority: i.priority as 'Tinggi' | 'Sedang' | 'Rendah',
         status: i.status === 'Dikirim' ? 'Menunggu peninjauan' : i.status,
         resolution: i.resolution ?? undefined,
+        photoPath: i.photo_path ?? undefined,
         timeline: [...i.events].sort((a, b) => a.at.localeCompare(b.at)).map((e) => ({ title: `${timeOf(e.at)} · ${e.label}`, detail: e.note ?? '' })),
       }
     }),
@@ -380,6 +381,13 @@ export async function loadAdminData(): Promise<AdminData> {
     tickets: tickets.map((t) => ({ ...toTicket(t), dbId: t.id, org: t.profile?.org_name ?? '—' })),
     materials: materials.map((m) => ({ id: m.id, profileId: m.profile_id, org: profileById.get(m.profile_id)?.org_name ?? '—', version: m.version, caption: m.caption, status: m.status, note: m.note ?? undefined })),
   }
+}
+
+/** Tautan sementara (5 menit) untuk foto kondisi pada laporan kendala (bucket privat issue-photos). */
+export async function issuePhotoUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from('issue-photos').createSignedUrl(path, 300)
+  if (error) throw toAppError(error)
+  return data.signedUrl
 }
 
 /** Tautan sementara (5 menit) untuk membuka berkas verifikasi privat. */

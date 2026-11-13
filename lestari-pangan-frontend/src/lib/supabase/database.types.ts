@@ -514,6 +514,7 @@ export type Database = {
           created_at: string
           description: string
           id: number
+          photo_path: string | null
           priority: string
           reporter_id: number
           resolution: string | null
@@ -527,6 +528,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: never
+          photo_path?: string | null
           priority?: string
           reporter_id: number
           resolution?: string | null
@@ -540,6 +542,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: never
+          photo_path?: string | null
           priority?: string
           reporter_id?: number
           resolution?: string | null
@@ -3239,6 +3242,7 @@ export type Database = {
           p_category: string
           p_client_id: string
           p_description: string
+          p_photo_path?: string
           p_transfer_id: number
         }
         Returns: {

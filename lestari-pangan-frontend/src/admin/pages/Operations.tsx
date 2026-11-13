@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, CheckCircle, FilePdf, MagnifyingGlass, MapPin, Phone, ShieldCheck, Truck, Warning } from '@phosphor-icons/react'
 import { Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, Segmented, StageList, Toaster, toast } from '../../components/ui'
@@ -8,7 +8,7 @@ import type { Chain } from '../data'
 import { messageOf } from '../../lib/supabase/errors'
 import { demoSignIn, isDemoEmail, sendEmailOtp, signInWithPassword, signOut, verifyEmailOtp } from '../../services/auth'
 import { fetchMyProfile } from '../../services/identity'
-import { verificationDocUrl } from '../../services/admin'
+import { issuePhotoUrl, verificationDocUrl } from '../../services/admin'
 import { assignCourier, verifyReceipt } from '../../services/adminActions'
 import { DecisionPanel, Filters, PageHeader, Panel, rp, Stat, Status, Table, td } from '../ui'
 
@@ -492,6 +492,28 @@ export function Issues() {
 
 /* ---------- AD08 Penanganan masalah ---------- */
 
+/** Foto kondisi dari pelapor; tautan sementara 5 menit dari bucket privat, dimuat saat kasus dibuka. */
+function IssuePhoto({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    issuePhotoUrl(path).then(setUrl, () => setFailed(true))
+  }, [path])
+  if (failed) return <p className="mt-3 text-meta text-ink-secondary">Foto kondisi tidak bisa dimuat. Muat ulang halaman.</p>
+  return (
+    <figure className="mt-3">
+      {url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img src={url} alt="Foto kondisi dari pelapor" className="max-h-80 w-full rounded-control border border-line object-contain bg-page" />
+        </a>
+      ) : (
+        <div className="h-40 animate-pulse rounded-control bg-page" aria-label="Memuat foto kondisi" />
+      )}
+      <figcaption className="mt-1 text-caption text-ink-secondary">Foto kondisi dari pelapor · klik untuk ukuran penuh</figcaption>
+    </figure>
+  )
+}
+
 export function IssueDetail() {
   const { id } = useParams()
   const { data } = useAdmin()
@@ -505,6 +527,7 @@ export function IssueDetail() {
         <div className="flex min-w-0 flex-col gap-4">
           <Panel title="Ringkasan kasus" desc={`Terkait ${i.transferId}`} actions={<Link to={`/admin/penyaluran/${i.transferId}`} className="inline-flex min-h-10 items-center gap-1 text-[0.875rem] font-semibold text-primary hover:underline">Buka rantai <ArrowRight size={14} weight="bold" aria-hidden="true" /></Link>}>
             <p className="text-body">{i.summary}</p>
+            {i.photoPath && <IssuePhoto path={i.photoPath} />}
             {i.resolution && <p className="mt-3 rounded-control bg-page p-3 text-meta"><span className="font-semibold">Resolusi:</span> {i.resolution}</p>}
             {i.id === 'ISS-8821-01' && (
               <dl className="mt-4 grid grid-cols-3 gap-2 text-center">

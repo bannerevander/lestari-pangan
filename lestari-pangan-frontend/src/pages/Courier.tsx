@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CaretRight, Flag, Gear, LockSimple, MapPin, NavigationArrow, Phone, ShieldCheck } from '@phosphor-icons/react'
-import { AppBar, Badge, Button, ButtonLink, Field, inputCls, Notice, PhotoUploadPlaceholder, PolicyNote, QtyStepper, RadioCard, Segmented, StatePanel, StickyFooter, toast, type Tone } from '../components/ui'
+import { AppBar, Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, QtyStepper, RadioCard, Segmented, StatePanel, StickyFooter, toast, type Tone } from '../components/ui'
 import { useApp, type CourierTask } from '../state/AppState'
 import { useCommand } from '../state/useCommand'
 import { useLiveData } from '../state/LiveData'
 import { messageOf } from '../lib/supabase/errors'
-import { reportIssue } from '../services/issues'
+import { reportIssue, uploadIssuePhoto } from '../services/issues'
+import { PhotoPicker } from '../components/PhotoPicker'
 import { NotAvailable } from '../components/NotAvailable'
 
 const tone = (s: CourierTask['status']): Tone => (s === 'Selesai' ? 'success' : s === 'Dalam perjalanan' ? 'info' : s === 'Gagal' ? 'danger' : 'warning')
@@ -221,8 +222,27 @@ export function TaskIssue() {
   const t = state.tasks.find((x) => x.id === id)
   const [cat, setCat] = useState('')
   const [desc, setDesc] = useState('')
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPath, setPhotoPath] = useState<{ file: File; path: string } | null>(null) // kirim ulang tidak mengunggah dua kali
   const [busy, setBusy] = useState(false)
   if (!t) return <NotAvailable />
+  const send = async () => {
+    setBusy(true)
+    try {
+      let path = photo && photoPath?.file === photo ? photoPath.path : undefined
+      if (photo && !path) {
+        path = await uploadIssuePhoto(photo)
+        setPhotoPath({ file: photo, path })
+      }
+      const code = await reportIssue(clientId, t.transferId, cat, `[${t.id}] ${desc.trim()}`, path)
+      await refresh()
+      toast('Laporan kendala terkirim ke tim operasional.')
+      navigate(`/masalah/${code}`, { replace: true })
+    } catch (err) {
+      toast(messageOf(err), 'info')
+      setBusy(false)
+    }
+  }
   const ready = cat && desc.trim().length >= 10
   return (
     <>
@@ -237,7 +257,7 @@ export function TaskIssue() {
           <Field label="Kronologi singkat" hint="Minimal 10 karakter. Tulis jumlah dan kondisi.">
             {(p) => <textarea {...p} rows={4} className={inputCls} value={desc} onChange={(e) => setDesc(e.target.value)} />}
           </Field>
-          <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Hanya foto kondisi wadah atau makanan." />
+          <PhotoPicker file={photo} onChange={setPhoto} label="Foto kondisi" hint="Hanya foto kondisi wadah atau makanan." />
         </section>
       </main>
       <StickyFooter>
@@ -245,19 +265,7 @@ export function TaskIssue() {
           block
           disabled={!ready}
           loading={busy}
-          onClick={() => {
-            setBusy(true)
-            reportIssue(clientId, t.transferId, cat, `[${t.id}] ${desc.trim()}`)
-              .then(async (code) => {
-                await refresh()
-                toast('Laporan kendala terkirim ke tim operasional.')
-                navigate(`/masalah/${code}`, { replace: true })
-              })
-              .catch((err) => {
-                toast(messageOf(err), 'info')
-                setBusy(false)
-              })
-          }}
+          onClick={send}
         >
           Kirim laporan kendala
         </Button>

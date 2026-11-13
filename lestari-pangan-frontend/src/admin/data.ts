@@ -37,6 +37,8 @@ export interface Issue {
   priority: 'Tinggi' | 'Sedang' | 'Rendah'
   status: string
   resolution?: string
+  /** Foto kondisi dari pelapor (bucket privat); dibuka lewat tautan sementara. */
+  photoPath?: string
   timeline?: { title: string; detail: string }[]
 }
 

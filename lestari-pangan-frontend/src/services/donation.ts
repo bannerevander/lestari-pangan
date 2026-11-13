@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase/client'
 import { toAppError } from '../lib/supabase/errors'
+import { uploadPhoto } from './photos'
 import { rpc } from '../lib/supabase/rpc'
 import type { FoodRequest, Offer } from '../data/types'
 import { idFromCode, OFFER_SELECT, REQUEST_SELECT, toOffer, toRequest, type OfferRow, type RequestRow } from './mappers'
@@ -42,7 +43,12 @@ export interface PublishOfferInput {
   recordCode?: string
   /** Batas jumlah per penerima; kosong = tanpa batas. */
   maxPerRecipient?: number
+  /** Path hasil uploadOfferPhoto; kosong = tanpa foto. */
+  photoPath?: string
 }
+
+/** Unggah foto penawaran (bucket publik); mengembalikan path untuk publishOffer. */
+export const uploadOfferPhoto = (file: File) => uploadPhoto('offer-photos', file)
 
 export const publishOffer = (i: PublishOfferInput) =>
   rpc('donation_publish_offer', {
@@ -63,6 +69,7 @@ export const publishOffer = (i: PublishOfferInput) =>
     p_description: i.description,
     p_record_id: i.recordCode ? idFromCode(i.recordCode) : undefined,
     p_max_per_recipient: i.maxPerRecipient,
+    p_photo_path: i.photoPath,
   })
 
 export const updateOffer = (code: string, c: { pickupStart: Date; pickupEnd: Date; available: number; storage?: string; description?: string; reason?: string }) =>

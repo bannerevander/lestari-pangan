@@ -1,5 +1,11 @@
 export type Role = 'pemberi' | 'penerima'
 
+export interface Contact {
+  pic: string
+  phone: string
+  address: string
+}
+
 export type FoodCategory = 'Makanan matang' | 'Bahan pangan' | 'Produk kemasan'
 
 export type Unit = 'porsi' | 'kg' | 'kemasan' | 'bungkus' | 'unit'
@@ -86,7 +92,10 @@ export interface Transfer {
   /** Area umum penawaran dan alamat lengkap pemberi (hanya untuk pihak penyaluran). */
   area?: string
   donorAddress?: string
+  /** Kontak koordinasi pihak penyaluran; terbaca hanya oleh pihak terkait (RLS). */
+  donorContact?: Contact
   recipientName: string
+  recipientContact?: Contact
   agreed: number
   handedOver?: number
   received?: number

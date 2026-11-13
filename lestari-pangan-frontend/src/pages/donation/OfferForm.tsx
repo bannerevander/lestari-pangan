@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Camera, Check } from '@phosphor-icons/react'
+import { Check } from '@phosphor-icons/react'
 import { AppBar, BottomSheet, Button, Chip, Field, inputCls, Notice, StickyFooter, toast } from '../../components/ui'
 import { useApp } from '../../state/AppState'
 import type { FoodCategory, Offer, Unit } from '../../data/types'
 import { isoToLabel, timeLabel } from '../../lib/format'
 import { messageOf } from '../../lib/supabase/errors'
-import { publishOffer } from '../../services/donation'
+import { publishOffer, uploadOfferPhoto } from '../../services/donation'
 import { useLiveData } from '../../state/LiveData'
 import { useProfile } from '../../state/useProfile'
 import { AreaField } from '../../components/AreaField'
+import { PhotoPicker } from '../../components/PhotoPicker'
 
 /** D02 Form penawaran tiga langkah (design.md §11.1). */
 
@@ -81,11 +82,22 @@ export default function OfferForm() {
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  // Path foto yang sudah terunggah untuk berkas ini: kirim ulang setelah gagal tidak mengunggah dua kali.
+  const uploaded = useRef<{ file: File; path: string } | null>(null)
   const [clientId] = useState(() => crypto.randomUUID()) // kirim ulang tidak membuat penawaran ganda
   const { refresh } = useLiveData()
   const [leaving, setLeaving] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const dirty = JSON.stringify(d) !== JSON.stringify(base)
+  const dirty = JSON.stringify(d) !== JSON.stringify(base) || !!photo
+
+  useEffect(() => {
+    if (!photo) return setPhotoPreview(null)
+    const url = URL.createObjectURL(photo)
+    setPhotoPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [photo])
 
   useEffect(() => {
     headingRef.current?.focus()
@@ -143,6 +155,7 @@ export default function OfferForm() {
   const publish = async () => {
     setSubmitting(true)
     try {
+      if (photo && uploaded.current?.file !== photo) uploaded.current = { file: photo, path: await uploadOfferPhoto(photo) }
       await publishOffer({
         clientId,
         name: d.name.trim(),
@@ -161,6 +174,7 @@ export default function OfferForm() {
         description: [d.description.trim(), d.instructions.trim() && `Petunjuk pengambilan: ${d.instructions.trim()}`].filter(Boolean).join('. ') || undefined,
         recordCode: fromRecord?.id,
         maxPerRecipient: d.limitOn ? Number(d.limit.replace(',', '.')) : undefined,
+        photoPath: photo ? uploaded.current?.path : undefined,
       })
       await refresh()
       navigate('/donasi', { replace: true })
@@ -259,13 +273,7 @@ export default function OfferForm() {
               <input type="checkbox" checked={d.estimate} onChange={(e) => set('estimate', e.target.checked)} className="h-5 w-5 accent-primary" />
               <span>Jumlah ini perkiraan</span>
             </label>
-            <div className="flex min-h-[96px] items-center gap-3 rounded-control border border-dashed border-line-control bg-surface p-4">
-              <Camera size={28} aria-hidden="true" className="text-primary" />
-              <div className="flex-1">
-                <p className="font-semibold">Foto pangan (opsional)</p>
-                <p className="text-meta text-ink-secondary">Unggah foto belum tersedia.</p>
-              </div>
-            </div>
+            <PhotoPicker file={photo} onChange={setPhoto} hint="Foto nyata membantu penerima mengenali pangan. Hindari wajah dan dokumen." />
             <Field label="Penyimpanan saat ini" error={errors.storage}>
               {(p) => <input {...p} className={inputCls} value={d.storage} onChange={(e) => set('storage', e.target.value)} placeholder="Contoh: Kulkas, wadah tertutup" />}
             </Field>
@@ -362,11 +370,13 @@ export default function OfferForm() {
         {step === 2 && (
           <>
             <Notice tone="info">Periksa kembali detail sebelum penawaran terlihat oleh penerima di sekitar Anda.</Notice>
+            {photoPreview && <img src={photoPreview} alt={`Foto ${d.name}`} className="aspect-[16/9] w-full rounded-card border border-line object-cover" />}
             <Review title="Pangan" onEdit={() => setStep(0)} rows={[
               ['Nama', d.name],
               ['Kategori', d.category],
               ['Jumlah', `${d.quantity} ${d.unit}${d.estimate ? ' (perkiraan)' : ''}`],
               ['Penyimpanan', d.storage],
+              ['Foto', photo ? 'Terlampir' : 'Tanpa foto'],
               ['Bahan/alergen', d.allergensKnown === 'ya' ? d.allergens : 'Belum diketahui oleh pemberi'],
             ]} />
             <Review title="Penyaluran" onEdit={() => setStep(1)} rows={[
@@ -375,7 +385,7 @@ export default function OfferForm() {
               ['Alamat lengkap', 'Terkunci sampai ada kesepakatan dengan penerima'],
               ['Cara', d.methods.join(', ')],
               ['Batas per penerima', d.limitOn ? `${d.limit} ${d.unit}` : 'Tanpa batas'],
-              ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Mitra pengiriman: biaya belum tersedia' : 'Tanpa biaya pengiriman dari platform'],
+              ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Mitra pengiriman: ongkir dibayar langsung ke kurir' : 'Tanpa biaya pengiriman dari platform'],
             ]} />
             <label className={`flex items-start gap-3 rounded-card border p-4 ${declareError ? 'border-danger bg-danger-container' : 'border-primary/30 bg-primary-container'}`}>
               <input type="checkbox" checked={declared} onChange={(e) => { setDeclared(e.target.checked); setDeclareError(false) }} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" aria-describedby="declare-err" />

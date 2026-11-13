@@ -3,6 +3,7 @@ import { toAppError } from '../lib/supabase/errors'
 import { rpc } from '../lib/supabase/rpc'
 import type { Issue, Role } from '../data/types'
 import { idFromCode, stampLabel } from './mappers'
+import { uploadPhoto } from './photos'
 
 /** Modul issues: laporan kendala dan keberatan (RPC issues_*). */
 
@@ -39,8 +40,11 @@ export async function loadIssues(): Promise<Issue[]> {
   }))
 }
 
+/** Unggah foto kondisi (bucket privat: hanya pelapor dan admin ops); mengembalikan path untuk reportIssue. */
+export const uploadIssuePhoto = (file: File) => uploadPhoto('issue-photos', file)
+
 /** Mengembalikan kode laporan baru (mis. "ISS-12"). */
-export const reportIssue = async (clientId: string, transferCode: string, category: string, description: string) =>
-  (await rpc<{ code: string }>('issues_report', { p_client_id: clientId, p_transfer_id: idFromCode(transferCode), p_category: category, p_description: description }))!.code
+export const reportIssue = async (clientId: string, transferCode: string, category: string, description: string, photoPath?: string) =>
+  (await rpc<{ code: string }>('issues_report', { p_client_id: clientId, p_transfer_id: idFromCode(transferCode), p_category: category, p_description: description, p_photo_path: photoPath }))!.code
 
 export const objectIssue = (code: string, note: string) => rpc('issues_object', { p_id: idFromCode(code), p_note: note })

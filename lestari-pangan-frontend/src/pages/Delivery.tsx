@@ -14,7 +14,7 @@ import { NotAvailable } from '../components/NotAvailable'
 const METHODS: { value: Transfer['method']; icon: typeof Truck; title: string; desc: string; cost: string; available: boolean }[] = [
   { value: 'Ambil sendiri', icon: HandArrowDown, title: 'Ambil sendiri oleh penerima', desc: 'Relawan penerima datang ke titik temu dengan wadah atau tas higienis.', cost: 'Rp0', available: true },
   { value: 'Antar pemberi', icon: Bicycle, title: 'Diantar pemberi', desc: 'Pemberi mengantar sendiri bila jaraknya dekat.', cost: 'Rp0 (sukarela)', available: true },
-  { value: 'Mitra pengiriman', icon: Truck, title: 'Mitra pengiriman', desc: 'Kurir relawan atau mitra bila ada alokasi sponsor.', cost: 'Belum tersedia', available: false },
+  { value: 'Mitra pengiriman', icon: Truck, title: 'Mitra pengiriman', desc: 'Tim operasional menugaskan kurir relawan atau mitra.', cost: 'Ongkir dibayar langsung ke mitra', available: true },
 ]
 
 export function MethodPage() {
@@ -188,7 +188,7 @@ export function DeliveryStatus() {
           <p className="text-meta text-ink-secondary">{t.agreed} {t.unit} · {t.date}, {t.timeStart}–{t.timeEnd} WIB</p>
           <dl className="mt-3 grid grid-cols-2 gap-2 text-meta">
             <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Harga pangan</dt><dd className="font-semibold">Rp0</dd></div>
-            <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Biaya pengiriman</dt><dd className="font-semibold">{t.method === 'Mitra pengiriman' ? 'Belum tersedia' : 'Rp0'}</dd></div>
+            <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Biaya pengiriman</dt><dd className="font-semibold">{t.method === 'Mitra pengiriman' ? 'Dibayar ke mitra' : 'Rp0'}</dd></div>
           </dl>
         </section>
         <section className="card p-4">

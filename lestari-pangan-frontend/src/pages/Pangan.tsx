@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowDown, ArrowRight, ArrowUp, CalendarBlank, PencilSimple, Plus, Truck } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { AppBar, Badge, Button, ButtonLink, Chip, CountUp, Field, inputCls, PolicyNote, QtyStepper, RadioCard, StatePanel, StatusBadge, StickyFooter, PhotoUploadPlaceholder, ChipRow, toast } from '../components/ui'
+import { AppBar, Badge, Button, ButtonLink, Chip, CountUp, Field, inputCls, PolicyNote, QtyStepper, RadioCard, StatePanel, StatusBadge, StickyFooter, ChipRow, toast } from '../components/ui'
 import { NotAvailable } from '../components/NotAvailable'
 import { useApp } from '../state/AppState'
 import { useCommand } from '../state/useCommand'
@@ -198,10 +198,6 @@ export function RecordForm() {
               </select>
             )}
           </Field>
-          <div className="flex flex-col gap-1.5">
-            <p className="text-label">Foto <span className="font-normal text-ink-secondary">(opsional)</span></p>
-            <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Foto tidak wajib; nanti membantu mengenali stok." />
-          </div>
         </section>
       </main>
       <StickyFooter>

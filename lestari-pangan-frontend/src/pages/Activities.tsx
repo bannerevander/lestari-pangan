@@ -2,13 +2,14 @@ import { useId, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
-import { AppBar, Badge, BottomSheet, Button, ButtonLink, Chip, Field, inputCls, MenuRow, Notice, PartiesRow, PhotoUploadPlaceholder, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter, ChipRow, toast } from '../components/ui'
+import { AppBar, Badge, BottomSheet, Button, ButtonLink, Chip, Field, inputCls, MenuRow, Notice, PartiesRow, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter, ChipRow, toast } from '../components/ui'
 import { FoodPhoto } from '../components/FoodPhoto'
 import { useApp } from '../state/AppState'
 import { useCommand } from '../state/useCommand'
 import { useLiveData } from '../state/LiveData'
 import { messageOf } from '../lib/supabase/errors'
-import { reportIssue } from '../services/issues'
+import { reportIssue, uploadIssuePhoto } from '../services/issues'
+import { PhotoPicker } from '../components/PhotoPicker'
 import { useProfile } from '../state/useProfile'
 import { NotAvailable } from '../components/NotAvailable'
 import type { Transfer } from '../data/types'
@@ -485,7 +486,6 @@ export function Handover() {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 text-label">Cara pencatatan</legend>
           <RadioCard name="bukti" checked onChange={() => {}} title="Diperiksa bersama di lokasi" description="Kedua pihak melihat jumlah dan kondisi pangan saat serah terima." />
-          <p className="text-caption text-ink-secondary">Kode atau tanda tangan digital belum tersedia.</p>
         </fieldset>
 
         <Notice tone="info">Penyerahan belum berarti diterima. {t.recipientName} akan mengonfirmasi jumlah yang diterima, dan selisih tidak dikenai sanksi.</Notice>
@@ -791,20 +791,6 @@ export function Notifications() {
 
 /* ---------- L08 / L10 ---------- */
 
-export function Coordination() {
-  const { id } = useParams()
-  return (
-    <>
-      <AppBar title="Koordinasi" />
-      <main className="p-4">
-        <StatePanel icon={<ChatCircleText size={40} className="text-primary" />} title="Koordinasi segera hadir" action={<ButtonLink to={`/aktivitas/${id}`} variant="secondary">Kembali ke penyaluran</ButtonLink>}>
-          Bentuk koordinasi (chat atau kontak terbatas) masih menunggu keputusan OD-09.
-        </StatePanel>
-      </main>
-    </>
-  )
-}
-
 const ISSUE_CATEGORIES = [
   ['Kondisi pangan tidak sesuai', 'Kemasan rusak, kuah tumpah, atau tidak layak konsumsi.'],
   ['Jumlah berbeda', 'Jumlah fisik berbeda dari yang disepakati.'],
@@ -822,11 +808,18 @@ export function ReportIssue() {
   const t = state.transfers.find((x) => x.id === id)
   const [cat, setCat] = useState('')
   const [desc, setDesc] = useState('')
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPath, setPhotoPath] = useState<{ file: File; path: string } | null>(null) // kirim ulang tidak mengunggah dua kali
   const [busy, setBusy] = useState(false)
   const send = async () => {
     setBusy(true)
     try {
-      const code = await reportIssue(clientId, id ?? '', cat, desc.trim())
+      let path = photo && photoPath?.file === photo ? photoPath.path : undefined
+      if (photo && !path) {
+        path = await uploadIssuePhoto(photo)
+        setPhotoPath({ file: photo, path })
+      }
+      const code = await reportIssue(clientId, id ?? '', cat, desc.trim(), path)
       await refresh()
       toast('Laporan terkirim. Tim meninjau dalam 60 menit.')
       navigate(`/masalah/${code}`, { replace: true })
@@ -855,10 +848,7 @@ export function ReportIssue() {
               <Field label="Ceritakan yang terjadi" hint="Tulis fakta di lapangan: jumlah, waktu, dan kondisi.">
                 {(p) => <textarea {...p} rows={4} className={inputCls} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Contoh: 2 kotak kemasan rusak saat diambil, 10 porsi lain dalam kondisi baik." />}
               </Field>
-              <div className="flex flex-col gap-1.5">
-                <p className="text-label">Foto kondisi <span className="font-normal text-ink-secondary">(opsional)</span></p>
-                <PhotoUploadPlaceholder label="Unggah foto belum tersedia" hint="Nanti cukup foto kemasan atau pangan. Foto wajah tidak diperlukan." />
-              </div>
+              <PhotoPicker file={photo} onChange={setPhoto} label="Foto kondisi" hint="Cukup foto kemasan atau pangan. Hanya Anda dan tim operasional yang bisa melihat." />
             </section>
             <PolicyNote title="Pelaporan tanpa hukuman">
               Laporan kendala dipakai untuk memperbaiki koordinasi, bukan untuk menghukum siapa pun.
