@@ -35,7 +35,38 @@ const cors = (origin: string | null) => ({
   Vary: 'Origin',
 })
 
-/** PCM 16-bit mono dari Gemini → berkas WAV yang bisa diputar langsung oleh browser. */
+/**
+ * Ambil sampel PCM 16-bit dari jawaban Gemini. Model 2.5 mengirim PCM mentah, model 3.x mengirim WAV utuh
+ * (header + metadata penanda AI di belakang). Bila WAV ikut dibungkus ulang, header dan metadata itu terputar
+ * sebagai bunyi "pletok" di awal dan akhir potongan (terukur 13 Nov 2026), jadi hanya chunk "data" yang diambil.
+ */
+function pcmOf(bytes: Uint8Array, mimeRate: number): { pcm: Uint8Array; rate: number } {
+  const tag = (o: number) => String.fromCharCode(...bytes.subarray(o, o + 4))
+  if (bytes.length < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') return { pcm: bytes, rate: mimeRate }
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  let rate = mimeRate
+  for (let o = 12; o + 8 <= bytes.length; ) {
+    const size = v.getUint32(o + 4, true)
+    if (tag(o) === 'fmt ') rate = v.getUint32(o + 12, true)
+    if (tag(o) === 'data') return { pcm: bytes.slice(o + 8, Math.min(o + 8 + size, bytes.length)), rate }
+    o += 8 + size + (size % 2)
+  }
+  return { pcm: new Uint8Array(0), rate }
+}
+
+/** Naik/turun volume 8 ms di awal dan akhir agar sambungan antarpotongan tidak meletup. */
+function fade(pcm: Uint8Array, rate: number): Uint8Array {
+  const s = new Int16Array(pcm.buffer, pcm.byteOffset, Math.floor(pcm.byteLength / 2))
+  const n = Math.min(Math.floor(rate * 0.008), Math.floor(s.length / 2))
+  for (let i = 0; i < n; i++) {
+    const g = i / n
+    s[i] = Math.round(s[i] * g)
+    s[s.length - 1 - i] = Math.round(s[s.length - 1 - i] * g)
+  }
+  return pcm
+}
+
+/** PCM 16-bit mono → berkas WAV yang bisa diputar langsung oleh browser. */
 function wav(pcm: Uint8Array, rate: number): ArrayBuffer {
   const out = new Uint8Array(44 + pcm.length)
   const v = new DataView(out.buffer)
@@ -112,11 +143,12 @@ Deno.serve(async (req) => {
     const data = await res.json()
     const part = data.candidates?.[0]?.content?.parts?.find((p: { inlineData?: { data: string } }) => p.inlineData)
     if (!part) continue
-    const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType ?? '')?.[1] ?? 24000)
-    const pcm = Uint8Array.from(atob(part.inlineData.data), (c) => c.charCodeAt(0))
+    const bytes = Uint8Array.from(atob(part.inlineData.data), (c) => c.charCodeAt(0))
+    const { pcm, rate } = pcmOf(bytes, Number(/rate=(\d+)/.exec(part.inlineData.mimeType ?? '')?.[1] ?? 24000))
+    if (pcm.length < 1000) continue
     console.log('tts', model, VOICE, `kunci#${k + 1}`, `${Date.now() - t0} ms`, `${text.length} huruf`)
     // octet-stream: supabase-js mengembalikan Blob apa adanya; klien menandainya audio/wav.
-    return new Response(wav(pcm, rate), { headers: { ...headers, 'Content-Type': 'application/octet-stream' } })
+    return new Response(wav(fade(pcm, rate), rate), { headers: { ...headers, 'Content-Type': 'application/octet-stream' } })
   }
   return reply(503, { error: 'AI_SIBUK' })
 })
