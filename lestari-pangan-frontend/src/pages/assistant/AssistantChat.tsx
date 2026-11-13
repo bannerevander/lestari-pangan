@@ -7,7 +7,7 @@ import { useProfile } from '../../state/useProfile'
 import { messageOf } from '../../lib/supabase/errors'
 import { asset } from '../../lib/format'
 import { askAssistant, type ChatTurn } from '../../services/assistant'
-import { canListen, canSpeak, createSpeaker, indonesianVoice, listen, speak, type Speaker } from './speech'
+import { canListen, canSpeak, createSpeaker, forSpeech, indonesianVoice, listen, SCREEN_HINT, speak, unlockAudio, type Speaker } from './speech'
 import { MessageText } from './MessageText'
 import { AssistantBubble } from './AssistantBubble'
 
@@ -34,6 +34,12 @@ const PHASE_LABEL: Record<Phase, string> = {
   speaking: 'Asisten berbicara. Ketuk untuk menyela.',
 }
 
+/** Teks yang dibacakan di mode suara: pembuka saja bila jawaban berisi daftar, lalu arahkan ke layar. */
+const spoken = (reply: string) => {
+  const v = forSpeech(reply)
+  return v.cut ? `${v.text}\n${SCREEN_HINT}` : v.text
+}
+
 export function AssistantChat() {
   const { state } = useApp()
   const profile = useProfile()
@@ -52,6 +58,8 @@ export function AssistantChat() {
   const [hint, setHint] = useState('')
   const [micDenied, setMicDenied] = useState(false)
   const [noIdVoice, setNoIdVoice] = useState(false)
+  /** true = suara Gemini gagal dan dipakai suara browser. */
+  const [fellBack, setFellBack] = useState(false)
   const [reading, setReading] = useState<number | null>(null)
 
   const turnsRef = useRef(turns)
@@ -118,10 +126,13 @@ export function AssistantChat() {
     let speaker: Speaker | null = null
     if (voiceRef.current) {
       setPhase('thinking')
-      speaker = createSpeaker(() => {
-        speakerRef.current = null
-        if (voiceRef.current) startListening()
-      })
+      speaker = createSpeaker(
+        () => {
+          speakerRef.current = null
+          if (voiceRef.current) startListening()
+        },
+        () => setFellBack(true),
+      )
       speakerRef.current = speaker
     }
     try {
@@ -132,17 +143,18 @@ export function AssistantChat() {
           partial = t
           setDraft(t)
           if (speaker && t) {
-            speaker.push(t)
+            speaker.push(forSpeech(t).text)
             setPhase((p) => (p === 'thinking' ? 'speaking' : p))
           }
         },
         ac.signal,
         () => setSlow(true),
+        voiceRef.current,
       )
       setTurns([...next, { role: 'assistant', text: reply, onTopic }])
       if (speaker && speakerRef.current === speaker) {
         setPhase('speaking')
-        speaker.finish(reply)
+        speaker.finish(spoken(reply))
       }
     } catch (e) {
       if (ac.signal.aborted) {
@@ -201,13 +213,18 @@ export function AssistantChat() {
   function speakReply(text: string) {
     stopAll()
     setPhase('speaking')
-    stopRef.current = speak(text, () => {
-      stopRef.current = null
-      if (voiceRef.current) startListening()
-    })
+    stopRef.current = speak(
+      spoken(text),
+      () => {
+        stopRef.current = null
+        if (voiceRef.current) startListening()
+      },
+      () => setFellBack(true),
+    )
   }
 
   function startVoice() {
+    unlockAudio()
     voiceRef.current = true
     setVoice(true)
     startListening()
@@ -221,6 +238,7 @@ export function AssistantChat() {
   }
 
   const tapOrb = () => {
+    unlockAudio()
     if (phase === 'listening') return stopRef.current?.() // berhenti mendengar → yang terdengar dikirim
     abortRef.current?.abort() // menyela: jawaban yang sedang dibuat dihentikan, lalu mendengarkan lagi
     startListening()
@@ -228,9 +246,10 @@ export function AssistantChat() {
 
   const readAloud = (i: number) => {
     if (reading === i) return stopAll()
+    unlockAudio()
     stopAll()
     setReading(i)
-    stopRef.current = speak(turns[i].text, () => setReading(null))
+    stopRef.current = speak(turns[i].text, () => setReading(null), () => setFellBack(true))
   }
 
   const lastReply = [...turns].reverse().find((t) => t.role === 'assistant')?.text
@@ -289,14 +308,14 @@ export function AssistantChat() {
               ))}
             </div>
             <p className="text-caption text-ink-secondary">
-              Pesan diproses Google Gemini. Ucapan diubah jadi teks oleh browser Anda. Riwayat obrolan hanya disimpan di perangkat ini. AI bisa keliru, jadi periksa sendiri kondisi pangan sebelum dikonsumsi.
+              Pesan dan suara asisten diproses Google Gemini. Ucapan Anda diubah jadi teks oleh browser. Riwayat obrolan hanya disimpan di perangkat ini. AI bisa keliru, jadi periksa sendiri kondisi pangan sebelum dikonsumsi.
             </p>
           </section>
         )}
 
         {!canListen && <Notice tone="info">Browser ini belum mendukung input suara. Pakai Chrome di Android untuk ngobrol dengan suara; mengetik tetap bisa.</Notice>}
         {micDenied && <Notice tone="warning" title="Izin mikrofon ditolak">Izinkan mikrofon di pengaturan browser, atau lanjutkan dengan mengetik.</Notice>}
-        {noIdVoice && (voice || reading !== null) && (
+        {noIdVoice && fellBack && (voice || reading !== null) && (
           <Notice tone="info" title="Suara Bahasa Indonesia belum tersedia">
             Bacaan bisa terdengar berlogat Inggris. Pakai Chrome atau Edge terbaru, atau tambahkan suara Bahasa Indonesia di pengaturan Ucapan (Speech) perangkat.
           </Notice>
@@ -382,7 +401,7 @@ export function AssistantChat() {
             </button>
             <p className="min-h-12 max-w-[36ch] text-center text-body text-ink">{heard || hint || (phase === 'listening' ? 'Contoh: “Ada nasi dan telur, masak apa?”' : '')}</p>
             <div className="grid w-full grid-cols-3 gap-2">
-              <Button variant="secondary" icon={<ArrowCounterClockwise size={18} />} disabled={!lastReply || busy} onClick={() => lastReply && speakReply(lastReply)}>
+              <Button variant="secondary" icon={<ArrowCounterClockwise size={18} />} disabled={!lastReply || busy} onClick={() => (unlockAudio(), lastReply && speakReply(lastReply))}>
                 Ulangi
               </Button>
               <Button variant="secondary" icon={<Keyboard size={18} />} onClick={() => (endVoice(), inputRef.current?.focus())}>

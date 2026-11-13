@@ -46,6 +46,8 @@ Tanpa Supabase CLI: buka **SQL Editor**, tempel seluruh isi satu berkas dari `te
 | `functions/demo-login` | Masuk instan akun uji juri (4 alamat `@example.com` tetap) saat memilih metode Kode verifikasi: membuat token sekali pakai dengan `auth.admin.generateLink`, klien menukarnya lewat `verifyOtp`. Tidak mengirim email. Hapus setelah penjurian. |
 | `functions/ai-chat` | Asisten Dapur AI (AR-21): validasi input, kuota lewat `ai_take_quota` atas nama pengguna, panggil Gemini dan alirkan jawaban (SSE: `{d}` potongan, `{reset}`, `{status:'padat'}`, `{done,onTopic,remaining}`, `{error}`) bila body berisi `stream: true`, hanya topik makanan. `verify_jwt` mati karena fungsi memeriksa sesi sendiri lewat RPC. |
 
+| `functions/ai-tts` | Suara Asisten Dapur (AR-24): teks ≤ 600 huruf → WAV lewat Gemini TTS, kuota `ai_take_tts_quota`, `fast: true` untuk kalimat pertama. Secret opsional: `GEMINI_TTS_MODEL`, `GEMINI_TTS_FAST_MODEL`, `GEMINI_TTS_VOICE` (bawaan Sulafat). |
+
 Secret yang wajib diisi di Dashboard → Edge Functions → Secrets: `GEMINI_API_KEY` (dari Google AI Studio); kunci tambahan boleh bernama `GEMINI_API_KEY_2`, dst. Opsional `GEMINI_MODEL`: daftar model dipisah koma (bawaan `gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash`). Log waktu tiap percobaan: Dashboard → Edge Functions → ai-chat → Logs. Deploy ulang: Supabase MCP `deploy_edge_function` atau `supabase functions deploy ai-chat --no-verify-jwt`.
 
 ## Akun admin

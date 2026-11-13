@@ -28,11 +28,13 @@ export async function askAssistant(
   onText: (text: string) => void,
   signal: AbortSignal,
   onBusy?: () => void,
+  /** true = mode suara: server meminta jawaban bergaya obrolan untuk didengar. */
+  voice = false,
 ): Promise<{ reply: string; onTopic: boolean }> {
   // Pasangan tanya-jawab yang ditolak (di luar topik) tidak ikut jadi konteks: AI cenderung meniru penolakan itu untuk pertanyaan berikutnya.
   const history = turns.filter((t, i) => t.onTopic !== false && !(t.role === 'user' && turns[i + 1]?.onTopic === false))
   const { data, error } = await supabase.functions.invoke<Response>('ai-chat', {
-    body: { messages: history.slice(-12).map(({ role, text }) => ({ role, text })), pantry, stream: true },
+    body: { messages: history.slice(-12).map(({ role, text }) => ({ role, text })), pantry, stream: true, voice },
     signal,
   })
   if (error) {
