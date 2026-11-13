@@ -21,6 +21,17 @@ Uji manual alur penuh aplikasi `lestari-pangan-frontend` (dev server lokal `loca
 | B-03 | **Diperbaiki** | Grafik "Aktivitas sepekan" dihitung dari tanggal penerimaan di riwayat, 7 hari terakhir (`lib/impact.ts` + tes `lib/impact.test.ts`); label "Oktober 2026" → "sejak bergabung" (Home, Dampak, Riwayat dampak); Beranda hanya menjumlah satuan porsi; petunjuk "Periode Oktober 2026" di admin dihapus | Dampak pemberi: 23 porsi di "13 Nov" (10+10+3), 8–14 Nov; muat di 320 px |
 | B-11 | **Ikut beres** | Kab/kota kini terisi dari profil karena profil sudah termuat saat form dibuka | Langkah 2 Tawarkan Pangan: "Kota Bandung · Coblong" terisi |
 
+**Verifikasi di produksi** (https://lestari-pangan.vercel.app, bundle `index-D1JG7yYG.js`, commit `a0a57e8`, 14 Nov 2026, browser bawaan aplikasi):
+
+| Uji | Hasil |
+| --- | --- |
+| Masuk pemberi lalu muat ulang `/notifikasi`, `/aktivitas` | Langsung "Semua (7)" dan "Riwayat 3"; tidak ada "Belum ada notifikasi"/0 sementara (sebelumnya muncul) |
+| Dampak pemberi | 23 porsi di "13 Nov" (8–14 Nov), tanpa label Oktober; cocok dengan database (LP-9 10 + LP-10 10 + LP-11 3, diterima 13 Nov WIB) |
+| Beranda pemberi | "23 porsi · Terkonfirmasi · sejak bergabung" |
+| `/donasi/baru` dimuat penuh | Kab/kota terisi "Kota Bandung · Coblong" |
+| Muat ulang `/donasi/kelola/PGR-13/ubah` | Tanggal 14 Nov, 16:00–18:00, jumlah 2, "Rak kering" terisi; Simpan nonaktif. Ubah penyimpanan → tersimpan di database, jadwal tidak berubah |
+| Konsol admin: masuk dan muat ulang `/admin/penyaluran` | "Memuat data…" ±0,2 dtk lalu "Semua 5"; dashboard "0 penawaran aktif" sesuai database (5 penawaran, semua Ditutup) |
+
 Sisa terkait B-03 yang **belum** diubah: data milik pengguna masih dicocokkan lewat nama organisasi (`Transfer` belum punya id pihak); RLS sudah membatasi baris ke kegiatan akun sendiri, jadi risikonya rendah.
 
 Konsekuensi B-02: layar tunggu bertahan sampai kueri **paling lambat** selesai (±20 kueri paralel; di dev 2× karena StrictMode). Normal ±1,6 dtk; saat Supabase lambat (teramati ±9–10 dtk per kueri pada 14 Nov dini hari) pengguna melihat "Memuat data…" lebih lama, bukan halaman kosong. Bila perlu lebih cepat: pecah muat per layar.
@@ -108,7 +119,7 @@ Penyebab (ditemukan 14 Nov): status masuk admin disimpan sendiri di `localStorag
 | ID | Temuan | Lokasi / saran |
 | --- | --- | --- |
 | B-09 | Judul permintaan memperkecil huruf nama pangan: "4 porsi uji qa nasi kotak ayam" ("QA" jadi "qa") | Detail permintaan; jangan `toLowerCase()` seluruh nama |
-| B-10 | Penjelasan selisih ditempel dengan tanda baca ganda: `“Jumlah fisik kurang: Uji QA: ….”.` | Banner "Menunggu verifikasi staf" |
+| B-10 | Teks digabung dengan tanda baca ganda: penjelasan selisih `“Jumlah fisik kurang: Uji QA: ….”.`; deskripsi penawaran yang diakhiri titik + ". Petunjuk pengambilan: …" menjadi "sendiri.." | Banner "Menunggu verifikasi staf"; Detail pangan |
 | B-11 | Kab/kota di langkah Penyaluran (Tawarkan Pangan) kosong walau profil punya area | Prefill dari `profile.area` |
 | B-12 | Tombol Keluar langsung keluar tanpa konfirmasi (mudah tersentuh di HP) | `Account.tsx` |
 | B-13 | Admin › Pengguna: linimasa menandai "Dokumen diunggah (selesai)" padahal "Belum ada berkas" | `admin/pages/Users` |
@@ -147,6 +158,9 @@ Semua lewat akun uji juri; tidak ada yang dihapus. Bila ingin membersihkan sebel
 | Notifikasi dan baris audit | Menyertai tindakan di atas |
 | Profil USR-57 | `area` diubah lalu dipulihkan (B-16) |
 | PGR-12 "Uji QA wortel (dihapus)" | 14 Nov, untuk menguji muat ulang form Ubah; sudah ditutup lewat Tutup penawaran |
+| PGR-13 "Uji QA produksi (akan ditutup)" | 14 Nov, uji yang sama di produksi; penyimpanan diubah lalu ditutup |
+
+| **PGR-14 "Beras medium sisa stok"** | **Penawaran demo untuk juri, biarkan aktif.** Pemberi uji, Bahan pangan 10 kg, maks 5 kg per penerima, ambil 21 Nov 2026 08.00–20.00 WIB, Ambil sendiri + Ojek online, Coblong, Kota Bandung, tanpa foto (browser bawaan tidak bisa mengunggah berkas; `assets/foto-demo/penawaran/beras-karung.webp` cocok bila ingin menambah). Terlihat di Beranda/Cari pangan penerima. Kedaluwarsa otomatis setelah 21 Nov 20.00 WIB |
 
 ## 6 Urutan perbaikan yang disarankan
 
