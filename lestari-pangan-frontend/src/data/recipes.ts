@@ -25,6 +25,8 @@ export interface Recipe {
   steps: RecipeStep[]
   safety: string
   status: 'Tersedia' | 'Ditinjau ulang'
+  /** Sampul dari contents.photo_path; tanpa sampul tampil ikon. */
+  photo?: string
 }
 
 

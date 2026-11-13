@@ -47,6 +47,7 @@ const toRecipe = (c: ContentRow): Recipe => ({
   summary: c.summary,
   category: c.category,
   minutes: c.minutes ?? 1,
+  photo: c.photo_path ? mediaUrl(c.photo_path) : undefined,
   status: 'Tersedia',
 })
 

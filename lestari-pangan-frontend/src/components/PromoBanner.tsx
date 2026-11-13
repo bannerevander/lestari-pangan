@@ -4,11 +4,11 @@ import { useProfile } from '../state/useProfile'
 import { cityOf } from '../lib/area'
 import type { Placement, Promotion } from '../services/promotions'
 
-/** Promosi aktif untuk satu penempatan; promosi berwilayah hanya tampil di kab/kota yang sama. */
+/** Promosi aktif untuk satu penempatan dan peran pengguna; promosi berwilayah hanya tampil di kab/kota yang sama. */
 export function PromoBanner({ placement, className = '' }: { placement: Placement; className?: string }) {
   const { state } = useApp()
   const city = cityOf(useProfile().area)
-  const list = state.promotions.filter((p) => p.placement === placement && (!p.area || p.area === city))
+  const list = state.promotions.filter((p) => p.placement === placement && (p.audience === 'semua' || p.audience === state.role) && (!p.area || p.area === city))
   if (!list.length) return null
   return (
     <section aria-label="Promosi" className={`chip-row -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 ${className}`}>

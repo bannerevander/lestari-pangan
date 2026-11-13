@@ -412,7 +412,8 @@ export function Recipes() {
             {matches.length === 0 && <StatePanel title="Belum ada resep yang cocok">Tambah bahan lain atau pilih alat masak yang berbeda.</StatePanel>}
             <div key={matches.map((m) => m.recipe.id).join()} className="stagger flex flex-col gap-3">
               {matches.map(({ recipe: r, hits, score }) => (
-                <Link key={r.id} to={`/resep/${r.id}`} className="tap tap-soft card block p-4 hover:bg-page">
+                <Link key={r.id} to={`/resep/${r.id}`} className="tap tap-soft card block overflow-hidden p-4 hover:bg-page">
+                  {r.photo && <img src={r.photo} alt="" loading="lazy" className="-mx-4 -mt-4 mb-3 aspect-[16/9] w-[calc(100%+2rem)] max-w-none object-cover" />}
                   <div className="flex items-center justify-between gap-2">
                     <Badge tone={score >= 50 ? 'success' : 'accent'} icon={false}>Cocok {score}%</Badge>
                     <span className="text-meta text-ink-secondary">{r.minutes} menit</span>

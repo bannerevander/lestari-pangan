@@ -6,6 +6,10 @@ import { asset } from '../lib/format'
 
 export type Placement = 'beranda' | 'tips' | 'resep' | 'reward' | 'dukung'
 
+/** Peran yang melihat promosi. */
+export type Audience = 'semua' | 'pemberi' | 'penerima'
+export const AUDIENCES: Record<Audience, string> = { semua: 'Semua pengguna', pemberi: 'Pemberi saja', penerima: 'Penerima saja' }
+
 /** Ukuran template per penempatan; admin mengunggah gambar sesuai rasio ini. */
 export const PLACEMENTS: Record<Placement, { label: string; width: number; height: number }> = {
   beranda: { label: 'Banner Beranda', width: 1200, height: 400 },
@@ -28,6 +32,7 @@ export interface Promotion {
   endsOn?: string
   active: boolean
   sort: number
+  audience: Audience
 }
 
 interface PromotionRow {
@@ -42,6 +47,7 @@ interface PromotionRow {
   ends_on: string | null
   active: boolean
   sort: number
+  audience: Audience
 }
 
 /** URL publik gambar: aset bawaan ("img/…") atau unggahan admin di bucket media. */
@@ -60,6 +66,7 @@ const toPromotion = (r: PromotionRow): Promotion => ({
   endsOn: r.ends_on ?? undefined,
   active: r.active,
   sort: r.sort,
+  audience: r.audience ?? 'semua',
 })
 
 /** Pengguna: RLS hanya mengembalikan promosi aktif dalam periodenya. Admin: semua promosi. */
@@ -67,7 +74,7 @@ export async function loadPromotions(): Promise<Promotion[]> {
   // shortcut: tabel baru belum ada di database.types.ts; perbarui tipe hasil generate lalu hapus cast.
   const { data, error } = await supabase
     .from('promotions' as never)
-    .select('id, code, title, placement, image_path, link, area, starts_on, ends_on, active, sort')
+    .select('id, code, title, placement, image_path, link, area, starts_on, ends_on, active, sort, audience')
     .order('sort')
     .order('id', { ascending: false })
   if (error) throw toAppError(error)
@@ -75,7 +82,7 @@ export async function loadPromotions(): Promise<Promotion[]> {
 }
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-export const MEDIA_MAX_BYTES = 2 * 1024 * 1024
+const MEDIA_MAX_BYTES = 2 * 1024 * 1024
 
 /** Unggah gambar admin ke bucket media; mengembalikan path, mis. "promo/uuid.jpg". */
 export async function uploadMedia(folder: 'promo' | 'konten' | 'apresiasi', file: File): Promise<string> {

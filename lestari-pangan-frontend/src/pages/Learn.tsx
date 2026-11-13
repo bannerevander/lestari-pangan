@@ -71,6 +71,7 @@ export function RecipeDetail() {
         }
       />
       <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-36 pt-4">
+        {r.photo && <img src={r.photo} alt="" className="aspect-[16/9] w-full rounded-greet object-cover" />}
         <section className="relative overflow-hidden rounded-greet bg-primary-container p-5">
           <CookingPot size={120} weight="duotone" aria-hidden="true" className="absolute -bottom-6 -right-6 text-primary/15" />
           <p className="text-caption font-semibold uppercase tracking-wide text-primary">{r.category}</p>
@@ -288,7 +289,11 @@ export function SavedRecipes() {
           list.map((r) =>
             r.status === 'Tersedia' ? (
               <Link key={r.id} to={`/resep/${r.id}`} className="tap card flex items-center gap-3 p-4 hover:bg-page">
-                <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary-container text-primary"><CookingPot size={24} /></span>
+                {r.photo ? (
+                  <img src={r.photo} alt="" loading="lazy" className="h-16 w-16 shrink-0 rounded-control object-cover" />
+                ) : (
+                  <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary-container text-primary"><CookingPot size={24} /></span>
+                )}
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{r.title}</span>
                   <span className="block text-meta text-ink-secondary">{r.category} · {r.minutes} menit</span>

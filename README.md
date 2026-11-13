@@ -195,6 +195,7 @@ Alur permintaan di atas merupakan dasar pembahasan; persetujuan versus klaim lan
 | Layanan / model | Dipakai untuk | Data yang dikirim |
 | --- | --- | --- |
 | Google Gemini API tier gratis: `gemini-3.5-flash-lite`, cadangan `gemini-3.1-flash-lite` dan `gemini-3.8-flash` | Asisten Dapur AI: ide resep dari bahan, cara menyimpan, mengolah sisa makanan | 12 pesan terakhir, daftar bahan Catat Pangan pengguna, judul resep terkurasi. Lewat Edge Function `ai-chat`; kunci API hanya di secret server. Data tier gratis dapat dipakai Google untuk pengembangan produk, dan ini disampaikan di layar. |
+| ChatGPT (OpenAI), pembuatan gambar | Foto penawaran demo, sampul resep/tips, dan banner promosi awal (folder `assets/`) | Hanya prompt deskripsi gambar; tidak ada data pengguna. Gambar demo, bukan foto makanan nyata dari pengguna. |
 | Web Speech API bawaan browser | Mengubah ucapan jadi teks (`id-ID`) dan membacakan jawaban | Audio diproses layanan suara browser (Google pada Chrome), tidak dikirim ke server Lestari Pangan. |
 
 Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat waktu permintaan untuk kuota 40 pesan per jam per akun. Asisten tidak menyatakan makanan aman hanya dari deskripsi, tanggal, atau foto. Alat bantu pengembangan: kode ditulis dengan bantuan asisten AI (Claude Code).

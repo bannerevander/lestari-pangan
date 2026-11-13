@@ -13,3 +13,26 @@ export async function shrinkImage(file: File, max = 1280, quality = 0.82): Promi
   bitmap.close()
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('encode'))), 'image/jpeg', quality))
 }
+
+/**
+ * Potong tengah (seperti object-fit: cover) lalu ubah ke ukuran tepat w × h, JPEG.
+ * Admin bisa memilih foto apa saja: rasio dan ukuran berkas diurus otomatis.
+ */
+export async function fitImage(file: File, w: number, h: number, quality = 0.86): Promise<File> {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  drawCover(canvas.getContext('2d')!, bitmap, 0, 0, w, h)
+  bitmap.close()
+  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('encode'))), 'image/jpeg', quality))
+  return new File([blob], 'gambar.jpg', { type: 'image/jpeg' })
+}
+
+/** Gambar sumber memenuhi kotak tujuan, bagian tengah dipertahankan. */
+export function drawCover(ctx: CanvasRenderingContext2D, img: CanvasImageSource & { width: number; height: number }, x: number, y: number, w: number, h: number) {
+  const s = Math.max(w / img.width, h / img.height)
+  const sw = w / s
+  const sh = h / s
+  ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, x, y, w, h)
+}
