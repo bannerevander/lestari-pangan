@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { PromoBanner } from '../components/PromoBanner'
 import { cityOf, shortCity } from '../lib/area'
 import { Link, useNavigate } from 'react-router-dom'
@@ -8,6 +9,12 @@ import { FoodCardCompact, FoodCardSearch } from '../components/FoodCard'
 import { useApp } from '../state/AppState'
 import { useProfile } from '../state/useProfile'
 import { asset, methodLabel } from '../lib/format'
+import { EcoChallengeCard } from './EcoChallengeCard'
+
+/*
+ * Urutan Beranda mengikuti pola super-app (Gojek, Grab, Tokopedia, Shopee):
+ * sapaan + aksi utama/pencarian → strip poin (Eco Challenge) → status berjalan → pintasan → promo → daftar → konten.
+ */
 
 /** Daun dekoratif pada modul sapaan (H01 botanical greeting). */
 function LeafDecor() {
@@ -17,6 +24,46 @@ function LeafDecor() {
       <path d="M60 110C55 80 48 50 40 15" />
       <circle cx="102" cy="22" r="5" fill="#FFB74D" stroke="none" opacity=".6" />
     </svg>
+  )
+}
+
+/** Sapaan + peran + area; `children` = aksi utama peran (tombol tawarkan / kolom cari). */
+function Greeting({ role, area, subtitle, children }: { role: string; area: string; subtitle?: string; children: ReactNode }) {
+  const { name } = useProfile()
+  return (
+    <section aria-label="Sapaan" className="relative overflow-hidden rounded-greet border border-line bg-gradient-to-br from-primary-container to-surface p-4">
+      <LeafDecor />
+      <div className="relative flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-primary/30 bg-primary-container px-3 py-1 text-[0.875rem] font-semibold text-primary">{role}</span>
+        <Link to="/area" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
+          <MapPin size={18} aria-hidden="true" /> {area} <CaretDown size={14} aria-hidden="true" />
+        </Link>
+      </div>
+      <h1 className="relative text-page-title">Halo, {name}</h1>
+      {subtitle && <p className="relative text-body text-ink-secondary">{subtitle}</p>}
+      <div className="relative mt-3">{children}</div>
+    </section>
+  )
+}
+
+function HomeSearch() {
+  const navigate = useNavigate()
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const q = new FormData(e.currentTarget).get('q')
+        navigate(`/donasi${q ? `?q=${encodeURIComponent(String(q))}` : ''}`)
+      }}
+    >
+      <label htmlFor="home-search" className="sr-only">Cari pangan</label>
+      <div className="flex min-h-[52px] items-center gap-2 rounded-control border border-line-control bg-surface px-3 shadow-card focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
+        <MagnifyingGlass size={22} aria-hidden="true" className="text-ink-secondary" />
+        <input id="home-search" name="q" placeholder="Cari nama atau jenis pangan" className="min-w-0 flex-1 bg-transparent py-3 text-body outline-none placeholder:text-ink-secondary" />
+        <button type="submit" className="tap -mr-1 min-h-12 rounded-control bg-primary-container px-4 text-[0.875rem] font-semibold text-primary">Cari</button>
+      </div>
+    </form>
   )
 }
 
@@ -48,14 +95,6 @@ function InspirationSection() {
           </span>
         </div>
       </Link>
-      <Link to="/tantangan" className="tap flex items-center gap-3 rounded-card border border-accent/60 bg-accent-soft p-4 hover:border-accent">
-        <img src={asset('illustrations/medali-daun.svg')} alt="" className="h-14 w-14 shrink-0" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-semibold">Tantangan</span>
-          <span className="block text-meta text-ink-secondary">Temukan langkah kecil untuk mengurangi sisa pangan.</span>
-        </span>
-        <CaretRight size={20} aria-hidden="true" className="shrink-0 text-ink-secondary" />
-      </Link>
     </section>
   )
 }
@@ -72,51 +111,38 @@ function DonorHome() {
 
   return (
     <div className="stagger flex flex-col gap-6 px-4 pt-4">
-      <section aria-label="Sapaan" className="relative overflow-hidden rounded-greet border border-line bg-gradient-to-br from-primary-container to-surface p-4">
-        <LeafDecor />
-        <h1 className="relative text-page-title">Halo, {profile.name}</h1>
-        <p className="relative text-body text-ink-secondary">Siap berbagi hari ini?</p>
-        <div className="relative mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-primary/30 bg-primary-container px-3 py-1 text-[0.875rem] font-semibold text-primary">Pemberi</span>
-          <Link to="/area" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
-            <MapPin size={18} aria-hidden="true" /> {profile.area ? shortCity(cityOf(profile.area)) : 'Pilih area'} <CaretDown size={14} aria-hidden="true" />
-          </Link>
-        </div>
-        {pending.length > 0 && (
-          <div className="relative mt-3 flex items-center gap-3 rounded-card border border-line bg-surface p-2 pl-3">
-            <Tray size={24} aria-hidden="true" className="shrink-0 text-primary" />
-            <p className="min-w-0 flex-1 text-[1rem] font-medium">{pending.length} permintaan baru</p>
-            <Link to="/aktivitas/permintaan" className="tap inline-flex min-h-12 items-center rounded-control bg-primary-container px-4 text-[1rem] font-semibold text-primary hover:bg-primary-hover">
-              Tinjau
-            </Link>
+      <Greeting role="Pemberi" area={profile.area ? shortCity(cityOf(profile.area)) : 'Pilih area'} subtitle="Punya pangan berlebih hari ini?">
+        <button type="button" onClick={() => navigate('/donasi/baru')} className="tap inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-control bg-primary px-3 text-[1rem] font-semibold text-white shadow-card hover:bg-primary-pressed">
+          <HandHeart size={22} aria-hidden="true" className="shrink-0" /> Tawarkan Pangan
+        </button>
+        <button type="button" onClick={() => navigate('/pangan')} className="tap mt-1 inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-control px-3 text-[0.9375rem] font-semibold text-primary hover:bg-primary-container">
+          atau pilih dari Catat Pangan <CaretRight size={16} weight="bold" aria-hidden="true" />
+        </button>
+      </Greeting>
+
+      <EcoChallengeCard />
+
+      {pending.length > 0 && (
+        <section aria-labelledby="perlu-tindakan" className="card flex items-center gap-3 border-primary/40 p-3 pl-4">
+          <Tray size={28} aria-hidden="true" className="shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <h2 id="perlu-tindakan" className="text-label uppercase tracking-wide text-primary">Perlu tindakan</h2>
+            <p className="text-[1rem] font-semibold">{pending.length} permintaan baru</p>
           </div>
-        )}
-      </section>
-      <PromoBanner placement="beranda" />
+          <Link to="/aktivitas/permintaan" className="tap inline-flex min-h-12 items-center rounded-control bg-primary px-4 text-[1rem] font-semibold text-white hover:bg-primary-pressed">
+            Tinjau
+          </Link>
+        </section>
+      )}
 
-      <section aria-label="Tawarkan pangan" className="rounded-card border border-primary/20 bg-primary-container/60 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-card-title">Punya pangan berlebih?</h2>
-          <img src={asset('illustrations/keranjang.svg')} alt="" className="h-12 w-12" />
-        </div>
-        <div className="mt-3 flex flex-col gap-1">
-          <button type="button" onClick={() => navigate('/donasi/baru')} className="tap inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-control bg-primary px-3 text-[1rem] font-semibold text-white shadow-card hover:bg-primary-pressed">
-            <HandHeart size={22} aria-hidden="true" className="shrink-0" /> Tawarkan Pangan
-          </button>
-          <button type="button" onClick={() => navigate('/pangan')} className="tap inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-control px-3 text-[0.9375rem] font-semibold text-primary hover:bg-primary-container">
-            atau pilih dari Catat Pangan <CaretRight size={16} weight="bold" aria-hidden="true" />
-          </button>
-        </div>
-      </section>
-
-      <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-[repeat(auto-fit,minmax(5.25rem,1fr))] gap-1">
+      <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-4 gap-1">
         <Shortcut to="/pangan" img="illustrations/catat-pangan.svg" label="Catat Pangan" />
         <Shortcut to="/dampak" img="illustrations/dampak.svg" label="Dampak" />
         <Shortcut to="/resep" img="illustrations/resep.svg" label="Resep" />
         <Shortcut to="/fitur" img="illustrations/semua-fitur.svg" label="Semua fitur" />
       </nav>
 
-      <section aria-labelledby="penawaran-aktif" className="flex flex-col gap-3">
+      <section aria-labelledby="penawaran-aktif" className="-mt-2 flex flex-col gap-3">
         <SectionHeader id="penawaran-aktif" title="Penawaran aktif" to="/donasi" />
         {active.length ? (
           active.map((o) => <FoodCardCompact key={o.id} offer={o} to={`/donasi/kelola/${o.id}`} />)
@@ -124,6 +150,8 @@ function DonorHome() {
           <p className="card p-4 text-body text-ink-secondary">Belum ada penawaran aktif. Tawarkan pangan pertama Anda.</p>
         )}
       </section>
+
+      <PromoBanner placement="beranda" />
 
       <section aria-labelledby="dampak-berbagi" className="flex flex-col gap-3">
         <SectionHeader id="dampak-berbagi" title="Dampak berbagi" to="/dampak" linkLabel="Lihat dampak" />
@@ -148,7 +176,6 @@ function DonorHome() {
 function RecipientHome() {
   const { state } = useApp()
   const profile = useProfile()
-  const navigate = useNavigate()
   const next = state.transfers.find((t) => t.recipientName === profile.name && (t.status === 'Terjadwal' || t.status === 'Diserahkan'))
   const available = state.offers.filter((o) => o.status === 'Tersedia' && o.available > 0).slice(0, 2)
   const received = state.transfers
@@ -157,18 +184,11 @@ function RecipientHome() {
 
   return (
     <div className="stagger flex flex-col gap-6 px-4 pt-4">
-      <section aria-label="Sapaan" className="relative overflow-hidden rounded-greet border border-line bg-gradient-to-br from-primary-container to-surface p-4">
-        <LeafDecor />
-        <div className="relative flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-primary/30 bg-primary-container px-3 py-1 text-[0.875rem] font-semibold text-primary">Penerima</span>
-          <Link to="/area" className="tap inline-flex min-h-12 items-center gap-1 rounded-full px-2 text-[0.875rem] font-medium hover:bg-surface">
-            <MapPin size={18} aria-hidden="true" /> {profile.area} <CaretDown size={14} aria-hidden="true" />
-          </Link>
-        </div>
-        <h1 className="relative mt-2 text-page-title">Halo, {profile.name}</h1>
-        <p className="relative text-body text-ink-secondary">Cek jadwal dan pangan yang tersedia di sekitar Anda.</p>
-      </section>
-      <PromoBanner placement="beranda" />
+      <Greeting role="Penerima" area={profile.area}>
+        <HomeSearch />
+      </Greeting>
+
+      <EcoChallengeCard />
 
       {next && (
         <section aria-labelledby="jadwal" className="card border-primary/40 p-4">
@@ -189,31 +209,17 @@ function RecipientHome() {
         </section>
       )}
 
-      <form
-        role="search"
-        onSubmit={(e) => {
-          e.preventDefault()
-          const q = new FormData(e.currentTarget).get('q')
-          navigate(`/donasi${q ? `?q=${encodeURIComponent(String(q))}` : ''}`)
-        }}
-      >
-        <label htmlFor="home-search" className="sr-only">Cari pangan</label>
-        <div className="flex min-h-[52px] items-center gap-2 rounded-control border border-line-control bg-surface px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
-          <MagnifyingGlass size={22} aria-hidden="true" className="text-ink-secondary" />
-          <input id="home-search" name="q" placeholder="Cari nama atau jenis pangan" className="min-w-0 flex-1 bg-transparent py-3 text-body outline-none placeholder:text-ink-secondary" />
-          <button type="submit" className="tap -mr-1 min-h-12 rounded-control bg-primary-container px-4 text-[0.875rem] font-semibold text-primary">Cari</button>
-        </div>
-      </form>
-
-      <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-[repeat(auto-fit,minmax(5.25rem,1fr))] gap-1">
+      <nav aria-label="Pintasan" className="-mt-2 grid grid-cols-4 gap-1">
         <Shortcut to="/pangan" img="illustrations/catat-pangan.svg" label="Pangan diterima" />
         <Shortcut to="/dampak" img="illustrations/dampak.svg" label="Dampak" />
         <Shortcut to="/resep" img="illustrations/resep.svg" label="Resep" />
         <Shortcut to="/fitur" img="illustrations/semua-fitur.svg" label="Semua fitur" />
       </nav>
 
+      <PromoBanner placement="beranda" className="-mt-2" />
+
       <section aria-labelledby="tersedia" className="flex flex-col gap-3">
-        <SectionHeader id="tersedia" title="Tersedia di sekitar Anda" to="/donasi" />
+        <SectionHeader id="tersedia" title="Pangan di sekitar Anda" to="/donasi" />
         {available.map((o) => (
           <FoodCardSearch key={o.id} offer={o} />
         ))}
