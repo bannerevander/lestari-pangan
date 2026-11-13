@@ -22,3 +22,8 @@ output/
 .backup-frontend-git/
 
 .DS_Store
+
+# Paket Android (APK/AAB) dan kunci tanda tangan: kunci TIDAK BOLEH masuk git
+android-release/
+*.keystore
+*.jks

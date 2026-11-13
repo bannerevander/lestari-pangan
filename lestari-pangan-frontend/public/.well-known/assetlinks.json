@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.lestari_pangan.twa",
+      "sha256_cert_fingerprints": [
+        "23:5E:77:A3:1E:91:51:53:DB:82:ED:FC:A3:11:35:38:50:45:FE:E9:55:9C:6C:D9:1B:75:37:26:AC:92:42:A3"
+      ]
+    }
+  }
+]

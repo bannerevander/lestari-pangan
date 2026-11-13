@@ -210,6 +210,8 @@ Satu akun per peran (pemberi, penerima, kurir, admin). Pilih metode **Kode verif
 
 Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf operasional** di bawah halaman masuk.
 
+**Aplikasi Android (APK):** Lestari Pangan juga tersedia sebagai APK (Trusted Web Activity) yang membuka aplikasi web yang sama dalam mode layar penuh, termasuk chat dan suara Asisten Dapur AI. Cara memasang dan data paket: [docs/ANDROID.md](docs/ANDROID.md).
+
 ## Struktur folder
 
 | Folder | Isi |
@@ -231,6 +233,7 @@ Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf ope
 - [docs/architecture.md](docs/architecture.md): keputusan arsitektur yang sudah disetujui (Supabase, modular monolith, PWA, Vercel), skema database, RPC, dan keputusan terbuka.
 - [docs/SECURITY.md](docs/SECURITY.md): lapisan keamanan, hasil pemeriksaan, dan **langkah manual dashboard** yang wajib dilakukan.
 - [docs/CONVENTIONS.md](docs/CONVENTIONS.md): aturan pembagian berkas kode, service, migrasi, dan bahasa.
+- [docs/ANDROID.md](docs/ANDROID.md): APK Android (TWA), sidik jari kunci, cara memasang dan membuat versi baru.
 
 Dokumen sumber use case: **PRESENTASI USE CASE HTML (1).docx**. Rujukan misi: [target resmi SDG 12](https://sdgs.un.org/goals/goal12).
 
