@@ -176,7 +176,7 @@ export function ChallengeList() {
     <>
       <PageHeader title="Eco Challenge" desc="Program kebiasaan baik tanpa kompetisi volume donasi." actions={<ButtonLink to="/admin/challenge/baru" icon={<Plus size={18} />} className="min-h-11">Tantangan baru</ButtonLink>} />
       <div className="stagger grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-        <Stat label="Tantangan aktif" value={n('Aktif')} unit="program" hint="Periode Oktober 2026" />
+        <Stat label="Tantangan aktif" value={n('Aktif')} unit="program" />
         <Stat label="Menunggu evaluasi" value={pending.length} unit="capaian" {...(pending[0] ? { to: `/admin/capaian/${pending[0].id}`, cta: `Periksa ${pending[0].id}` } : {})} />
         <Stat label="Mitra berpartisipasi" value={new Set(participants.map((p) => p.org)).size} unit="mitra" hint={`${participants.length} keikutsertaan`} />
       </div>

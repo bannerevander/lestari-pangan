@@ -1,7 +1,10 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { CircleNotch } from '@phosphor-icons/react'
 import { AppFrame, TabLayout } from './components/Layouts'
 import { useApp } from './state/AppState'
+import { useMyProfile } from './state/MyProfile'
+import { useLiveData } from './state/LiveData'
 import Home from './pages/Home'
 import { DonasiTab, OfferClose, OfferDetail, OfferEdit, OfferForm, OfferManage } from './pages/donation'
 import { IncomingRequests, RequestAdjustment, RequestCancel, RequestDetail, RequestForm, ReviewRequest } from './pages/requests'
@@ -47,7 +50,16 @@ const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 function RequireAuth() {
   const { state } = useApp()
+  const { ready } = useMyProfile()
+  const { loaded } = useLiveData()
   if (!state.signedIn) return <Navigate to={state.onboarded ? '/masuk' : '/pengenalan'} replace />
+  // Layar dan form baru dirender setelah profil + data pertama tiba: tanpa "kosong" palsu dan form tidak terisi nilai kosong.
+  if (!ready || !loaded)
+    return (
+      <div className="flex min-h-screen items-center justify-center gap-2 bg-page text-meta text-ink-secondary" role="status" aria-busy="true">
+        <CircleNotch size={20} className="animate-spin text-primary" aria-hidden="true" /> Memuat data…
+      </div>
+    )
   return <Outlet />
 }
 

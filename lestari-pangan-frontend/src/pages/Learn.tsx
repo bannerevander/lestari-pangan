@@ -668,7 +668,7 @@ export function ImpactHistory() {
       <AppBar title="Riwayat dampak" />
       <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-10 pt-4">
         <Notice tone="info" title="Dihitung sekali per kegiatan">Catatan pemberi dan penerima untuk kegiatan yang sama tidak dijumlahkan dua kali.</Notice>
-        <p className="font-semibold">Oktober 2026 · {list.length} kegiatan terkonfirmasi</p>
+        <p className="font-semibold">Sejak bergabung · {list.length} kegiatan terkonfirmasi</p>
         {list.length === 0 && <StatePanel title="Belum ada kegiatan terkonfirmasi">Dampak tercatat setelah penerima mengonfirmasi penerimaan.</StatePanel>}
         {list.map((t) => (
           <article key={t.id} className="card p-4">

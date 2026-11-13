@@ -111,7 +111,8 @@ function DonorHome() {
   const pending = state.requests.filter((r) => r.status === 'Diajukan' && state.offers.some((o) => o.id === r.offerId && o.donorName === profile.name))
   const active = state.offers.filter((o) => o.donorName === profile.name && o.status === 'Tersedia').slice(0, 3)
   const received = state.transfers
-    .filter((t) => t.donorName === profile.name && (t.status === 'Diterima penuh' || t.status === 'Diterima sebagian'))
+    // Hanya porsi: satuan lain (kg, kemasan) tidak dijumlahkan ke angka berlabel porsi.
+    .filter((t) => t.donorName === profile.name && t.unit === 'porsi' && (t.status === 'Diterima penuh' || t.status === 'Diterima sebagian'))
     .reduce((s, t) => s + (t.received ?? 0), 0)
 
   return (
@@ -165,7 +166,7 @@ function DonorHome() {
             <p className="text-display text-primary"><CountUp value={received} /> porsi</p>
             <p className="text-[1rem] font-medium">diterima penerima</p>
             <p className="mt-1 flex items-center gap-1 text-meta text-primary">
-              <Check size={16} weight="bold" aria-hidden="true" /> Terkonfirmasi · Oktober 2026
+              <Check size={16} weight="bold" aria-hidden="true" /> Terkonfirmasi · sejak bergabung
             </p>
             <p className="text-meta text-ink-secondary">Sumber: penerimaan terkonfirmasi</p>
           </div>
@@ -184,7 +185,7 @@ function RecipientHome() {
   const next = state.transfers.find((t) => t.recipientName === profile.name && (t.status === 'Terjadwal' || t.status === 'Diserahkan'))
   const available = state.offers.filter((o) => o.status === 'Tersedia' && o.available > 0).slice(0, 2)
   const received = state.transfers
-    .filter((t) => t.recipientName === profile.name && t.received !== undefined)
+    .filter((t) => t.recipientName === profile.name && t.unit === 'porsi' && t.received !== undefined)
     .reduce((s, t) => s + (t.received ?? 0), 0)
 
   return (
@@ -235,7 +236,7 @@ function RecipientHome() {
         <div className="flex items-center gap-3 rounded-card border border-line bg-gradient-to-br from-primary-container/70 to-surface p-4">
           <div className="min-w-0 flex-1">
             <p className="text-display text-primary"><CountUp value={received} /> porsi</p>
-            <p className="text-[1rem] font-medium">diterima aktual · Oktober 2026</p>
+            <p className="text-[1rem] font-medium">diterima aktual · sejak bergabung</p>
             <p className="text-meta text-ink-secondary">Sumber: konfirmasi penerimaan Anda</p>
           </div>
           <img src={asset('illustrations/tangan-berbagi.svg')} alt="" className="h-16 w-16 shrink-0" />

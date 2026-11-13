@@ -25,20 +25,24 @@ interface AdminState {
   /** Nama dan lingkup staf yang masuk. */
   staff: { name: string; scope: string } | null
   data: AdminData
+  /** Percobaan muat pertama sejak masuk sudah selesai (berhasil atau gagal). */
+  loaded: boolean
 }
 
-const initial: AdminState = { signedIn: false, staff: null, data: emptyData }
+const initial: AdminState = { signedIn: false, staff: null, data: emptyData, loaded: false }
 
-type Action = { type: 'signIn'; staff: NonNullable<AdminState['staff']> } | { type: 'signOut' } | { type: 'hydrate'; data: AdminData }
+type Action = { type: 'signIn'; staff: NonNullable<AdminState['staff']> } | { type: 'signOut' } | { type: 'hydrate'; data: AdminData } | { type: 'loaded' }
 
 function reducer(s: AdminState, a: Action): AdminState {
   switch (a.type) {
     case 'signIn':
-      return { ...s, signedIn: true, staff: a.staff }
+      return { ...s, signedIn: true, staff: a.staff, loaded: false }
     case 'signOut':
       return initial
     case 'hydrate':
-      return { ...s, data: a.data }
+      return { ...s, data: a.data, loaded: true }
+    case 'loaded':
+      return s.loaded ? s : { ...s, loaded: true }
   }
 }
 
@@ -83,7 +87,9 @@ export function AdminStateProvider({ children }: { children: ReactNode }) {
   }, [state.signedIn])
 
   useEffect(() => {
-    refresh().catch(() => {}) // gagal muat: tampilkan data terakhir
+    refresh()
+      .catch(() => {}) // gagal muat: tampilkan data terakhir
+      .finally(() => dispatch({ type: 'loaded' }))
     const onVisible = () => document.visibilityState === 'visible' && refresh().catch(() => {})
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)

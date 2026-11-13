@@ -23,6 +23,7 @@ import { useCommand } from '../state/useCommand'
 import { messageOf } from '../lib/supabase/errors'
 import { useProfile } from '../state/useProfile'
 import { asset } from '../lib/format'
+import { lastWeek } from '../lib/impact'
 
 /* ---------- H03 Semua fitur ---------- */
 
@@ -140,12 +141,7 @@ export function Impact() {
         { label: 'Terbuang', value: dist.wasted, cls: 'bg-danger' },
       ].filter((p) => p.value > 0)
   const total = parts.reduce((s, p) => s + p.value, 0)
-  const days = [
-    { day: '6 Okt', value: 0 as number | null, note: '0 porsi' },
-    { day: '7 Okt', value: received as number | null, note: 'Terkonfirmasi' },
-    { day: '8 Okt', value: null, note: 'Belum dicatat' },
-    { day: '9 Okt', value: 0, note: '0 porsi' },
-  ]
+  const days = lastWeek(done)
   const max = Math.max(1, ...days.map((d) => d.value ?? 0))
 
   return (
@@ -167,7 +163,7 @@ export function Impact() {
         />
         {unit !== 'porsi' ? (
           <StatePanel title={`Belum ada data ${unit === 'kg' ? 'kilogram' : 'kemasan'}`}>
-            Tidak ada kegiatan terkonfirmasi dengan satuan ini pada Oktober 2026. Satuan berbeda tidak dijumlahkan.
+            Belum ada kegiatan terkonfirmasi dengan satuan ini sejak bergabung. Satuan berbeda tidak dijumlahkan.
           </StatePanel>
         ) : (
           <>
@@ -181,7 +177,7 @@ export function Impact() {
                 <Notebook size={18} aria-hidden="true" className="mt-px shrink-0" />
                 <span className="min-w-0">Sumber: konfirmasi penerimaan <span className="whitespace-nowrap">{done.map((t) => t.id).join(', ') || '—'}</span></span>
               </p>
-              {donor && <p className="mt-1 text-meta text-ink-secondary">Surplus ditawarkan bulan ini: {offered} porsi (belum dihitung sebagai donasi berhasil).</p>}
+              {donor && <p className="mt-1 text-meta text-ink-secondary">Surplus ditawarkan sejak bergabung: {offered} porsi (belum dihitung sebagai donasi berhasil).</p>}
             </section>
 
             {total > 0 && (
@@ -210,23 +206,22 @@ export function Impact() {
                 <h2 id="sepekan" className="text-card-title">Aktivitas sepekan</h2>
                 <span className="text-caption text-ink-secondary">Satuan: porsi</span>
               </div>
-              <ul className="mt-4 grid grid-cols-4 items-end gap-2" aria-label="Porsi diterima per hari">
+              <ul className="mt-4 grid grid-cols-7 items-end gap-1" aria-label="Porsi diterima per hari, tujuh hari terakhir">
                 {days.map((d) => (
-                  <li key={d.day} className="flex flex-col items-center gap-1 text-center">
+                  <li key={d.day} className="flex min-w-0 flex-col items-center gap-1 text-center">
                     <span className="text-caption font-bold tabular-nums">{d.value ?? '–'}</span>
                     <span className="flex h-20 w-full items-end justify-center border-b border-line" aria-hidden="true">
                       {d.value === null ? (
-                        <span className="h-full w-8 rounded-t-[6px] border-2 border-b-0 border-dashed border-line-control" />
+                        <span className="h-full w-full max-w-8 rounded-t-[6px] border-2 border-b-0 border-dashed border-line-control" />
                       ) : (
-                        <span className="w-8 origin-bottom animate-grow-y rounded-t-[6px] bg-primary" style={{ height: `${Math.max(4, (d.value / max) * 80)}px` }} />
+                        <span className="w-full max-w-8 origin-bottom animate-grow-y rounded-t-[6px] bg-primary" style={{ height: `${Math.max(4, (d.value / max) * 80)}px` }} />
                       )}
                     </span>
-                    <span className="text-caption font-semibold">{d.day}</span>
-                    <span className="text-[0.75rem] leading-4 text-ink-secondary">{d.note}</span>
+                    <span className="text-[0.75rem] font-semibold leading-4">{d.day}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 border-t border-line pt-3 text-caption text-ink-secondary">Hari tanpa catatan dibedakan dari nilai 0, supaya tidak terbaca sebagai “nol food waste”.</p>
+              <p className="mt-3 border-t border-line pt-3 text-caption text-ink-secondary">Tanggal = hari penerimaan dikonfirmasi. Garis putus-putus berarti tidak ada penerimaan hari itu, bukan “nol food waste”.</p>
             </section>
 
             <div className="card divide-y divide-line overflow-hidden">

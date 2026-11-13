@@ -229,8 +229,9 @@ export function AdminLayout() {
       </header>
       <Drawer open={menu} onClose={() => setMenu(false)} />
       <div className="lg:pl-72 print:!pl-0">
-        <main id="admin-main" key={pathname} className="mx-auto flex max-w-[1200px] animate-rise-in flex-col gap-5 px-4 pb-16 pt-5 md:px-8 md:pt-8">
-          <Outlet />
+        <main id="admin-main" key={pathname} className="mx-auto flex max-w-[1200px] animate-rise-in flex-col gap-5 px-4 pb-16 pt-5 md:px-8 md:pt-8" aria-busy={!state.loaded}>
+          {/* Angka 0 dan "tidak ada antrean" baru boleh tampil setelah data pertama tiba. */}
+          {state.loaded ? <Outlet /> : <p role="status" className="py-16 text-center text-meta text-ink-secondary">Memuat data…</p>}
         </main>
       </div>
       <Toaster />
