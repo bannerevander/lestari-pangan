@@ -6,9 +6,9 @@ Kata sandi semua akun: `test123`
 
 | Peran | Email | Tempat masuk | Profil |
 | --- | --- | --- | --- |
-| Pemberi | `pemberi@example.com` | https://lestari-pangan.vercel.app/masuk | Warung Uji Juri (UMKM), Coblong, Kota Bandung |
-| Penerima | `penerima@example.com` | https://lestari-pangan.vercel.app/masuk | Dapur Komunitas Uji Juri, kapasitas 30 porsi/hari |
-| Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Admin Uji Juri. Konsol menyesuaikan perangkat: laptop = menu samping + tabel, HP = menu ☰ + kartu |
+| Pemberi | `pemberi@example.com` | https://lestari-pangan.vercel.app/masuk | Warung Makan Bu Sari (UMKM, PIC Sari Wulandari), Coblong, Kota Bandung |
+| Penerima | `penerima@example.com` | https://lestari-pangan.vercel.app/masuk | Dapur Komunitas Harapan (PIC Budi Santoso), Coblong, Kota Bandung, kapasitas 30 porsi/hari |
+| Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Rina Pratama. Konsol menyesuaikan perangkat: laptop = menu samping + tabel, HP = menu ☰ + kartu |
 
 Cara masuk (pilih salah satu):
 
@@ -22,7 +22,7 @@ Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima
 ## Skenario uji per peran
 
 1. **Pemberi**: Tawarkan Pangan → isi kategori (Makanan matang wajib waktu dimasak), jumlah, jadwal, cara penyaluran "Ojek online (GoSend/GrabExpress)", opsional batas per penerima → Terbitkan.
-2. **Penerima**: Cari pangan → pilih penawaran Warung Uji Juri → ajukan permintaan. Permintaan batal otomatis bila pemberi tidak menanggapi dalam 2 jam.
+2. **Penerima**: Cari pangan → pilih penawaran Warung Makan Bu Sari (PGR-14, beras, ambil 21 Nov) → ajukan permintaan. Permintaan batal otomatis bila pemberi tidak menanggapi dalam 2 jam.
 3. **Pemberi**: Aktivitas → tinjau permintaan → setujui. Penerima bisa mengajukan ongkir ditanggung pemberi di detail penyaluran.
 4. **Penerima**: Aktivitas → detail penyaluran → kartu **Pesan pengiriman**: salin alamat jemput, tujuan, dan catatan driver, lalu pesan GoSend/GrabExpress di aplikasinya. **Koordinasi** → hubungi pemberi lewat Telepon/WhatsApp.
 5. **Pemberi**: catat penyerahan saat driver mengambil pangan.
