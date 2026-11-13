@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Bell,
@@ -42,6 +42,7 @@ import { useProfile } from '../state/useProfile'
 import { useMyProfile } from '../state/MyProfile'
 import { useCommand } from '../state/useCommand'
 import { AreaField } from '../components/AreaField'
+import { LocationPicker, type PickedLocation } from '../components/LocationPicker'
 import { saveProfile } from '../services/identity'
 import { currentEmail, isDemoEmail, setPassword } from '../services/auth'
 import { messageOf } from '../lib/supabase/errors'
@@ -267,6 +268,18 @@ export function LocationSettings() {
     end: t ? `${t[3]}:${t[4]}` : '19:00',
   })
   const [days, setDays] = useState<string[]>(profile.hours.startsWith('Setiap hari') ? DAYS : DAYS.slice(0, 6))
+  const [point, setPoint] = useState(profile.point)
+  // Titik dari peta mengisi kab/kota dan alamat; alamat yang sudah diubah pengguna (mis. tambah patokan) tidak ditimpa.
+  const auto = useRef('')
+  const onPick = (p: PickedLocation) => {
+    setPoint({ lat: p.lat, lng: p.lng })
+    if (p.address === undefined) return
+    setF((x) => {
+      const keep = x.address.trim() && x.address !== auto.current
+      if (!keep) auto.current = p.address!
+      return { ...x, area: p.area || x.area, address: keep ? x.address : p.address! }
+    })
+  }
   const [errors, setErrors] = useState<Errors>({})
   const { busy, save } = useSave('Lokasi dan jam koordinasi disimpan')
 
@@ -280,7 +293,7 @@ export function LocationSettings() {
     setErrors(e)
     if (Object.values(e).some(Boolean)) return
     const dayLabel = days.length === 7 ? 'Setiap hari' : days.length > 2 && DAYS.indexOf(days[days.length - 1]) - DAYS.indexOf(days[0]) === days.length - 1 ? `${days[0]}–${days[days.length - 1]}` : days.join(', ')
-    save({ area: f.area.trim(), address: f.address.trim(), hours: `${dayLabel}, ${f.start.replace(':', '.')}–${f.end.replace(':', '.')}` })
+    save({ area: f.area.trim(), address: f.address.trim(), ...(point ?? {}), hours: `${dayLabel}, ${f.start.replace(':', '.')}–${f.end.replace(':', '.')}` })
   }
 
   return (
@@ -292,6 +305,10 @@ export function LocationSettings() {
         </PolicyNote>
         <Card title="Wilayah publik" badge={<Badge tone="success" icon={false}><Eye size={14} aria-hidden="true" className="mr-1 inline" />Terlihat publik</Badge>}>
           <AreaField value={f.area} onChange={(area) => setF({ ...f, area })} error={errors.area} />
+        </Card>
+        <Card title="Titik di peta" badge={<Badge tone="neutral" icon={false}><EyeSlash size={14} aria-hidden="true" className="mr-1 inline" />Privat</Badge>}>
+          <p className="mb-3 text-meta text-ink-secondary">Wilayah dan alamat terisi otomatis dari titik ini. Pihak penyaluran dan driver ojek online membukanya di Google Maps.</p>
+          <LocationPicker value={point} onPick={onPick} />
         </Card>
         <Card title="Titik temu" badge={<Badge tone="neutral" icon={false}><EyeSlash size={14} aria-hidden="true" className="mr-1 inline" />Privat</Badge>}>
           <Field label="Alamat lengkap" hint="Sertakan patokan, nomor rumah, atau akses pintu samping." error={errors.address}>

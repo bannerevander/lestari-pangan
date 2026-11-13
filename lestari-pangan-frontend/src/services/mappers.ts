@@ -137,7 +137,7 @@ const plus2h = (ts: string) => stampLabel(new Date(new Date(ts).getTime() + 2 * 
 // ---- Penyaluran ----
 
 export const TRANSFER_SELECT =
-  'code, agreed, handed_over, received, rejected, unit, method, window_start, window_end, status, pending_schedule, pending_receipt, fee_payer, fee_request, prep, distributed, used, wasted, distribution_reported_at, offer:offers!transfers_offer_id_fkey(code, name, photo_path, area), request:requests!transfers_request_id_fkey(code), donor:profiles!transfers_donor_id_fkey(org_name, contact:profile_contacts(pic, phone, address)), recipient:profiles!transfers_recipient_id_fkey(org_name, contact:profile_contacts(pic, phone, address)), events:transfer_events(label, at, note, actor:profiles!transfer_events_actor_id_fkey(org_name))'
+  'code, agreed, handed_over, received, rejected, unit, method, window_start, window_end, status, pending_schedule, pending_receipt, fee_payer, fee_request, prep, distributed, used, wasted, distribution_reported_at, offer:offers!transfers_offer_id_fkey(code, name, photo_path, area), request:requests!transfers_request_id_fkey(code), donor:profiles!transfers_donor_id_fkey(org_name, contact:profile_contacts(pic, phone, address, lat, lng)), recipient:profiles!transfers_recipient_id_fkey(org_name, contact:profile_contacts(pic, phone, address, lat, lng)), events:transfer_events(label, at, note, actor:profiles!transfer_events_actor_id_fkey(org_name))'
 
 export interface TransferRow {
   code: string

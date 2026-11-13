@@ -32,7 +32,7 @@ Peringatan Supabase advisor "SECURITY DEFINER dapat dipanggil pengguna login" un
 | Env tidak masuk git | `.env.local` diabaikan git; hanya `.env.example` (berisi placeholder) yang di-commit. |
 | Tanpa sourcemap | `build.sourcemap = false`; kode sumber tidak dipublikasikan. |
 | Login tanpa kata sandi | Email + OTP 6 angka. Token tidak pernah dibaca dari URL (`detectSessionInUrl: false`). Masuk dan daftar memakai jalur yang sama sehingga respons tidak membocorkan email mana yang terdaftar. |
-| Header keamanan (Vercel) | [`vercel.json`](../lestari-pangan-frontend/vercel.json): CSP ketat (`script-src 'self'`, koneksi hanya ke proyek Supabase), HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` (mikrofon/kamera hanya untuk situs sendiri). `npm run preview` memakai header yang sama sehingga bisa diuji lokal. |
+| Header keamanan (Vercel) | [`vercel.json`](../lestari-pangan-frontend/vercel.json): CSP ketat (`script-src 'self'`, koneksi hanya ke proyek Supabase dan geocoding `nominatim.openstreetmap.org`, gambar tambahan hanya tile `tile.openstreetmap.org`), HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` (mikrofon, kamera, dan lokasi hanya untuk situs sendiri; lokasi diminta saat pengguna menekan "Pakai lokasi saya sekarang"). Titik peta (`profile_contacts.lat/lng`) privat seperti alamat: hanya pemilik, admin, dan pihak penyaluran. `npm run preview` memakai header yang sama sehingga bisa diuji lokal. |
 | Pesan galat aman | [`lib/supabase/errors.ts`](../lestari-pangan-frontend/src/lib/supabase/errors.ts) menerjemahkan kode galat; pesan teknis server tidak ditampilkan ke pengguna. |
 | Tanpa skrip pihak ketiga | Font dibundel lokal, tidak ada CDN, tidak ada `dangerouslySetInnerHTML`. |
 

@@ -40,3 +40,6 @@ export function labelToIso(label: string) {
  * sendiri oleh pihak yang menanggung ongkir (GoSend/GrabExpress), bukan kurir yang ditugaskan tim.
  */
 export const methodLabel = (m: string) => (m === 'Mitra pengiriman' ? 'Ojek online' : m === 'Antar pemberi' ? 'Diantar pemberi' : m)
+
+/** Tautan Google Maps untuk satu titik (membuka aplikasi Google Maps di HP bila terpasang). */
+export const mapsUrl = (p: { lat: number; lng: number }) => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`

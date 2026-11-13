@@ -4,6 +4,9 @@ export interface Contact {
   pic: string
   phone: string
   address: string
+  /** Titik peta; null bila pemilik belum memilih titik. */
+  lat: number | null
+  lng: number | null
 }
 
 export type FoodCategory = 'Makanan matang' | 'Bahan pangan' | 'Produk kemasan'

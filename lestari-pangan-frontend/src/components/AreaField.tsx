@@ -12,6 +12,16 @@ export function AreaField({ value, onChange, error, cityOnly = false }: { value:
   const [city, setCity] = useState(init.city)
   const [cities, setCities] = useState<City[]>([])
   const listId = useId()
+  // Ikuti nilai dari luar (mis. terisi dari titik peta); '' = ketikan pengguna belum valid, jangan dihapus.
+  const [seen, setSeen] = useState(value)
+  if (value !== seen) {
+    setSeen(value)
+    if (value) {
+      const next = splitArea(value)
+      setDistrict(next.district)
+      setCity(next.city)
+    }
+  }
 
   useEffect(() => {
     let alive = true

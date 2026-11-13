@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
-import { methodLabel } from '../../lib/format'
-import { CalendarBlank, LockSimple, MapPin, Phone, User, WhatsappLogo } from '@phosphor-icons/react'
+import { mapsUrl, methodLabel } from '../../lib/format'
+import { CalendarBlank, LockSimple, MapPin, MapTrifold, Phone, User, WhatsappLogo } from '@phosphor-icons/react'
 import { AppBar, ButtonLink, Notice } from '../../components/ui'
 import { NotAvailable } from '../../components/NotAvailable'
 import { useApp } from '../../state/AppState'
@@ -44,6 +44,11 @@ export default function Coordination() {
             <p className="flex items-center gap-2"><User size={20} aria-hidden="true" className="text-primary" /> {c.pic}</p>
             <p className="flex items-center gap-2"><Phone size={20} aria-hidden="true" className="text-primary" /> {c.phone}</p>
             <p className="flex items-start gap-2"><MapPin size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" /> {c.address}</p>
+            {c.lat != null && c.lng != null && (
+              <a href={mapsUrl({ lat: c.lat, lng: c.lng })} target="_blank" rel="noopener noreferrer" className="tap inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-line bg-surface font-semibold text-primary hover:border-line-control">
+                <MapTrifold size={20} aria-hidden="true" /> Buka di Google Maps
+              </a>
+            )}
             {!done && (
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <a href={`tel:${c.phone.replace(/[^\d+]/g, '')}`} className="tap inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-line bg-surface font-semibold text-primary hover:border-line-control">

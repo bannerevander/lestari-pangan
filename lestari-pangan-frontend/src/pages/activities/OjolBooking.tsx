@@ -1,6 +1,7 @@
 import { ArrowSquareOut, Copy, Motorcycle } from '@phosphor-icons/react'
 import { toast } from '../../components/ui'
 import type { Contact, Transfer } from '../../data/types'
+import { mapsUrl } from '../../lib/format'
 
 /** Tautan resmi layanan antar instan; aplikasi Gojek/Grab terbuka bila terpasang, selain itu halaman layanannya. */
 const APPS = [
@@ -9,7 +10,7 @@ const APPS = [
 ] as const
 
 const stop = (label: string, name: string, c?: Contact) =>
-  [`${label}: ${name}`, c?.address, c ? `Kontak: ${c.pic} (${c.phone})` : null].filter(Boolean).join('\n')
+  [`${label}: ${name}`, c?.address, c ? `Kontak: ${c.pic} (${c.phone})` : null, c?.lat != null && c.lng != null ? `Peta: ${mapsUrl({ lat: c.lat, lng: c.lng })}` : null].filter(Boolean).join('\n')
 
 const copy = (text: string, done: string) =>
   navigator.clipboard.writeText(text).then(

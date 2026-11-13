@@ -12,6 +12,8 @@ export interface UiProfile {
   pic: string
   phone: string
   address: string
+  /** Titik peta titik temu (privat); null bila belum dipilih. */
+  point: { lat: number; lng: number } | null
   hours: string
   capacity: string
   storage: string
@@ -33,10 +35,11 @@ export function useProfile(): UiProfile {
       pic: profile.contact?.pic ?? '',
       phone: profile.contact?.phone ?? '',
       address: profile.contact?.address ?? '',
+      point: profile.contact?.lat != null && profile.contact?.lng != null ? { lat: profile.contact.lat, lng: profile.contact.lng } : null,
       hours: profile.hours ?? '',
       capacity: profile.capacity ?? '',
       storage: profile.storage ?? '',
     }
   }
-  return { name: '', initials: '', type: '', area: '', verification: 'Belum diajukan', pic: '', phone: '', address: '', hours: '', capacity: '', storage: '' }
+  return { name: '', initials: '', type: '', area: '', verification: 'Belum diajukan', pic: '', phone: '', address: '', point: null, hours: '', capacity: '', storage: '' }
 }

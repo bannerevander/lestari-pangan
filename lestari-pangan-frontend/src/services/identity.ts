@@ -43,7 +43,11 @@ export async function completeOnboarding(input: OnboardingInput): Promise<void> 
 }
 
 /** Kolom profil yang boleh diubah pengguna sendiri (identity_save_profile). */
-export type ProfileUpdate = Partial<Record<'org_name' | 'area' | 'hours' | 'capacity' | 'storage' | 'pic' | 'phone' | 'address', string>>
+export type ProfileUpdate = Partial<Record<'org_name' | 'area' | 'hours' | 'capacity' | 'storage' | 'pic' | 'phone' | 'address', string>> & {
+  /** Titik peta titik temu; null menghapus titik. */
+  lat?: number | null
+  lng?: number | null
+}
 
 export async function saveProfile(fields: ProfileUpdate): Promise<void> {
   const { error } = await supabase.rpc('identity_save_profile', { p_fields: fields })

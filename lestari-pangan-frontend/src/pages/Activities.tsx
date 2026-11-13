@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
-import { methodLabel } from '../lib/format'
+import { mapsUrl, methodLabel } from '../lib/format'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowRight, Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
+import { ArrowRight, Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray, MapTrifold } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
 import { AppBar, Badge, BottomSheet, Button, ButtonLink, Chip, Field, inputCls, MenuRow, Notice, PartiesRow, PolicyNote, QtyStepper, RadioCard, Segmented, StageList, StatePanel, StatusBadge, StickyFooter, ChipRow, toast } from '../components/ui'
 import { FoodPhoto } from '../components/FoodPhoto'
@@ -325,6 +325,11 @@ export function TransferDetail() {
                     <LockSimple size={16} aria-hidden="true" /> Alamat lengkap, hanya untuk pihak yang terlibat
                   </p>
                   <p className="mt-1">{t.donorAddress ?? 'Alamat belum tersedia'}</p>
+                  {t.donorContact?.lat != null && t.donorContact.lng != null && (
+                    <a href={mapsUrl({ lat: t.donorContact.lat, lng: t.donorContact.lng })} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-[0.875rem] font-semibold text-primary hover:underline">
+                      <MapTrifold size={18} aria-hidden="true" /> Buka di Google Maps
+                    </a>
+                  )}
                 </div>
               </div>
             </li>

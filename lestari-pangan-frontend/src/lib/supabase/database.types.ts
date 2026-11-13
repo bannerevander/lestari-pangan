@@ -803,6 +803,8 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          lat: number | null
+          lng: number | null
           phone: string
           pic: string
           profile_id: number
@@ -810,6 +812,8 @@ export type Database = {
         Insert: {
           address: string
           created_at?: string
+          lat?: number | null
+          lng?: number | null
           phone: string
           pic: string
           profile_id: number
@@ -817,6 +821,8 @@ export type Database = {
         Update: {
           address?: string
           created_at?: string
+          lat?: number | null
+          lng?: number | null
           phone?: string
           pic?: string
           profile_id?: number

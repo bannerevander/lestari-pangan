@@ -1,10 +1,11 @@
 import { AreaField } from '../../components/AreaField'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button, Chip, Field, inputCls, RadioCard, toast } from '../../components/ui'
 import { useApp } from '../../state/AppState'
 import { messageOf } from '../../lib/supabase/errors'
-import { completeOnboarding } from '../../services/identity'
+import { completeOnboarding, saveProfile } from '../../services/identity'
+import { LocationPicker, type PickedLocation } from '../../components/LocationPicker'
 import { readDraft, writeDraft } from './draft'
 import { SignupShell } from './SignupShell'
 
@@ -22,6 +23,18 @@ export function ProfileSetup() {
   const [pickup, setPickup] = useState('Ambil sendiri')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
+  const [point, setPoint] = useState<{ lat: number; lng: number } | null>(null)
+  // Titik dari peta mengisi kab/kota dan alamat; alamat yang sudah diubah pengguna (mis. tambah patokan) tidak ditimpa.
+  const auto = useRef('')
+  const onPick = (p: PickedLocation) => {
+    setPoint({ lat: p.lat, lng: p.lng })
+    if (p.address === undefined) return
+    setF((x) => {
+      const keep = x.address.trim() && x.address !== auto.current
+      if (!keep) auto.current = p.address!
+      return { ...x, area: p.area || x.area, address: keep ? x.address : p.address! }
+    })
+  }
   if (!draft?.verified) return <Navigate to="/masuk" replace />
 
   const submit = async () => {
@@ -50,6 +63,7 @@ export function ProfileSetup() {
         capacity,
         storage: donor ? undefined : storage,
       })
+      if (point) await saveProfile(point)
       // OD-02: cukup email + OTP; langkah unggah bukti verifikasi dilewati untuk saat ini.
       writeDraft(null)
       dispatch({ type: 'signIn', role: state.role })
@@ -72,6 +86,11 @@ export function ProfileSetup() {
           <AreaField value={f.area} onChange={(area) => setF({ ...f, area })} error={errors.area} />
           <p className="-mt-2 text-caption text-ink-secondary">Hanya wilayah ini yang terlihat di pencarian.</p>
         </section>
+        <section className="flex flex-col gap-3">
+          <h2 className="flex items-center gap-2 text-card-title">{donor ? 'Lokasi penjemputan di peta' : 'Lokasi distribusi di peta'} <span className="rounded-full bg-page px-2 py-0.5 text-caption text-ink-secondary">Privat</span></h2>
+          <p className="-mt-1 text-meta text-ink-secondary">Kab/kota dan alamat terisi otomatis. Titik ini membantu penerima dan driver ojek online menemukan lokasi lewat Google Maps.</p>
+          <LocationPicker value={point} onPick={onPick} />
+        </section>
         <section className="flex flex-col gap-4">
           <h2 className="flex items-center gap-2 text-card-title">Kontak koordinasi <span className="rounded-full bg-page px-2 py-0.5 text-caption text-ink-secondary">Privat</span></h2>
           <Field label="Nama penanggung jawab" error={errors.pic}>
@@ -80,7 +99,7 @@ export function ProfileSetup() {
           <Field label="Nomor telepon" error={errors.phone}>
             {(p) => <input {...p} type="tel" inputMode="tel" autoComplete="tel" className={inputCls} value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />}
           </Field>
-          <Field label={donor ? 'Alamat titik penjemputan' : 'Alamat titik distribusi'} hint="Dibuka hanya setelah permintaan disetujui." error={errors.address}>
+          <Field label={donor ? 'Alamat titik penjemputan' : 'Alamat titik distribusi'} hint="Terisi dari peta. Tambahkan patokan, mis. pagar hijau atau pintu samping. Dibuka hanya setelah permintaan disetujui." error={errors.address}>
             {(p) => <textarea {...p} rows={2} autoComplete="street-address" className={inputCls} value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} />}
           </Field>
         </section>
