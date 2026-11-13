@@ -7,7 +7,7 @@ import { CountUp, SectionHeader } from '../components/ui'
 import { FoodCardCompact, FoodCardSearch } from '../components/FoodCard'
 import { useApp } from '../state/AppState'
 import { useProfile } from '../state/useProfile'
-import { asset } from '../lib/format'
+import { asset, methodLabel } from '../lib/format'
 
 /** Daun dekoratif pada modul sapaan (H01 botanical greeting). */
 function LeafDecor() {
@@ -181,7 +181,7 @@ function RecipientHome() {
           </p>
           <p className="text-meta text-ink-secondary">Dari {next.donorName} · {next.id}</p>
           <p className="mt-1 flex items-center gap-1.5 text-meta">
-            <Clock size={18} aria-hidden="true" className="text-primary" /> {next.timeStart}–{next.timeEnd} WIB · {next.method}
+            <Clock size={18} aria-hidden="true" className="text-primary" /> {next.timeStart}–{next.timeEnd} WIB · {methodLabel(next.method)}
           </p>
           <Link to={`/aktivitas/${next.id}`} className="tap mt-3 flex min-h-[52px] items-center justify-center gap-1 rounded-control bg-primary text-[1rem] font-semibold text-white hover:bg-primary-pressed">
             Lihat penyaluran <CaretRight size={18} weight="bold" aria-hidden="true" />

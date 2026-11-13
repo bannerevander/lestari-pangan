@@ -16,7 +16,6 @@ import {
   SealCheck,
   SignOut,
   SquaresFour,
-  Truck,
   Wallet,
   Warning,
   X,
@@ -30,7 +29,7 @@ type Item = { to: string; label: string; icon: typeof SquaresFour; badge?: numbe
 
 function useNav(): { title: string; items: Item[] }[] {
   const { data } = useAdmin()
-  const { contents, deliveries, issues, orgs } = data
+  const { contents, issues, orgs } = data
   const count = <T extends { id: string; status: string }>(list: T[], re: RegExp) => list.filter((x) => re.test(x.status)).length
   return [
     {
@@ -40,7 +39,6 @@ function useNav(): { title: string; items: Item[] }[] {
         { to: '/admin/pengguna', label: 'Pengguna dan verifikasi', icon: SealCheck, badge: count(orgs, /Menunggu/) },
         { to: '/admin/penyaluran', label: 'Penawaran dan penyaluran', icon: Handshake },
         { to: '/admin/kendala', label: 'Antrean kendala', icon: Warning, badge: count(issues, /Menunggu/) },
-        { to: '/admin/pengiriman', label: 'Pengiriman', icon: Truck, badge: count(deliveries, /Menunggu kurir/) },
         { to: '/admin/tiket', label: 'Tiket bantuan', icon: Lifebuoy, badge: data.tickets.filter((t) => t.status !== 'Selesai').length },
       ],
     },

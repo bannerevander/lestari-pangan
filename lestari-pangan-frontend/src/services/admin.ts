@@ -42,7 +42,7 @@ type Name = { org_name: string } | null
 
 export async function loadAdminData(): Promise<AdminData> {
   const db = supabase
-  const [profiles, verifications, issues, transfers, tasks, contents, challenges, progress, packs, claims, ledger, supports, inKind, programs, audit, offers, requests, materials] =
+  const [profiles, verifications, issues, transfers, contents, challenges, progress, packs, claims, ledger, supports, inKind, programs, audit, offers, requests, materials] =
     await Promise.all([
       q<{ id: number; code: string; role: string; org_name: string; org_type: string; area: string; verification_status: string; created_at: string; contact: { pic: string; phone: string } | null }>(
         db.from('profiles').select('id, code, role, org_name, org_type, area, verification_status, created_at, contact:profile_contacts(pic, phone)').order('created_at', { ascending: false }).limit(LIMIT),
@@ -63,9 +63,6 @@ export async function loadAdminData(): Promise<AdminData> {
           .select('id, code, agreed, handed_over, received, rejected, distributed, used, wasted, unit, method, status, window_start, pending_receipt, request:requests!transfers_request_id_fkey(code), offer:offers!transfers_offer_id_fkey(code, name, initial), donor:profiles!transfers_donor_id_fkey(org_name), recipient:profiles!transfers_recipient_id_fkey(org_name)')
           .order('created_at', { ascending: false })
           .limit(LIMIT),
-      ),
-      q<{ code: string; transfer_id: number; cost: number; status: string; courier: Name }>(
-        db.from('courier_tasks').select('code, transfer_id, cost, status, courier:profiles!courier_tasks_courier_id_fkey(org_name)').limit(LIMIT),
       ),
       q<{ id: number; slug: string; kind: 'Tips' | 'Resep'; title: string; category: string; summary: string; body: unknown; photo_path: string | null; version: number; status: string; author: string; updated_at: string }>(
         db.from('contents').select('id, slug, kind, title, category, summary, body, photo_path, version, status, author, updated_at').order('updated_at', { ascending: false }),
@@ -116,7 +113,6 @@ export async function loadAdminData(): Promise<AdminData> {
     ),
   ])
   const profileById = new Map(profiles.map((p) => [p.id, p]))
-  const transferById = new Map(transfers.map((t) => [t.id, t]))
   const transferByRequest = new Map(transfers.filter((t) => t.request).map((t) => [t.request!.code, t.code]))
 
   const latestVerification = new Map<number, (typeof verifications)[number]>()
@@ -176,40 +172,6 @@ export async function loadAdminData(): Promise<AdminData> {
     }
   }
 
-  const taskByTransfer = new Map(tasks.map((t) => [t.transfer_id, t]))
-  const deliveries = [
-    ...tasks.map((c) => {
-      const t = transferById.get(c.transfer_id)
-      return {
-        id: c.code,
-        transferId: t?.code ?? '',
-        transferDbId: c.transfer_id,
-        load: t ? `${t.agreed} ${t.unit} ${t.offer?.name ?? ''}`.trim() : '—',
-        from: t?.donor?.org_name ?? '—',
-        to: t?.recipient?.org_name ?? '—',
-        method: 'Kurir bersponsor' as const,
-        cost: c.cost,
-        courier: c.courier?.org_name,
-        status: c.status === 'Dalam perjalanan' ? 'Dalam pengantaran' : c.status === 'Menunggu ambil' ? 'Menunggu ambil' : c.status,
-      }
-    }),
-    // Penyaluran lewat mitra pengiriman yang belum punya tugas kurir.
-    ...transfers
-      .filter((t) => t.method === 'Mitra pengiriman' && t.status === 'Terjadwal' && !taskByTransfer.has(t.id))
-      .map((t) => ({
-        id: t.code,
-        transferId: t.code,
-        transferDbId: t.id,
-        load: `${t.agreed} ${t.unit} ${t.offer?.name ?? ''}`.trim(),
-        from: t.donor?.org_name ?? '—',
-        to: t.recipient?.org_name ?? '—',
-        method: 'Kurir bersponsor' as const,
-        cost: 0,
-        courier: undefined,
-        status: 'Menunggu kurir',
-      })),
-  ]
-
   const programSpend = new Map<number, { masuk: number; keluar: number }>()
   for (const l of ledger) {
     if (l.program_id === null) continue
@@ -262,7 +224,6 @@ export async function loadAdminData(): Promise<AdminData> {
         timeline: [...i.events].sort((a, b) => a.at.localeCompare(b.at)).map((e) => ({ title: `${timeOf(e.at)} · ${e.label}`, detail: e.note ?? '' })),
       }
     }),
-    deliveries,
     contents: contents.map((c) => ({
       id: c.slug,
       dbId: c.id,
@@ -363,7 +324,6 @@ export async function loadAdminData(): Promise<AdminData> {
         })),
     })),
     chains,
-    couriers: profiles.filter((p) => p.role === 'kurir').map((p) => ({ id: p.id, name: p.org_name })),
     partners: profiles.filter((p) => p.role === 'pemberi' || p.role === 'penerima').map((p) => ({ id: p.id, name: p.org_name, area: p.area })),
     impact: (() => {
       const out: AdminData['impact'] = {}

@@ -24,7 +24,7 @@ Fokus SDG utama adalah **SDG 12 tentang konsumsi dan produksi yang bertanggung j
 | Restoran dan UMKM | Menemukan penerima yang sesuai, mempermudah koordinasi, menyimpan riwayat penyaluran, serta mengevaluasi pola surplus. |
 | Rumah tangga | Menyalurkan kelebihan pangan dan memperoleh ide penggunaan bahan yang tersedia. |
 | Panti dan komunitas | Menemukan donasi yang sesuai kebutuhan, mengatur penerimaan, dan mencatat hasil distribusi. |
-| Mitra pengiriman | Menjalankan penugasan dengan jadwal, informasi lokasi, dan status serah terima yang jelas. |
+| Ojek online (GoSend/GrabExpress) | Mengantar pangan yang dipesan sendiri oleh pemberi atau penerima; aplikasi menyiapkan alamat jemput, tujuan, kontak, dan catatan driver untuk disalin. |
 | Sponsor dan pendukung | Membantu operasional atau penyaluran serta melihat penggunaan dukungan dan hasil program yang dapat ditelusuri. |
 
 Manfaat promosi dari reward apresiasi bergantung pada jangkauan dan kredibilitas program; kenaikan penjualan atau reputasi restoran tidak dijanjikan.
@@ -36,7 +36,7 @@ Aplikasi memiliki **dua peran pengguna utama**:
 - **Pemberi donasi:** restoran, UMKM, dan rumah tangga.
 - **Penerima donasi:** pengelola panti asuhan, panti jompo, dan komunitas penyaluran makanan gratis.
 
-**Admin** membantu verifikasi, pengelolaan konten, penanganan kendala, reward, dan laporan pendanaan. **Mitra pengiriman** membantu pengangkutan, baik melalui kemitraan yang dibangun maupun pihak ketiga. Keduanya merupakan fungsi pendukung operasional, bukan kelompok peserta Eco Challenge tambahan.
+**Admin** membantu verifikasi, pengelolaan konten, penanganan kendala, reward, dan laporan pendanaan. Pengantaran memakai **ojek online** (GoSend/GrabExpress) yang dipesan pihak yang menanggung ongkir, tanpa kurir khusus aplikasi. Keduanya merupakan fungsi pendukung operasional, bukan kelompok peserta Eco Challenge tambahan.
 
 ## Prinsip produk
 
@@ -202,11 +202,11 @@ Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat wakt
 
 ## Akun demo untuk juri
 
-Satu akun per peran (pemberi, penerima, kurir, admin). Pilih metode **Kode verifikasi** lalu ketuk Kirim kode (akun uji langsung masuk), atau metode **Kata sandi**. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+Satu akun per peran (pemberi, penerima, admin). Pilih metode **Kode verifikasi** lalu ketuk Kirim kode (akun uji langsung masuk), atau metode **Kata sandi**. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
 
 | Bagian | Alamat | Perangkat |
 | --- | --- | --- |
-| Aplikasi pengguna (pemberi, penerima, kurir) | https://lestari-pangan.vercel.app | Dirancang untuk HP. Di laptop tampil sebagai kolom HP di tengah layar. |
+| Aplikasi pengguna (pemberi, penerima) | https://lestari-pangan.vercel.app | Dirancang untuk HP. Di laptop tampil sebagai kolom HP di tengah layar. |
 | Konsol staf (admin) | https://lestari-pangan.vercel.app/admin/masuk | **Menyesuaikan perangkat yang dipakai.** Di laptop: menu di samping kiri dan data dalam tabel. Di HP: menu lewat tombol ☰ dan setiap baris tabel tampil sebagai kartu. Fungsinya sama di keduanya. |
 
 Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf operasional** di bawah halaman masuk.

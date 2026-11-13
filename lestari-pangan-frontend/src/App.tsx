@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppFrame, TabLayout } from './components/Layouts'
 import { useApp } from './state/AppState'
-import { useMyProfile } from './state/MyProfile'
 import Home from './pages/Home'
 import { DonasiTab, OfferClose, OfferDetail, OfferEdit, OfferForm, OfferManage } from './pages/donation'
 import { IncomingRequests, RequestAdjustment, RequestCancel, RequestDetail, RequestForm, ReviewRequest } from './pages/requests'
@@ -10,7 +9,6 @@ import { ActivitiesTab, Distribution, Handover, IssueDetail, Notifications, Rece
 import Coordination from './pages/activities/Coordination'
 import { PanganTab, RecordCorrection, RecordDetail, RecordForm, RecordMove } from './pages/Pangan'
 import { AreaPicker, ClaimReview, DeletionRequest, HelpRequest, RewardDetail, SavedTips } from './pages/Extras'
-import { TaskDetail, TaskHandover, TaskIssue, TaskList } from './pages/Courier'
 import { DeliveryStatus, MethodPage, PrepPage } from './pages/Delivery'
 import { AccountTab } from './pages/Account'
 import { Features, Impact, Recipes, TipDetail, Tips } from './pages/Explore'
@@ -53,12 +51,6 @@ function RequireAuth() {
   return <Outlet />
 }
 
-/** Kurir tidak memakai tab pemberi/penerima; berandanya daftar tugas. */
-function TabsOrTasks() {
-  const { profile } = useMyProfile()
-  return profile?.role === 'kurir' ? <Navigate to="/tugas" replace /> : <TabLayout />
-}
-
 export default function App() {
   return (
     <Routes>
@@ -81,7 +73,7 @@ export default function App() {
         <Route path="/pulihkan" element={<Recover />} />
 
         <Route element={<RequireAuth />}>
-          <Route element={<TabsOrTasks />}>
+          <Route element={<TabLayout />}>
             <Route index element={<Home />} />
             <Route path="donasi" element={<DonasiTab />} />
             <Route path="pangan" element={<PanganTab />} />
@@ -127,10 +119,6 @@ export default function App() {
           <Route path="pengaturan/hapus-akun" element={<DeletionRequest />} />
           <Route path="reward/:id" element={<RewardDetail />} />
           <Route path="reward/:id/klaim" element={<ClaimReview />} />
-          <Route path="tugas" element={<TaskList />} />
-          <Route path="tugas/:id" element={<TaskDetail />} />
-          <Route path="tugas/:id/serah-terima" element={<TaskHandover />} />
-          <Route path="tugas/:id/kendala" element={<TaskIssue />} />
           <Route path="resep" element={<Recipes />} />
           <Route path="tantangan" element={<ChallengeList />} />
           <Route path="tantangan/:id" element={<ChallengeDetail />} />

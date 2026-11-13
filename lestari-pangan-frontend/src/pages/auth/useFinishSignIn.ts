@@ -23,11 +23,9 @@ export function useFinishSignIn() {
       return
     }
     if (profile?.role === 'kurir') {
-      // Tab pemberi/penerima dialihkan ke /tugas untuk kurir oleh App (TabsOrTasks).
-      writeDraft(null)
-      dispatch({ type: 'signIn' })
-      navigate('/tugas', { replace: true })
-      return
+      // Peran kurir dihentikan: pengantaran kini lewat ojek online yang dipesan pemberi/penerima sendiri.
+      await signOut()
+      throw new AppError('TIDAK_BERHAK', 'Peran kurir tidak lagi digunakan. Pengantaran kini memakai ojek online.')
     }
     writeDraft({ ...draft, verified: true })
     navigate('/peran?daftar=1')

@@ -4,7 +4,7 @@ import { Check } from '@phosphor-icons/react'
 import { AppBar, BottomSheet, Button, Chip, Field, inputCls, Notice, StickyFooter, toast } from '../../components/ui'
 import { useApp } from '../../state/AppState'
 import type { FoodCategory, Offer, Unit } from '../../data/types'
-import { isoToLabel, timeLabel } from '../../lib/format'
+import { isoToLabel, timeLabel, methodLabel } from '../../lib/format'
 import { messageOf } from '../../lib/supabase/errors'
 import { publishOffer, uploadOfferPhoto } from '../../services/donation'
 import { useLiveData } from '../../state/LiveData'
@@ -341,8 +341,8 @@ export default function OfferForm() {
                         className="h-5 w-5 accent-primary"
                       />
                       <span className="flex-1">
-                        <span className="block font-medium">{m === 'Ambil sendiri' ? 'Penerima ambil sendiri' : m === 'Antar pemberi' ? 'Saya antar' : 'Mitra pengiriman'}</span>
-                        {m === 'Mitra pengiriman' && <span className="block text-meta text-ink-secondary">Ongkir ditanggung penerima; penerima bisa mengajukan agar Anda yang menanggung.</span>}
+                        <span className="block font-medium">{m === 'Ambil sendiri' ? 'Penerima ambil sendiri' : m === 'Antar pemberi' ? 'Saya antar' : 'Ojek online (GoSend/GrabExpress)'}</span>
+                        {m === 'Mitra pengiriman' && <span className="block text-meta text-ink-secondary">Penerima memesan dan membayar ongkir; penerima bisa meminta Anda yang menanggung.</span>}
                       </span>
                     </label>
                   )
@@ -383,9 +383,9 @@ export default function OfferForm() {
               ['Area (publik)', d.area],
               ['Pengambilan', `${isoToLabel(d.date)}, ${timeLabel(d.start)}–${timeLabel(d.end)} WIB`],
               ['Alamat lengkap', 'Terkunci sampai ada kesepakatan dengan penerima'],
-              ['Cara', d.methods.join(', ')],
+              ['Cara', d.methods.map(methodLabel).join(', ')],
               ['Batas per penerima', d.limitOn ? `${d.limit} ${d.unit}` : 'Tanpa batas'],
-              ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Mitra pengiriman: ongkir dibayar langsung ke kurir' : 'Tanpa biaya pengiriman dari platform'],
+              ['Biaya pengiriman', d.methods.includes('Mitra pengiriman') ? 'Ojek online: ongkir dibayar langsung ke driver' : 'Tanpa biaya pengiriman dari platform'],
             ]} />
             <label className={`flex items-start gap-3 rounded-card border p-4 ${declareError ? 'border-danger bg-danger-container' : 'border-primary/30 bg-primary-container'}`}>
               <input type="checkbox" checked={declared} onChange={(e) => { setDeclared(e.target.checked); setDeclareError(false) }} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" aria-describedby="declare-err" />

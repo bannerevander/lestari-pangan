@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import { methodLabel } from '../../lib/format'
 import { CaretRight, Clock, MapPin, PencilSimple, WarningCircle, XCircle } from '@phosphor-icons/react'
 import { AppBar, Badge, ButtonLink, MenuRow, StatusBadge, StickyFooter } from '../../components/ui'
 import { pickupLabel } from '../../components/FoodCard'
@@ -79,7 +80,7 @@ export function OfferManage() {
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{r.recipientName}</p>
-                    <p className="text-meta text-ink-secondary">{r.method} · {r.pickupTime}</p>
+                    <p className="text-meta text-ink-secondary">{methodLabel(r.method)} · {r.pickupTime}</p>
                   </div>
                   <span className="shrink-0 text-right">
                     <span className="block text-[1.125rem] font-bold">{r.quantity} {r.unit}</span>

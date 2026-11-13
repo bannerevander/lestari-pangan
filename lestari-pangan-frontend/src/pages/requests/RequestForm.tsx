@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { methodLabel } from '../../lib/format'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CaretRight, PaperPlaneTilt, Users } from '@phosphor-icons/react'
 import { Button, Field, inputCls, Notice, RadioCard, StickyFooter, toast } from '../../components/ui'
@@ -189,8 +190,8 @@ export function RequestForm() {
                 name="method"
                 checked={method === m}
                 onChange={() => setMethod(m)}
-                title={m}
-                description={m === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : m === 'Mitra pengiriman' ? 'Kurir ditugaskan tim; ongkir dibayar langsung ke mitra' : 'Sesuai kesepakatan dengan pemberi'}
+                title={methodLabel(m)}
+                description={m === 'Ambil sendiri' ? 'Tanpa biaya pengiriman dari platform' : m === 'Mitra pengiriman' ? 'Pesan GoSend/GrabExpress sendiri; ongkir dibayar Anda, atau pemberi bila disepakati.' : 'Sesuai kesepakatan dengan pemberi'}
               />
             ))}
           </div>

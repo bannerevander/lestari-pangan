@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { methodLabel } from '../lib/format'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Bicycle, CheckSquare, HandArrowDown, Info, Truck, Warning } from '@phosphor-icons/react'
 import { AppBar, Badge, Button, ButtonLink, Notice, PolicyNote, StickyFooter, toast } from '../components/ui'
@@ -14,7 +15,7 @@ import { NotAvailable } from '../components/NotAvailable'
 const METHODS: { value: Transfer['method']; icon: typeof Truck; title: string; desc: string; cost: string; available: boolean }[] = [
   { value: 'Ambil sendiri', icon: HandArrowDown, title: 'Ambil sendiri oleh penerima', desc: 'Relawan penerima datang ke titik temu dengan wadah atau tas higienis.', cost: 'Rp0', available: true },
   { value: 'Antar pemberi', icon: Bicycle, title: 'Diantar pemberi', desc: 'Pemberi mengantar sendiri bila jaraknya dekat.', cost: 'Rp0 (sukarela)', available: true },
-  { value: 'Mitra pengiriman', icon: Truck, title: 'Mitra pengiriman', desc: 'Tim operasional menugaskan kurir relawan atau mitra.', cost: 'Ongkir dibayar langsung ke mitra', available: true },
+  { value: 'Mitra pengiriman', icon: Truck, title: 'Ojek online (GoSend/GrabExpress)', desc: 'Pihak yang menanggung ongkir memesan sendiri lewat aplikasi Gojek atau Grab.', cost: 'Ongkir dibayar langsung ke driver', available: true },
 ]
 
 export function MethodPage() {
@@ -181,14 +182,14 @@ export function DeliveryStatus() {
       <main className="stagger mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-10 pt-4">
         <section className="card p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Badge tone="info">{t.method}</Badge>
+            <Badge tone="info">{methodLabel(t.method)}</Badge>
             <span className="text-caption text-ink-secondary">{t.id}</span>
           </div>
           <p className="mt-2 font-semibold">{t.foodName}</p>
           <p className="text-meta text-ink-secondary">{t.agreed} {t.unit} · {t.date}, {t.timeStart}–{t.timeEnd} WIB</p>
           <dl className="mt-3 grid grid-cols-2 gap-2 text-meta">
             <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Harga pangan</dt><dd className="font-semibold">Rp0</dd></div>
-            <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Biaya pengiriman</dt><dd className="font-semibold">{t.method === 'Mitra pengiriman' ? 'Dibayar ke mitra' : 'Rp0'}</dd></div>
+            <div className="rounded-control bg-page p-2"><dt className="text-caption text-ink-secondary">Biaya pengiriman</dt><dd className="font-semibold">{t.method === 'Mitra pengiriman' ? 'Dibayar ke driver' : 'Rp0'}</dd></div>
           </dl>
         </section>
         <section className="card p-4">

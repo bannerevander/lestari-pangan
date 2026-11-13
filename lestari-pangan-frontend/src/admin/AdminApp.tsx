@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { AdminStateProvider } from './store'
 import { AdminLayout } from './AdminLayout'
-import { AdminLogin, Dashboard, Deliveries, Distribution, IssueDetail, Issues, OperationDetail, UserReview, Users } from './pages/Operations'
+import { AdminLogin, Dashboard, Distribution, IssueDetail, Issues, OperationDetail, UserReview, Users } from './pages/Operations'
 import { AchievementReview, Appreciation, ChallengeEditor, ChallengeList, ClaimDetail, ContentEditor, ContentList, Rewards } from './pages/Programs'
 import { AuditLog, FundDetail, Funds, Programs, Reports } from './pages/Finance'
 import { Promotions } from './pages/Promotions'
@@ -21,7 +21,6 @@ export default function AdminApp() {
           <Route path="penyaluran/:id" element={<OperationDetail />} />
           <Route path="kendala" element={<Issues />} />
           <Route path="kendala/:id" element={<IssueDetail />} />
-          <Route path="pengiriman" element={<Deliveries />} />
           <Route path="konten" element={<ContentList />} />
           <Route path="konten/:id" element={<ContentEditor />} />
           <Route path="challenge" element={<ChallengeList />} />

@@ -26,8 +26,6 @@ interface State {
   records: FoodRecord[]
   notifications: Notification[]
   issues: Issue[]
-  /** Tugas relawan/mitra pengiriman (K01–K04); hanya untuk akun kurir. */
-  tasks: CourierTask[]
   tips: Tip[]
   recipes: Recipe[]
   savedTips: string[]
@@ -55,22 +53,6 @@ interface State {
   tickets: Ticket[]
 }
 
-export interface CourierTask {
-  id: string
-  transferId: string
-  food: string
-  agreed: number
-  unit: string
-  from: { name: string; pic: string; phone: string; address: string; note: string }
-  to: { name: string; pic: string; phone: string; address: string; note: string }
-  window: string
-  cost: string
-  status: 'Menunggu kurir' | 'Menunggu ambil' | 'Dalam perjalanan' | 'Selesai' | 'Gagal'
-  picked?: number
-  delivered?: number
-  timeline: { label: string; at: string; note?: string }[]
-}
-
 export type ProfileFields = { pic: string; phone: string; address: string; hours: string; area: string; capacity: string; storage: string }
 export interface Support {
   id: string
@@ -90,7 +72,6 @@ const empty: Omit<LiveData, 'prefs'> = {
   records: [],
   notifications: [],
   issues: [],
-  tasks: [],
   tips: [],
   recipes: [],
   savedTips: [],

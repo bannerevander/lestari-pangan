@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { methodLabel } from '../../lib/format'
 import { LockSimple } from '@phosphor-icons/react'
 import { AppBar, ButtonLink, Notice, StageList, StatusBadge, StickyFooter } from '../../components/ui'
 import { useApp } from '../../state/AppState'
@@ -71,7 +72,7 @@ export function RequestDetail() {
             <Row k="Pemberi" v={`${donorName}${offer ? ` (${offer.area.split(',')[0]})` : ''}`} />
             <Row k="Jumlah diminta" v={<span className="font-bold text-primary">{req.quantity} {req.unit}</span>} />
             <Row k="Pengambilan" v={req.pickupTime} />
-            <Row k="Cara" v={req.method} />
+            <Row k="Cara" v={methodLabel(req.method)} />
             {offer && <Row k="Area" v={offer.area} />}
             {req.note && <Row k="Catatan" v={req.note} />}
           </dl>

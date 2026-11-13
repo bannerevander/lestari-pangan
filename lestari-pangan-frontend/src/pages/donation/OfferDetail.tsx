@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { methodLabel } from '../../lib/format'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { BookmarkSimple, Clock, HandHeart, House, SealCheck, Truck } from '@phosphor-icons/react'
 import { AppBar, Button, ButtonLink, IconButton, KeyValue, Notice, StatusBadge, StickyFooter } from '../../components/ui'
@@ -104,13 +105,13 @@ export function OfferDetail() {
                     {m === 'Ambil sendiri' ? <House size={20} /> : <Truck size={20} />}
                   </span>
                   <div>
-                    <p className="font-semibold">{m}</p>
+                    <p className="font-semibold">{methodLabel(m)}</p>
                     <p className="text-meta text-ink-secondary">
                       {m === 'Ambil sendiri'
                         ? 'Tanpa biaya pengiriman dari platform. Transportasi Anda sendiri.'
                         : m === 'Antar pemberi'
                           ? 'Pemberi mengantar sesuai kesepakatan.'
-                          : 'Kurir ditugaskan tim operasional; ongkir dibayar penerima langsung ke mitra, atau pemberi bila disepakati.'}
+                          : 'Pesan GoSend/GrabExpress sendiri; ongkir dibayar penerima, atau pemberi bila disepakati.'}
                     </p>
                   </div>
                 </li>

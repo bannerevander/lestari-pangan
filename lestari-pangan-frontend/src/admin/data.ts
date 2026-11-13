@@ -42,19 +42,6 @@ export interface Issue {
   timeline?: { title: string; detail: string }[]
 }
 
-export interface Delivery {
-  id: string
-  transferId: string
-  load: string
-  from: string
-  to: string
-  method: 'Ambil sendiri' | 'Kurir bersponsor' | 'Antar pemberi'
-  cost: number
-  courier?: string
-  status: string
-  transferDbId?: number
-}
-
 export interface Content {
   id: string
   kind: 'Tips' | 'Resep'
@@ -191,7 +178,6 @@ export interface Material {
 export interface AdminData {
   orgs: Org[]
   issues: Issue[]
-  deliveries: Delivery[]
   contents: Content[]
   challenges: Challenge[]
   participants: Participant[]
@@ -202,7 +188,6 @@ export interface AdminData {
   audit: AuditEntry[]
   opOffers: OpOffer[]
   chains: Record<string, Chain>
-  couriers: { id: number; name: string }[]
   partners: { id: number; name: string; area: string }[]
   materials: Material[]
   /** Dampak fisik per satuan untuk laporan terbuka (AD21); satuan tidak pernah dijumlahkan silang. */
@@ -214,6 +199,6 @@ export interface AdminData {
 
 /** Sebelum data server termuat. */
 export const emptyData: AdminData = {
-  orgs: [], issues: [], deliveries: [], contents: [], challenges: [], participants: [], rewardPacks: [], claims: [], txns: [],
-  programs: [], audit: [], opOffers: [], chains: {}, couriers: [], partners: [], materials: [], impact: {}, promotions: [], tickets: [],
+  orgs: [], issues: [], contents: [], challenges: [], participants: [], rewardPacks: [], claims: [], txns: [],
+  programs: [], audit: [], opOffers: [], chains: {}, partners: [], materials: [], impact: {}, promotions: [], tickets: [],
 }

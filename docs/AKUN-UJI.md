@@ -1,6 +1,6 @@
 # Akun uji untuk juri
 
-Satu akun per peran, dibuat 12 Nov 2026 di proyek Supabase produksi. Halaman masuk punya dua metode untuk semua pengguna: **Kode verifikasi** dan **Kata sandi**. Akun uji bisa memakai keduanya.
+Satu akun per peran, dibuat 12 Nov 2026 (akun `kurir@example.com` masih ada di database tetapi tidak bisa masuk sejak peran kurir dihentikan 13 Nov 2026) di proyek Supabase produksi. Halaman masuk punya dua metode untuk semua pengguna: **Kode verifikasi** dan **Kata sandi**. Akun uji bisa memakai keduanya.
 
 Kata sandi semua akun: `test123`
 
@@ -8,7 +8,6 @@ Kata sandi semua akun: `test123`
 | --- | --- | --- | --- |
 | Pemberi | `pemberi@example.com` | https://lestari-pangan.vercel.app/masuk | Warung Uji Juri (UMKM), Coblong, Kota Bandung |
 | Penerima | `penerima@example.com` | https://lestari-pangan.vercel.app/masuk | Dapur Komunitas Uji Juri, kapasitas 30 porsi/hari |
-| Kurir | `kurir@example.com` | https://lestari-pangan.vercel.app/masuk | Kurir Uji Juri (relawan), diarahkan ke `/tugas` |
 | Admin (semua lingkup: ops, keuangan, konten) | `admin@example.com` | https://lestari-pangan.vercel.app/admin/masuk | Admin Uji Juri. Konsol menyesuaikan perangkat: laptop = menu samping + tabel, HP = menu ☰ + kartu |
 
 Cara masuk (pilih salah satu):
@@ -22,11 +21,11 @@ Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima
 
 ## Skenario uji per peran
 
-1. **Pemberi**: Tawarkan Pangan → isi kategori (Makanan matang wajib waktu dimasak), jumlah, jadwal, cara penyaluran "Mitra pengiriman", opsional batas per penerima → Terbitkan.
+1. **Pemberi**: Tawarkan Pangan → isi kategori (Makanan matang wajib waktu dimasak), jumlah, jadwal, cara penyaluran "Ojek online (GoSend/GrabExpress)", opsional batas per penerima → Terbitkan.
 2. **Penerima**: Cari pangan → pilih penawaran Warung Uji Juri → ajukan permintaan. Permintaan batal otomatis bila pemberi tidak menanggapi dalam 2 jam.
 3. **Pemberi**: Aktivitas → tinjau permintaan → setujui. Penerima bisa mengajukan ongkir ditanggung pemberi di detail penyaluran.
-4. **Admin**: Penyaluran/Pengiriman → tugaskan Kurir Uji Juri.
-5. **Kurir**: Tugas → ambil → antar.
+4. **Penerima**: Aktivitas → detail penyaluran → kartu **Pesan pengiriman**: salin alamat jemput, tujuan, dan catatan driver, lalu pesan GoSend/GrabExpress di aplikasinya. **Koordinasi** → hubungi pemberi lewat Telepon/WhatsApp.
+5. **Pemberi**: catat penyerahan saat driver mengambil pangan.
 6. **Penerima**: konfirmasi penerimaan. Bila jumlahnya kurang, isi penjelasan → status **Menunggu verifikasi** → **Admin** menyetujui di detail penyaluran.
 7. **Penerima/Pemberi**: Eco Challenge → ikuti → ajukan pemeriksaan → **Admin** meloloskan → poin masuk → Reward → tukar poin.
 

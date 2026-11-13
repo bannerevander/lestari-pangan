@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { methodLabel } from '../lib/format'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, Bell, CalendarBlank, CaretRight, ChatCircleText, Clock, Flag, Gift, Info, LockSimple, MapPin, Package, Truck, Tray } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
@@ -10,6 +11,7 @@ import { useLiveData } from '../state/LiveData'
 import { messageOf } from '../lib/supabase/errors'
 import { reportIssue, uploadIssuePhoto } from '../services/issues'
 import { PhotoPicker } from '../components/PhotoPicker'
+import { OjolBooking } from './activities/OjolBooking'
 import { useProfile } from '../state/useProfile'
 import { NotAvailable } from '../components/NotAvailable'
 import type { Transfer } from '../data/types'
@@ -158,7 +160,7 @@ function TransferCard({ t, donor }: { t: Transfer; donor: boolean }) {
           </div>
         </div>
         <p className="mt-2 flex items-center gap-1.5 text-meta text-ink-secondary">
-          <Clock size={18} aria-hidden="true" /> {t.date}, {t.timeStart}–{t.timeEnd} WIB · {t.method}
+          <Clock size={18} aria-hidden="true" /> {t.date}, {t.timeStart}–{t.timeEnd} WIB · {methodLabel(t.method)}
         </p>
         {t.status === 'Diterima sebagian' && <p className="mt-1 text-meta text-warning">{t.rejected} {t.unit} tidak diterima</p>}
       </Link>
@@ -330,19 +332,21 @@ export function TransferDetail() {
               <Truck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-primary" />
               <div>
                 <p className="text-meta text-ink-secondary">Cara pengambilan</p>
-                <p className="font-semibold">{t.method}</p>
+                <p className="font-semibold">{methodLabel(t.method)}</p>
                 <p className="text-meta text-ink-secondary">
                   {t.method === 'Ambil sendiri'
                     ? 'Tanpa biaya pengiriman'
                     : t.method === 'Antar pemberi'
                       ? 'Diantar pemberi tanpa biaya untuk penerima'
-                      : `Ongkir ditanggung ${t.feePayer}, dibayar langsung ke mitra pengiriman`}
+                      : `Ongkir ditanggung ${t.feePayer}, dibayar langsung ke ojek online`}
                 </p>
                 {t.method === 'Mitra pengiriman' && t.status === 'Terjadwal' && <FeeActions t={t} donor={donor} />}
               </div>
             </li>
           </ul>
         </section>
+
+        {t.method === 'Mitra pengiriman' && t.status === 'Terjadwal' && <OjolBooking t={t} donor={donor} />}
 
         <section className="card p-4">
           <h2 className="mb-3 text-card-title">Tahapan penyaluran</h2>
@@ -392,7 +396,7 @@ export function TransferDetail() {
             subtitle={`Hubungi ${donor ? t.recipientName : t.donorName}`}
           />
           <MenuRow to={`/aktivitas/${t.id}/status`} icon={<Truck size={20} />} title="Status penyaluran" subtitle="Linimasa serah terima" />
-          {t.status === 'Terjadwal' && <MenuRow to={`/aktivitas/${t.id}/metode`} icon={<Package size={20} />} title="Metode dan biaya" subtitle={`${t.method} · pangan Rp0`} />}
+          {t.status === 'Terjadwal' && <MenuRow to={`/aktivitas/${t.id}/metode`} icon={<Package size={20} />} title="Metode dan biaya" subtitle={`${methodLabel(t.method)} · pangan Rp0`} />}
           {donor && t.status === 'Terjadwal' && <MenuRow to={`/aktivitas/${t.id}/persiapan`} icon={<Tray size={20} />} title="Persiapan pangan" subtitle={`${t.prep?.length ?? 0}/4 daftar periksa`} />}
           {issues.map((i) => (
             <MenuRow key={i.id} to={`/masalah/${i.id}`} icon={<Flag size={20} />} title={`Laporan ${i.id}`} subtitle={`${i.status} · ${i.category}`} />
@@ -795,7 +799,7 @@ const ISSUE_CATEGORIES = [
   ['Kondisi pangan tidak sesuai', 'Kemasan rusak, kuah tumpah, atau tidak layak konsumsi.'],
   ['Jumlah berbeda', 'Jumlah fisik berbeda dari yang disepakati.'],
   ['Tidak datang atau terlambat', 'Salah satu pihak tidak hadir sesuai jadwal.'],
-  ['Kendala pengiriman', 'Kendaraan, rute, atau mitra pengiriman bermasalah.'],
+  ['Kendala pengiriman', 'Driver batal, terlambat, atau pangan rusak di jalan.'],
   ['Lainnya', 'Lokasi sulit ditemukan, kontak tidak aktif, atau hal lain.'],
 ] as const
 

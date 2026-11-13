@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, type ReactN
 import { useApp } from './AppState'
 import { useMyProfile } from './MyProfile'
 import { loadDonationData } from '../services/donation'
-import { loadTasks, loadTransfers } from '../services/fulfillment'
+import { loadTransfers } from '../services/fulfillment'
 import { loadRecords } from '../services/inventory'
 import { loadIssues } from '../services/issues'
 import { loadNotifications, subscribeNotifications } from '../services/notify'
@@ -26,21 +26,19 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     // Tanpa sesi Supabase (mis. status masuk lama di perangkat) tidak ada yang dimuat.
     if (!state.signedIn || !(await hasSession())) return
-    const courier = profile?.role === 'kurir'
-    const [donation, transfers, records, notifications, issues, tasks, engagement, funding, promotions, tickets] = await Promise.all([
+    const [donation, transfers, records, notifications, issues, engagement, funding, promotions, tickets] = await Promise.all([
       loadDonationData(),
       loadTransfers(),
-      courier ? [] : loadRecords(role),
+      loadRecords(role),
       loadNotifications(role),
       loadIssues(),
-      courier && profile ? loadTasks(profile.id) : [],
-      courier ? null : loadEngagement(),
-      courier ? null : loadFunding(),
-      courier ? [] : loadPromotions(),
+      loadEngagement(),
+      loadFunding(),
+      loadPromotions(),
       loadTickets(),
     ])
-    dispatch({ type: 'hydrate', data: { ...donation, transfers, records, notifications, issues, tasks, ...engagement, ...funding, promotions, tickets } })
-  }, [state.signedIn, role, profile, dispatch])
+    dispatch({ type: 'hydrate', data: { ...donation, transfers, records, notifications, issues, ...engagement, ...funding, promotions, tickets } })
+  }, [state.signedIn, role, dispatch])
 
   useEffect(() => {
     refresh().catch(() => {}) // gagal muat (offline): layar tetap menampilkan data terakhir

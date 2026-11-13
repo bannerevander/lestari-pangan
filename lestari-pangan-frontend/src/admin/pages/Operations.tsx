@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { ArrowRight, CheckCircle, FilePdf, MagnifyingGlass, MapPin, Phone, ShieldCheck, Truck, Warning } from '@phosphor-icons/react'
+import { ArrowRight, CheckCircle, FilePdf, MagnifyingGlass, MapPin, Phone, ShieldCheck, Warning } from '@phosphor-icons/react'
 import { Badge, Button, ButtonLink, Field, inputCls, Notice, PolicyNote, Segmented, StageList, Toaster, toast } from '../../components/ui'
-import { asset } from '../../lib/format'
+import { asset, methodLabel } from '../../lib/format'
 import { useAdmin } from '../store'
 import type { Chain } from '../data'
 import { messageOf } from '../../lib/supabase/errors'
 import { demoSignIn, isDemoEmail, sendEmailOtp, signInWithPassword, signOut, verifyEmailOtp } from '../../services/auth'
 import { fetchMyProfile } from '../../services/identity'
 import { issuePhotoUrl, verificationDocUrl } from '../../services/admin'
-import { assignCourier, verifyReceipt } from '../../services/adminActions'
+import { verifyReceipt } from '../../services/adminActions'
 import { DecisionPanel, Filters, PageHeader, Panel, rp, Stat, Status, Table, td } from '../ui'
 
 /* ---------- AD01 Masuk admin ---------- */
@@ -346,7 +346,7 @@ export function Distribution() {
                     <tr key={r.id}>
                       <td className={td}><p className="font-semibold">{r.org}</p><p className="text-ink-secondary">{r.id}</p></td>
                       <td className={td}>{r.asked} {o.unit}{r.proposed !== undefined && <><br /><span className="text-warning">Usulan {r.proposed} {o.unit}</span></>}</td>
-                      <td className={td}>{r.time}<br /><span className="text-ink-secondary">{r.method}</span></td>
+                      <td className={td}>{r.time}<br /><span className="text-ink-secondary">{methodLabel(r.method)}</span></td>
                       <td className={td}><Status status={r.status} /></td>
                       <td className={`${td} text-right`}>
                         {r.transferId ? (
@@ -568,75 +568,6 @@ export function IssueDetail() {
           />
         </div>
       </div>
-    </>
-  )
-}
-
-/* ---------- AD09 Penugasan pengiriman ---------- */
-
-export function Deliveries() {
-  const { data, refresh } = useAdmin()
-  const [f, setF] = useState('all')
-  const [courier, setCourier] = useState<Record<string, number>>({})
-  const [busy, setBusy] = useState<string | null>(null)
-  const rows = data.deliveries.map((d) => ({ ...d, st: d.status }))
-  const list = rows.filter((d) => f === 'all' || d.st === f)
-  const n = (s: string) => rows.filter((d) => d.st === s).length
-  return (
-    <>
-      <PageHeader title="Penugasan pengiriman" desc="Koordinasi relawan kurir dan mitra pengantaran bersponsor." />
-      <div className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Total" value={rows.length} unit="tugas" />
-        <Stat label="Menunggu kurir" value={n('Menunggu kurir')} unit="tugas" />
-        <Stat label="Dalam pengantaran" value={n('Dalam pengantaran')} unit="tugas" />
-        <Stat label="Selesai" value={n('Selesai')} unit="tugas" />
-      </div>
-      <Panel>
-        <div className="mb-4">
-          <Filters label="Filter status" value={f} onChange={setF} options={[{ value: 'all', label: 'Semua', count: rows.length }, ...['Menunggu kurir', 'Dalam pengantaran', 'Selesai'].map((s) => ({ value: s, label: s, count: n(s) }))]} />
-        </div>
-        <Table label="Daftar pengiriman" head={['Tugas', 'Rute', 'Metode', 'Biaya', 'Status', '']}>
-          {list.map((d) => (
-            <tr key={d.id} className="hover:bg-page">
-              <td className={td}><p className="font-semibold">{d.id}</p><p className="text-ink-secondary">{d.transferId} · {d.load}</p></td>
-              <td className={td}>{d.from}<br /><span className="text-ink-secondary">→ {d.to}</span></td>
-              <td className={td}><span className="inline-flex items-center gap-1"><Truck size={16} aria-hidden="true" />{d.method}</span>{d.courier && <><br /><span className="text-ink-secondary">{d.courier}</span></>}</td>
-              <td className={`${td} tabular`}>{d.cost ? rp(d.cost) : 'Rp0'}<br /><span className="text-ink-secondary">{d.cost ? 'Subsidi sponsor' : 'Tanpa biaya'}</span></td>
-              <td className={td}><Status status={d.st} /></td>
-              <td className={`${td} text-right`}>
-                {d.st === 'Menunggu kurir' || d.st === 'Gagal' ? (
-                  (
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <label className="sr-only" htmlFor={`kurir-${d.id}`}>Kurir untuk {d.id}</label>
-                      <select id={`kurir-${d.id}`} className={`${inputCls} min-h-10 w-44 py-1.5`} value={courier[d.id] ?? ''} onChange={(e) => setCourier({ ...courier, [d.id]: Number(e.target.value) })}>
-                        <option value="">Pilih kurir</option>
-                        {data.couriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                      <Button
-                        className="min-h-10 px-3 text-[0.875rem]"
-                        disabled={!courier[d.id]}
-                        loading={busy === d.id}
-                        onClick={() => {
-                          setBusy(d.id)
-                          assignCourier(d.transferDbId!, courier[d.id], d.cost)
-                            .then(refresh)
-                            .then(() => toast(`${d.transferId} ditugaskan ke kurir.`))
-                            .catch((e) => toast(messageOf(e), 'info'))
-                            .finally(() => setBusy(null))
-                        }}
-                      >
-                        Tugaskan
-                      </Button>
-                    </div>
-                  )
-                ) : (
-                  <span className="text-ink-secondary">—</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </Table>
-      </Panel>
     </>
   )
 }

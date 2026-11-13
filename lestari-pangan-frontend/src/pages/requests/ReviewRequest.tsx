@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { methodLabel } from '../../lib/format'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppBar, BottomSheet, Button, Field, inputCls, KeyValue, Notice, QtyStepper, StickyFooter, toast } from '../../components/ui'
 import { FoodPhoto } from '../../components/FoodPhoto'
@@ -54,7 +55,7 @@ export function ReviewRequest() {
             <KeyValue label="Jumlah diminta"><span className="font-semibold">{req.quantity} {req.unit}</span></KeyValue>
             <KeyValue label="Kapasitas penerima">{req.capacity}</KeyValue>
             <KeyValue label="Pengambilan">{req.pickupTime}</KeyValue>
-            <KeyValue label="Cara">{req.method}</KeyValue>
+            <KeyValue label="Cara">{methodLabel(req.method)}</KeyValue>
             {req.note && <KeyValue label="Catatan">{req.note}</KeyValue>}
             {req.deadline && <KeyValue label="Tanggapi sebelum"><span className="font-semibold text-warning">{req.deadline}</span></KeyValue>}
           </dl>

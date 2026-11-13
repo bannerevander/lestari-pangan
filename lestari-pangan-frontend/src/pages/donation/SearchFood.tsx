@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { methodLabel } from '../../lib/format'
 import { useSearchParams } from 'react-router-dom'
 import { Funnel } from '@phosphor-icons/react'
 import { RootHeader } from '../../components/Layouts'
@@ -117,7 +118,7 @@ export function SearchFood() {
           <div className="flex flex-wrap gap-2">
             {['Ambil sendiri', 'Antar pemberi', 'Mitra pengiriman'].map((m) => (
               <Chip key={m} selected={draftMethod === m} onClick={() => setDraftMethod(draftMethod === m ? null : m)}>
-                {m}
+                {methodLabel(m)}
               </Chip>
             ))}
           </div>

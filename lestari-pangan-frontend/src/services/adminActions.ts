@@ -52,8 +52,6 @@ export async function decide(data: AdminData, target: string, after: string, rea
 }
 
 /** Pembayar ongkir diambil server dari kesepakatan penyaluran (penerima/pemberi); Rp0 = relawan. */
-export const assignCourier = (transferDbId: number, courierId: number, cost: number) =>
-  rpc('admin_assign_courier', { p_transfer_id: transferDbId, p_courier_id: courierId, p_cost: cost })
 
 export const verifyReceipt = (transferDbId: number, approve: boolean, note: string) =>
   rpc('admin_verify_receipt', { p_id: transferDbId, p_approve: approve, p_note: note })

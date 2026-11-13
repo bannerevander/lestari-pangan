@@ -16,7 +16,6 @@ import {
   SignOut,
   Storefront,
   Trophy,
-  Truck,
   UsersThree,
 } from '@phosphor-icons/react'
 import { RootHeader } from '../components/Layouts'
@@ -74,7 +73,6 @@ export function AccountTab() {
         <Group title="Aktivitas dan dampak">
           <MenuRow to="/dampak" icon={<ChartBar size={20} />} title="Dashboard dampak" subtitle="Ringkasan per periode dan sumber data" />
           <MenuRow to="/aktivitas" icon={<BookOpen size={20} />} title="Riwayat penyaluran" />
-          <MenuRow to="/tugas" icon={<Truck size={20} />} title="Tugas pengantaran" subtitle="Khusus mitra atau relawan yang ditugaskan" />
         </Group>
 
         <Group title="Resep, tips, dan tantangan">

@@ -320,7 +320,7 @@ export function ClaimReview() {
         <fieldset className="flex flex-col gap-2">
           <legend className="float-left mb-2 text-label">Cara serah terima</legend>
           <RadioCard name="m" checked={method === 'Ambil di posko'} onChange={() => setMethod('Ambil di posko')} title="Ambil di posko transit" description="Lokasi posko dikabarkan tim program setelah kuota aktif. Tanpa biaya." />
-          <RadioCard name="m" checked={method === 'Dikirim'} onChange={() => setMethod('Dikirim')} title="Dikirim ke alamat operasional" description="Bila ada alokasi kurir relawan. Alamat dibuka hanya untuk kurir." />
+          <RadioCard name="m" checked={method === 'Dikirim'} onChange={() => setMethod('Dikirim')} title="Dikirim ke alamat operasional" description="Dikirim lewat ekspedisi atau ojek online ke alamat Anda." />
         </fieldset>
         <label className="tap flex min-h-12 cursor-pointer items-start gap-3 rounded-control p-1">
           <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-primary" checked={ack} onChange={(e) => setAck(e.target.checked)} />

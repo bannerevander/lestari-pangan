@@ -29,9 +29,6 @@ export type Command =
   | { type: 'respondFee'; id: string; accept: boolean }
   | { type: 'setMethod'; id: string; method: Transfer['method'] }
   | { type: 'setPrep'; id: string; checks: string[] }
-  | { type: 'taskPickup'; id: string; quantity: number }
-  | { type: 'taskDeliver'; id: string; quantity: number }
-  | { type: 'taskFail'; id: string; reason: string }
   | { type: 'addRecord'; record: { name: string; category: string; quantity: number; unit: string; storage: string; estimate: boolean }; clientId?: string }
   | { type: 'moveRecord'; id: string; kind: 'Digunakan' | 'Didistribusikan' | 'Terbuang'; quantity: number; note?: string; clientId?: string }
   | { type: 'correctRecord'; id: string; quantity: number; reason: string; clientId?: string }
@@ -100,15 +97,6 @@ async function toServer(a: Command): Promise<void> {
       return
     case 'setPrep':
       await fulfillment.setPrep(a.id, a.checks)
-      return
-    case 'taskPickup':
-      await fulfillment.taskPickup(a.id, a.quantity)
-      return
-    case 'taskDeliver':
-      await fulfillment.taskDeliver(a.id, a.quantity)
-      return
-    case 'taskFail':
-      await fulfillment.taskFail(a.id, a.reason)
       return
     case 'addRecord':
       await inventory.addRecord(a.clientId ?? crypto.randomUUID(), a.record)

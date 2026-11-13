@@ -241,7 +241,7 @@ export function NeedsCapacity() {
         <fieldset className="card flex flex-col gap-2 p-4">
           <legend className="float-left mb-3 text-card-title">Cara pengambilan utama</legend>
           <RadioCard name="pickup" checked={pickup === 'Ambil sendiri'} onChange={() => setPickup('Ambil sendiri')} title="Ambil sendiri oleh relawan" description="Relawan datang ke titik temu pemberi." />
-          <RadioCard name="pickup" checked={pickup === 'Perlu antar'} onChange={() => setPickup('Perlu antar')} title="Perlu bantuan pengantaran" description="Bergantung ketersediaan mitra pengiriman; biaya disepakati terpisah." />
+          <RadioCard name="pickup" checked={pickup === 'Perlu antar'} onChange={() => setPickup('Perlu antar')} title="Perlu bantuan pengantaran" description="Lewat ojek online (GoSend/GrabExpress) atau diantar pemberi; ongkir disepakati terpisah." />
         </fieldset>
       </main>
       <StickyFooter>

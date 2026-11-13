@@ -34,3 +34,9 @@ export function labelToIso(label: string) {
   const i = MONTHS.indexOf(m)
   return i < 0 || !y ? '' : `${y}-${String(i + 1).padStart(2, '0')}-${d.padStart(2, '0')}`
 }
+
+/**
+ * Label cara penyaluran untuk layar. Nilai database 'Mitra pengiriman' kini berarti ojek online yang dipesan
+ * sendiri oleh pihak yang menanggung ongkir (GoSend/GrabExpress), bukan kurir yang ditugaskan tim.
+ */
+export const methodLabel = (m: string) => (m === 'Mitra pengiriman' ? 'Ojek online' : m === 'Antar pemberi' ? 'Diantar pemberi' : m)

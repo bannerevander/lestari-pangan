@@ -64,7 +64,7 @@ select id, 'admin', 'ops', 'Admin Operasional', 'Staf', 'Bandung' from auth.user
 
 Email pendaftaran pertama memakai template **Confirm signup**. Agar berisi kode 6 angka (bukan hanya tautan), tambahkan `{{ .Token }}` di Dashboard → Authentication → Emails → Confirm signup (juga Magic Link). Tanpa itu, akun baru hanya bisa dikonfirmasi lewat tautan di email.
 
-Akun kurir dibuat dengan cara sama (`role = 'kurir'`, `admin_scope` null), lalu tambah kontak: `insert into public.profile_contacts (profile_id, pic, phone, address) …`.
+Peran kurir dihentikan sejak 13 Nov 2026 (docs/architecture.md AR-22): tabel `courier_tasks` dan RPC tugas kurir tetap ada tetapi tidak dipakai aplikasi, dan akun berperan kurir ditolak saat masuk.
 
 ## Menambah migrasi
 

@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { methodLabel } from '../../lib/format'
 import { CalendarBlank, LockSimple, MapPin, Phone, User, WhatsappLogo } from '@phosphor-icons/react'
 import { AppBar, ButtonLink, Notice } from '../../components/ui'
 import { NotAvailable } from '../../components/NotAvailable'
@@ -33,7 +34,7 @@ export default function Coordination() {
           <p className="text-caption font-semibold uppercase tracking-wide text-ink-secondary">Kegiatan</p>
           <p className="mt-1 font-semibold">{t.foodName} · {t.agreed} {t.unit}</p>
           <p className="flex items-center gap-1.5 text-meta text-ink-secondary">
-            <CalendarBlank size={16} aria-hidden="true" /> {t.date}, {t.timeStart}–{t.timeEnd} WIB · {t.method}
+            <CalendarBlank size={16} aria-hidden="true" /> {t.date}, {t.timeStart}–{t.timeEnd} WIB · {methodLabel(t.method)}
           </p>
         </section>
 

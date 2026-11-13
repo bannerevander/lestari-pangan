@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { methodLabel } from '../../lib/format'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight } from '@phosphor-icons/react'
 import { AppBar, Badge, BottomSheet, Button, ButtonLink, PolicyNote, StatePanel, StickyFooter, toast } from '../../components/ui'
@@ -76,7 +77,7 @@ export function RequestAdjustment() {
           <h2 className="mb-1 text-caption font-semibold uppercase tracking-wide text-ink-secondary">Tidak berubah</h2>
           <dl className="divide-y divide-line">
             <Row k="Pengambilan" v={req.pickupTime} />
-            <Row k="Cara" v={req.method} />
+            <Row k="Cara" v={methodLabel(req.method)} />
             <Row k="Biaya pangan" v="Rp0 (gratis)" />
           </dl>
         </section>

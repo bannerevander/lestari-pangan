@@ -1,4 +1,5 @@
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
+import { methodLabel } from '../../lib/format'
 import { AppBar, Badge, ButtonLink, StatePanel } from '../../components/ui'
 import { useApp } from '../../state/AppState'
 
@@ -58,7 +59,7 @@ export function IncomingRequests() {
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-[1.25rem] font-bold text-primary">{r.quantity} {r.unit}</p>
-                        <p className="text-caption text-ink-secondary">{r.method}</p>
+                        <p className="text-caption text-ink-secondary">{methodLabel(r.method)}</p>
                       </div>
                     </div>
                     <div className="rounded-control bg-page p-3 text-meta">

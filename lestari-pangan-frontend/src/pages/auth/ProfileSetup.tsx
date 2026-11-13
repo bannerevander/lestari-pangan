@@ -104,7 +104,7 @@ export function ProfileSetup() {
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-label">Cara pengambilan</legend>
               <RadioCard name="pickup" checked={pickup === 'Ambil sendiri'} onChange={() => setPickup('Ambil sendiri')} title="Relawan ambil sendiri" />
-              <RadioCard name="pickup" checked={pickup === 'Perlu antar'} onChange={() => setPickup('Perlu antar')} title="Perlu bantuan pengantaran" description="Bergantung mitra pengiriman." />
+              <RadioCard name="pickup" checked={pickup === 'Perlu antar'} onChange={() => setPickup('Perlu antar')} title="Perlu bantuan pengantaran" description="Lewat ojek online (GoSend/GrabExpress) atau diantar pemberi." />
             </fieldset>
           </section>
         )}
