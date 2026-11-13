@@ -11,7 +11,8 @@ const RPC_MESSAGES: Record<string, string> = {
   BELUM_TERVERIFIKASI: 'Kegiatan ini memerlukan akun terverifikasi.',
   BATAS_AI: 'Batas 40 pesan Asisten Dapur per jam tercapai. Coba lagi nanti.',
   AI_BELUM_SIAP: 'Asisten Dapur AI belum diaktifkan pengelola. Coba lagi nanti.',
-  AI_SIBUK: 'Asisten Dapur sedang sibuk. Coba lagi sebentar.',
+  AI_SIBUK: 'Semua layanan AI sedang penuh. Tunggu sebentar lalu coba lagi.',
+  AI_TERPUTUS: 'Koneksi terputus sebelum jawaban selesai. Periksa internet lalu coba lagi.',
 }
 
 export class AppError extends Error {
