@@ -76,25 +76,30 @@ function Shortcut({ to, img, label }: { to: string; img: string; label: string }
   )
 }
 
+/** Konten edukasi sebagai rail kartu potret berjudul di atas foto (pola Explore Gojek / story), beda bentuk dari kartu pangan. */
 function InspirationSection() {
-  const tip = useApp().state.tips[0]
-  if (!tip) return null
+  const tips = useApp().state.tips.slice(0, 6)
+  if (!tips.length) return null
   return (
     <section aria-labelledby="inspirasi" className="flex flex-col gap-3">
-      <h2 id="inspirasi" className="text-section-title">Inspirasi untukmu</h2>
-      <Link to={`/tips/${tip.id}`} className="tap card block overflow-hidden hover:border-line-control">
-        <div className="relative">
-          <img src={tip.photo} alt="" className="aspect-[2/1] w-full object-cover" />
-          <span className="absolute left-3 top-3 rounded-full bg-surface px-2.5 py-1 text-caption font-semibold">Tips</span>
-        </div>
-        <div className="p-4">
-          <h3 className="text-card-title">{tip.title}</h3>
-          <p className="mt-1 text-body text-ink-secondary">{tip.summary}</p>
-          <span className="mt-2 inline-flex items-center gap-1 text-[0.875rem] font-semibold text-primary">
-            Baca selengkapnya <CaretRight size={16} weight="bold" aria-hidden="true" />
-          </span>
-        </div>
-      </Link>
+      <SectionHeader id="inspirasi" title="Inspirasi untukmu" to="/tips" />
+      <ul className="chip-row -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
+        {tips.map((t) => (
+          // Lebar 9.5rem: kartu ketiga terlihat sebagian di HP 375 px, tanda baris bisa digeser.
+          <li key={t.id} className="w-[9.5rem] shrink-0">
+            <Link to={`/tips/${t.id}`} className="tap tap-soft relative block aspect-[3/4] overflow-hidden rounded-card bg-primary-pressed shadow-card">
+              {t.photo && <img src={t.photo} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+              {/* Gradasi hijau gelap dari bawah: judul putih tetap terbaca di atas foto apa pun. */}
+              <span aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(0deg,rgba(10,32,16,0.9)_0%,rgba(10,32,16,0.5)_45%,rgba(10,32,16,0)_72%)]" />
+              <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-surface px-2.5 py-1 text-caption font-semibold">{t.category}</span>
+              <span className="absolute inset-x-0 bottom-0 p-3">
+                <span className="line-clamp-3 block font-semibold leading-5 text-[#fff]">{t.title}</span>
+                <span className="mt-1 block text-caption text-[#fff]/85">{t.minutes} menit baca</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

@@ -42,7 +42,7 @@ export function EcoChallengeCard() {
             <span className="text-ink-secondary">Progres</span>
             <span className="font-semibold tabular">{done} dari {current.target} {current.unit}</span>
           </span>
-          <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label={`Progres ${current.title}`} aria-valuemin={0} aria-valuemax={current.target} aria-valuenow={done}>
+          <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-accent/30" role="progressbar" aria-label={`Progres ${current.title}`} aria-valuemin={0} aria-valuemax={current.target} aria-valuenow={done}>
             <span className="block h-full origin-left animate-grow-x rounded-full bg-primary" style={{ width: `${(done / current.target) * 100}%` }} />
           </span>
         </span>
