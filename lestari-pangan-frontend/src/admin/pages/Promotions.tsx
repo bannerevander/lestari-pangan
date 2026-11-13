@@ -1,15 +1,12 @@
 import { useState } from 'react'
-import { DownloadSimple, Plus } from '@phosphor-icons/react'
-import { Button, Field, inputCls, Notice, Segmented, toast } from '../../components/ui'
+import { Plus } from '@phosphor-icons/react'
+import { Button, Field, inputCls, Notice, toast } from '../../components/ui'
 import { AreaField } from '../../components/AreaField'
-import { asset } from '../../lib/format'
 import { messageOf } from '../../lib/supabase/errors'
 import { AUDIENCES, PLACEMENTS, uploadMedia, type Audience, type Placement, type Promotion } from '../../services/promotions'
 import { savePromotion } from '../../services/adminActions'
 import { useAdmin } from '../store'
-import { ImagePicker } from '../ImagePicker'
-import { BannerMaker } from '../BannerMaker'
-import { BANNER, composeBanner, type BannerText } from '../banner'
+import { BannerMaker, type BannerText } from '../BannerMaker'
 import { Filters, PageHeader, Panel, Status, Table, td } from '../ui'
 
 /* ---------- Promosi (admin konten) ---------- */
@@ -63,7 +60,7 @@ export function Promotions() {
           {list.map((p) => (
             <tr key={p.id} className="hover:bg-page">
               <td className={td}>
-                <img src={p.image} alt="" className="mb-2 aspect-[3/1] w-48 rounded-control border border-line object-cover" />
+                <img src={p.image} alt="" className="mb-2 aspect-[16/9] w-48 rounded-control border border-line object-cover" />
                 <p className="font-semibold">{p.title}</p>
                 <p className="text-ink-secondary">{p.id}{p.link ? ` · membuka ${LINKS.find(([v]) => v === p.link)?.[1] ?? p.link}` : ''}</p>
               </td>
@@ -89,11 +86,9 @@ function Editor({ base, onClose }: { base: Promotion | null; onClose: () => void
       ? { title: base.title, placement: base.placement, audience: base.audience, link: base.link ?? '', area: base.area ?? '', startsOn: base.startsOn ?? '', endsOn: base.endsOn ?? '', active: base.active, sort: base.sort }
       : blank,
   )
-  // Banner baru: dibuat dari foto + teks. Banner lama: gambarnya dipertahankan kecuali diganti.
-  const [mode, setMode] = useState<'buat' | 'jadi'>(base ? 'jadi' : 'buat')
+  // Foto lama dipertahankan kecuali diganti; tulisan disimpan sebagai teks di database.
   const [photo, setPhoto] = useState<File | null>(null)
-  const [text, setText] = useState<BannerText>({ title: '', sentence: '', button: '' })
-  const [file, setFile] = useState<File | null>(null)
+  const [text, setText] = useState<BannerText>({ headline: base?.headline ?? '', body: base?.body ?? '', cta: base?.cta ?? '' })
   const [allAreas, setAllAreas] = useState(!base?.area)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
@@ -102,23 +97,22 @@ function Editor({ base, onClose }: { base: Promotion | null; onClose: () => void
     setForm((f) => ({ ...f, placement: p, link: base || f.link !== WHERE[f.placement].link ? f.link : WHERE[p].link }))
 
   const save = async () => {
-    if (mode === 'buat') {
-      if (!photo) return setErr('Pilih foto untuk banner.')
-      if (text.title.trim().length < 3) return setErr('Isi judul banner (minimal 3 huruf).')
-    } else {
-      if (!file && !base) return setErr('Pilih gambar banner.')
-      if (form.title.trim().length < 3) return setErr('Tulis ulang teks yang ada di banner (minimal 3 huruf).')
-    }
+    if (!photo && !base) return setErr('Pilih foto untuk banner.')
+    const headline = text.headline.trim()
+    if (headline && headline.length < 3) return setErr('Judul minimal 3 huruf.')
+    if (!headline && form.title.trim().length < 3) return setErr('Gambar tanpa judul: tulis ulang teks yang ada di gambar (minimal 3 huruf).')
     if (!allAreas && !form.area) return setErr('Pilih kabupaten/kota dari daftar, atau centang Semua wilayah.')
     if (form.startsOn && form.endsOn && form.endsOn < form.startsOn) return setErr('Tanggal selesai harus setelah tanggal mulai.')
     setBusy(true)
     try {
-      const image = mode === 'buat' ? await composeBanner(photo!, text) : file
-      const imagePath = image ? await uploadMedia('promo', image) : base!.imagePath
-      // Teks alternatif untuk pembaca layar = tulisan pada banner.
-      const title = mode === 'buat' ? [text.title, text.sentence].map((s) => s.trim()).filter(Boolean).join('. ') : form.title.trim()
+      const imagePath = photo ? await uploadMedia('promo', photo) : base!.imagePath
+      // Judul promosi (daftar admin + pembaca layar) = tulisan pada banner.
+      const title = headline ? [headline, text.body.trim()].filter(Boolean).join('. ') : form.title.trim()
       await savePromotion(base?.dbId ?? null, {
         title,
+        headline,
+        body: text.body,
+        cta: text.cta,
         placement: form.placement,
         audience: form.audience,
         image_path: imagePath,
@@ -163,27 +157,11 @@ function Editor({ base, onClose }: { base: Promotion | null; onClose: () => void
 
         <section className="flex flex-col gap-3">
           <h3 className="text-card-title">Langkah 2 · Banner</h3>
-          <Segmented
-            label="Cara membuat banner"
-            value={mode}
-            onChange={setMode}
-            options={[
-              { value: 'buat', label: base ? 'Buat ulang dari foto' : 'Buat dari foto (disarankan)' },
-              { value: 'jadi', label: base ? 'Pakai/ganti gambar jadi' : 'Sudah punya banner jadi' },
-            ]}
-          />
-          {mode === 'buat' ? (
-            <BannerMaker photo={photo} onPhoto={setPhoto} text={text} onText={setText} />
-          ) : (
-            <>
-              <ImagePicker file={file} currentUrl={base?.image} onChange={setFile} width={BANNER.width} height={BANNER.height} label="Gambar banner" />
-              <Field label="Tulisan yang ada di banner" hint="Ketik ulang tulisannya agar pengguna tunanetra tetap tahu isi banner.">
-                {(p) => <input {...p} className={inputCls} value={form.title} onChange={(e) => set('title', e.target.value)} />}
-              </Field>
-              <a href={asset('templates/template-promosi-1200x400.svg')} download className="inline-flex items-center gap-1.5 self-start text-[0.875rem] font-semibold text-primary hover:underline">
-                <DownloadSimple size={16} aria-hidden="true" /> Unduh template desain (untuk Canva/Figma)
-              </a>
-            </>
+          <BannerMaker photo={photo} currentUrl={base?.image} onPhoto={setPhoto} text={text} onText={setText} />
+          {!text.headline.trim() && (
+            <Field label="Tulisan yang ada di gambar" hint="Karena Judul kosong, gambar tampil apa adanya. Ketik ulang tulisannya agar pengguna tunanetra tetap tahu isinya.">
+              {(p) => <input {...p} className={inputCls} value={form.title} onChange={(e) => set('title', e.target.value)} />}
+            </Field>
           )}
         </section>
 

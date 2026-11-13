@@ -12,11 +12,11 @@ export const AUDIENCES: Record<Audience, string> = { semua: 'Semua pengguna', pe
 
 /** Ukuran template per penempatan; admin mengunggah gambar sesuai rasio ini. */
 export const PLACEMENTS: Record<Placement, { label: string; width: number; height: number }> = {
-  beranda: { label: 'Banner Beranda', width: 1200, height: 400 },
-  tips: { label: 'Banner Tips', width: 1200, height: 400 },
-  resep: { label: 'Banner Resep', width: 1200, height: 400 },
-  reward: { label: 'Banner Reward', width: 1200, height: 400 },
-  dukung: { label: 'Banner Dukung Lestari Pangan', width: 1200, height: 400 },
+  beranda: { label: 'Banner Beranda', width: 1200, height: 675 },
+  tips: { label: 'Banner Tips', width: 1200, height: 675 },
+  resep: { label: 'Banner Resep', width: 1200, height: 675 },
+  reward: { label: 'Banner Reward', width: 1200, height: 675 },
+  dukung: { label: 'Banner Dukung Lestari Pangan', width: 1200, height: 675 },
 }
 
 export interface Promotion {
@@ -33,6 +33,10 @@ export interface Promotion {
   active: boolean
   sort: number
   audience: Audience
+  /** Tulisan di atas foto; kosong = gambar sudah berisi tulisan sendiri. */
+  headline?: string
+  body?: string
+  cta?: string
 }
 
 interface PromotionRow {
@@ -48,6 +52,9 @@ interface PromotionRow {
   active: boolean
   sort: number
   audience: Audience
+  headline: string | null
+  body: string | null
+  cta: string | null
 }
 
 /** URL publik gambar: aset bawaan ("img/…") atau unggahan admin di bucket media. */
@@ -67,6 +74,9 @@ const toPromotion = (r: PromotionRow): Promotion => ({
   active: r.active,
   sort: r.sort,
   audience: r.audience ?? 'semua',
+  headline: r.headline ?? undefined,
+  body: r.body ?? undefined,
+  cta: r.cta ?? undefined,
 })
 
 /** Pengguna: RLS hanya mengembalikan promosi aktif dalam periodenya. Admin: semua promosi. */
@@ -74,7 +84,7 @@ export async function loadPromotions(): Promise<Promotion[]> {
   // shortcut: tabel baru belum ada di database.types.ts; perbarui tipe hasil generate lalu hapus cast.
   const { data, error } = await supabase
     .from('promotions' as never)
-    .select('id, code, title, placement, image_path, link, area, starts_on, ends_on, active, sort, audience')
+    .select('id, code, title, placement, image_path, link, area, starts_on, ends_on, active, sort, audience, headline, body, cta')
     .order('sort')
     .order('id', { ascending: false })
   if (error) throw toAppError(error)
