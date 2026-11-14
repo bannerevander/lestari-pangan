@@ -1,8 +1,0 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    { "name": "lestari-dev", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "lestari-pangan-frontend", "run", "dev", "--", "--port", "5173", "--strictPort"], "port": 5173 },
-    { "name": "lestari-preview", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "lestari-pangan-frontend", "run", "preview", "--", "--port", "4173", "--strictPort"], "port": 4173 },
-    { "name": "prototype-dev", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "prototype", "run", "dev", "--", "--port", "5174", "--strictPort"], "port": 5174 }
-  ]
-}

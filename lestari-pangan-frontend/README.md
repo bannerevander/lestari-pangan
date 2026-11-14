@@ -1,6 +1,6 @@
 # Lestari Pangan — Front End
 
-Front end mobile-first Lestari Pangan, dibangun dari `docs/design.md`, `docs/REQUIREMENTS.md`, `docs/GAYA-HOME-TERKUNCI.md` (di root proyek), dan ekspor layar Google Stitch (H01 terkunci sebagai acuan utama). Layar sudah dicocokkan dengan ekspor lengkap Stitch 9 Okt 2026 (`output/stitch/export-2026-10-09/`); lihat ULASAN-UX.md.
+Front end mobile-first Lestari Pangan (aplikasi pengguna + konsol admin di `/admin`). Gambaran produk, arsitektur, dan akun demo ada di [README utama](../README.md).
 
 Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.
 
@@ -18,7 +18,7 @@ npm run lint
 
 Butuh Node.js 18 atau lebih baru (`test:config` butuh Node 23.6+ karena menjalankan TypeScript langsung).
 
-**Tanpa mode demo.** Aplikasi selalu memakai Supabase; tanpa env tampil layar "Konfigurasi belum lengkap". Versi demo (data lokal, pemilih peran) ada di [`../prototype`](../prototype).
+**Tanpa mode demo.** Aplikasi selalu memakai Supabase; tanpa env tampil layar "Konfigurasi belum lengkap".
 
 **Deploy ke Vercel.** Produksi: https://lestari-pangan.vercel.app (proyek `lestari-pangan`, env sudah terisi di Vercel). Dari folder ini:
 
@@ -27,7 +27,7 @@ npx vercel@latest login              # sekali per komputer
 npx vercel@latest deploy --prod      # build di server Vercel lalu terbit
 ```
 
-`vercel.json` berisi rewrite SPA dan header keamanan; `.vercelignore` mencegah berkas env ikut terunggah. Jangan menaruh kunci lain di env Vercel ([docs/SECURITY.md](../docs/SECURITY.md)).
+`vercel.json` berisi rewrite SPA dan header keamanan; `.vercelignore` mencegah berkas env ikut terunggah. Jangan menaruh kunci lain di env Vercel.
 
 ## Teknologi
 
@@ -72,12 +72,10 @@ Alur lengkap yang sudah teruji otomatis: pemberi menerbitkan penawaran → pener
 
 ## Batas yang diketahui
 
-- Semua layar memakai Supabase. Status per kelompok layar: [docs/PROGRESS.md](../docs/PROGRESS.md) §2.
+- Semua layar memakai Supabase.
 - Pembayaran memakai transfer bank manual yang divalidasi admin (QRIS tidak dikerjakan untuk lomba). Push notification di luar aplikasi belum ada; notifikasi in-app memakai Realtime.
 
 ## Struktur
-
-Aturan pembagian berkas: [docs/CONVENTIONS.md](../docs/CONVENTIONS.md).
 
 ```
 config/           publicEnvGuard.ts (build gagal bila ada kunci rahasia) + tes

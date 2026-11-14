@@ -1,7 +1,7 @@
 # Lestari Pangan
 
 <p align="center">
-  <img src="assets/logo-lestari-pangan.png" alt="Logo Lestari Pangan" width="120">
+  <img src="lestari-pangan-frontend/public/img/logo-lestari-pangan.png" alt="Logo Lestari Pangan" width="120">
 </p>
 
 <p align="center"><b>Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.</b></p>
@@ -96,8 +96,6 @@ Semua fitur di bawah tersambung ke backend Supabase produksi dan bisa dicoba den
 | **Pusat bantuan** | Tiket bantuan dan permintaan hapus data; admin membalas |
 | **Konsol admin** (`/admin`) | Verifikasi, kendala, verifikasi penerimaan sebagian, konten + sampul, challenge, reward, klaim, apresiasi, promosi banner per wilayah, tiket, buku kas, program, laporan, jejak audit. Responsif: tabel di laptop, kartu di HP |
 
-Rincian status per layar: [docs/PROGRESS.md](docs/PROGRESS.md).
-
 ## Unduh dan coba
 
 ### Aplikasi Android (APK)
@@ -149,7 +147,7 @@ Video demo YouTube (3–5 menit): **https://youtu.be/ISI-TAUTAN-VIDEO**
 
 ## Arsitektur dan alur data
 
-Modular monolith tanpa server sendiri: semua logika bisnis ada di Supabase. Klien **membaca** tabel/view yang dibatasi RLS dan **mengubah data hanya lewat RPC** (satu fungsi = satu transaksi + jejak audit + notifikasi). Kunci rahasia hanya ada di Edge Functions. Rincian keputusan: [docs/architecture.md](docs/architecture.md).
+Modular monolith tanpa server sendiri: semua logika bisnis ada di Supabase. Klien **membaca** tabel/view yang dibatasi RLS dan **mengubah data hanya lewat RPC** (satu fungsi = satu transaksi + jejak audit + notifikasi). Kunci rahasia hanya ada di Edge Functions.
 
 ```mermaid
 flowchart LR
@@ -253,7 +251,7 @@ Untuk mencoba cepat memakai backend produksi, isi kedua variabel dengan URL dan 
 3. Isi secret Edge Functions (Dashboard → Edge Functions → Secrets), contoh di [`supabase/functions/.env.example`](supabase/functions/.env.example). Wajib: `GEMINI_API_KEY` dari [Google AI Studio](https://aistudio.google.com/apikey) (tier gratis).
 4. (Opsional) Jalankan tes pgTAP di [`supabase/tests/`](supabase/tests) lewat SQL Editor; semua baris harus `ok`.
 
-Panduan lengkap backend, akun admin, dan langkah manual dashboard: [supabase/README.md](supabase/README.md), [docs/SECURITY.md](docs/SECURITY.md).
+Panduan lengkap backend dan akun admin: [supabase/README.md](supabase/README.md).
 
 ## Penggunaan AI
 
@@ -262,7 +260,7 @@ Panduan lengkap backend, akun admin, dan langkah manual dashboard: [supabase/REA
 | Google Gemini API tier gratis: `gemini-3.5-flash-lite`, cadangan `gemini-3.1-flash-lite` dan `gemini-3.8-flash` | **Asisten Dapur AI**: ide resep dari bahan, cara menyimpan, mengolah sisa makanan; menolak topik di luar makanan (jawaban terstruktur `on_topic`) | 12 pesan terakhir, daftar bahan Catat Pangan pengguna, judul resep terkurasi. Lewat Edge Function `ai-chat`; kunci API hanya di secret server. Data tier gratis dapat dipakai Google untuk pengembangan produk, dan ini disampaikan di layar |
 | Google Gemini TTS: `gemini-3.8-flash-lite-tts` (kalimat pertama), `gemini-3.8-flash-tts` (sisanya), suara Sulafat | **Suara Asisten Dapur**: membacakan jawaban dalam Bahasa Indonesia | Teks jawaban per potongan ±280 huruf lewat Edge Function `ai-tts` (kuota 120 potongan/jam/akun). Bila gagal, aplikasi memakai suara browser |
 | Web Speech API bawaan browser | **Mode suara**: ucapan → teks (`id-ID`); cadangan pembaca jawaban | Audio diproses layanan suara browser (Google pada Chrome), tidak dikirim ke server Lestari Pangan |
-| ChatGPT (OpenAI), pembuatan gambar | Foto penawaran contoh, sampul resep/tips, banner promosi awal ([`assets/`](assets)) | Hanya prompt deskripsi gambar, tanpa data pengguna. Gambar ini ilustrasi, bukan foto makanan nyata pengguna |
+| ChatGPT (OpenAI), pembuatan gambar | Foto penawaran contoh, sampul resep/tips, banner promosi awal | Hanya prompt deskripsi gambar, tanpa data pengguna. Gambar ini ilustrasi, bukan foto makanan nyata pengguna |
 | Claude Code (Anthropic) | Asisten pemrograman selama pengembangan (penulisan kode, dokumentasi, pengujian) | Kode sumber repo ini; tidak ada data pengguna |
 
 Batasan yang dijaga: riwayat obrolan hanya disimpan di perangkat pengguna; server hanya mencatat waktu permintaan untuk kuota. Asisten **tidak menyatakan makanan aman** hanya dari deskripsi, tanggal, atau foto, dan layar chat menjelaskan bahwa jawaban dibuat AI.
@@ -277,8 +275,6 @@ Batasan yang dijaga: riwayat obrolan hanya disimpan di perangkat pengguna; serve
 - **Hak pengguna**: permintaan hapus data lewat Pusat bantuan; persetujuan mitra sebelum nama/logo dipublikasikan di Paket Apresiasi.
 - **Jujur soal data**: penawaran tidak dihitung sebagai donasi berhasil; laporan sisa, penolakan, dan kendala tetap bisa dicatat.
 
-Rincian pemeriksaan: [docs/SECURITY.md](docs/SECURITY.md).
-
 ## Atribusi
 
 | Sumber | Dipakai untuk | Lisensi / keterangan |
@@ -292,7 +288,7 @@ Rincian pemeriksaan: [docs/SECURITY.md](docs/SECURITY.md).
 | Kepmendagri No. 300.2.2-2138 Tahun 2025 (kode dan data wilayah) | Daftar 514 kab/kota dan 38 provinsi ([`data/kota.json`](lestari-pangan-frontend/src/data)) | Data pemerintah, publik |
 | [PWABuilder](https://www.pwabuilder.com) | Membuat paket APK Trusted Web Activity | Layanan gratis Microsoft, kode MIT |
 | Google Stitch | Eksplorasi desain layar awal (wireframe), lalu diimplementasikan ulang sebagai kode React | Ilustrasi SVG dan beberapa foto contoh dari ekspor Stitch ada di `public/illustrations` dan `public/img` |
-| ChatGPT (OpenAI) | Gambar contoh di [`assets/`](assets) dan konten awal | Gambar buatan AI, lihat [Penggunaan AI](#penggunaan-ai) |
+| ChatGPT (OpenAI) | Foto contoh penawaran, sampul resep/tips, banner promosi awal | Gambar buatan AI, lihat [Penggunaan AI](#penggunaan-ai) |
 | Bappenas (2021), UNEP Food Waste Index Report 2024, [SDG 12](https://sdgs.un.org/goals/goal12) | Data latar masalah | Dikutip sebagai rujukan |
 
 Daftar lengkap dependensi: [`lestari-pangan-frontend/package.json`](lestari-pangan-frontend/package.json).
@@ -303,19 +299,7 @@ Daftar lengkap dependensi: [`lestari-pangan-frontend/package.json`](lestari-pang
 | --- | --- |
 | [`lestari-pangan-frontend/`](lestari-pangan-frontend) | Kode aplikasi (React + Vite), di-hosting di Vercel; [README](lestari-pangan-frontend/README.md) |
 | [`supabase/`](supabase) | Backend: migrasi (skema, RLS, RPC, job), Edge Functions, tes pgTAP; [README](supabase/README.md) |
-| [`docs/`](docs) | Requirement, arsitektur, desain, keamanan, progres, akun uji, Android |
-| [`assets/`](assets) | Logo, foto contoh, sampul konten |
-| [`prototype/`](prototype) | Prototipe klik (data lokal, tanpa backend) untuk uji alur desain |
-
-| Dokumen | Isi |
-| --- | --- |
-| [docs/PROGRESS.md](docs/PROGRESS.md) | Status per area dan per layar, utang teknis, log pekerjaan |
-| [docs/architecture.md](docs/architecture.md) | Keputusan arsitektur, skema database, daftar RPC |
-| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Requirement fungsional/nonfungsional dan kriteria penerimaan |
-| [docs/design.md](docs/design.md) | Panduan UI: navigasi, komponen, warna, aksesibilitas, motion |
-| [docs/SECURITY.md](docs/SECURITY.md) | Lapisan keamanan dan hasil pemeriksaan |
-| [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Aturan pembagian berkas kode, service, migrasi |
-| [docs/AKUN-UJI.md](docs/AKUN-UJI.md) | Akun demo dan skenario uji |
-| [docs/ANDROID.md](docs/ANDROID.md) | APK Android (TWA): data paket, cara memasang, membuat versi baru |
+| [`docs/AKUN-UJI.md`](docs/AKUN-UJI.md) | Akun demo dan skenario uji per peran |
+| [`docs/ANDROID.md`](docs/ANDROID.md) | APK Android (TWA): data paket, cara memasang, membuat versi baru |
 
 Terakhir diperbarui: **14 November 2026**.

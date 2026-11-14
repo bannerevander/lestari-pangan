@@ -1,6 +1,6 @@
 # Backend Supabase
 
-Proyek: **Lestari Pangan** (`nuikazqzrdtaxkywwfvm`, region Singapura, Postgres 17). Rancangan lengkap: [docs/architecture.md](../docs/architecture.md) §9; keamanan: [docs/SECURITY.md](../docs/SECURITY.md).
+Backend Lestari Pangan di Supabase (Postgres 17). Gambaran arsitektur ada di [README utama](../README.md#arsitektur-dan-alur-data).
 
 ## Isi folder
 
@@ -66,12 +66,11 @@ select id, 'admin', 'ops', 'Admin Operasional', 'Staf', 'Bandung' from auth.user
 
 Email pendaftaran pertama memakai template **Confirm signup**. Agar berisi kode 6 angka (bukan hanya tautan), tambahkan `{{ .Token }}` di Dashboard → Authentication → Emails → Confirm signup (juga Magic Link). Tanpa itu, akun baru hanya bisa dikonfirmasi lewat tautan di email.
 
-Peran kurir dihentikan sejak 13 Nov 2026 (docs/architecture.md AR-22): tabel `courier_tasks` dan RPC tugas kurir tetap ada tetapi tidak dipakai aplikasi, dan akun berperan kurir ditolak saat masuk.
+Peran kurir dihentikan sejak 13 Nov 2026: tabel `courier_tasks` dan RPC tugas kurir tetap ada tetapi tidak dipakai aplikasi, dan akun berperan kurir ditolak saat masuk.
 
 ## Menambah migrasi
 
-1. Tulis `migrations/YYYYMMDDHHMMSS_nama.sql` (aturan: [docs/CONVENTIONS.md](../docs/CONVENTIONS.md) §4).
+1. Tulis `migrations/YYYYMMDDHHMMSS_nama.sql`.
 2. Terapkan (Supabase MCP `apply_migration` atau SQL Editor).
 3. Jalankan ketiga berkas tes + Supabase advisor.
 4. Perbarui tipe front end: `lestari-pangan-frontend/src/lib/supabase/database.types.ts`.
-5. Catat di [docs/PROGRESS.md](../docs/PROGRESS.md).
