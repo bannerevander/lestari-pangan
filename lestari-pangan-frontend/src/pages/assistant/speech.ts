@@ -36,13 +36,10 @@ export function listen(onText: (text: string, final: boolean) => void, onEnd: (e
   rec.continuous = false
   let error: string | undefined
   rec.onresult = (e) => {
-    let text = ''
-    let final = false
-    for (let i = 0; i < e.results.length; i++) {
-      text += e.results[i][0].transcript
-      final = e.results[i].isFinal
-    }
-    onText(text.trim(), final)
+    // Satu ucapan (continuous=false): hasil terakhir sudah memuat seluruh kalimat. Chrome Android kadang
+    // menyisakan hasil sementara lama di daftar, jadi menggabungkan semua hasil membuat teks tertulis ganda.
+    const last = e.results[e.results.length - 1]
+    if (last) onText(last[0].transcript.trim(), last.isFinal)
   }
   rec.onerror = (e) => (error = e.error)
   rec.onend = () => onEnd(error)
