@@ -1,10 +1,14 @@
 # Lestari Pangan
 
-**Lestari Pangan** adalah rencana aplikasi mobile yang mempertemukan restoran, UMKM, dan rumah tangga yang memiliki surplus pangan layak konsumsi dengan panti serta komunitas yang membutuhkan. Aplikasi membantu kegiatan dari penawaran makanan hingga penerimaan dan pencatatan hasil distribusi, dengan dukungan pengambilan mandiri atau mitra pengiriman.
+**Lestari Pangan** adalah aplikasi mobile yang mempertemukan restoran, UMKM, dan rumah tangga yang memiliki surplus pangan layak konsumsi dengan panti serta komunitas yang membutuhkan. Aplikasi membantu kegiatan dari penawaran makanan hingga penerimaan dan pencatatan hasil distribusi, dengan dukungan pengambilan mandiri atau mitra pengiriman.
 
 Tagline: **Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.**
 
-Status: tahap rancangan UI. Arah produk, pendanaan, paket reward, dan cakupan fitur telah dibahas; cakupan fitur disetujui sementara dan dapat disempurnakan. Palet hijau–oranye dan arah aplikasi mobile modern telah disetujui. Rancangan seluruh halaman, komponen, dan motion tersedia dalam docs/design.md sebagai acuan pembuatan UI baru dari awal. Direktori proyek memiliki aset logo, catatan keputusan, dokumentasi kebutuhan, serta spesifikasi desain; belum merupakan aplikasi mobile yang berjalan.
+**Kategori:** Mobile Apps · Subtema Green Environment & Sustainability (SDG 12).
+
+**Bentuk aplikasi:** Progressive Web App mobile-first yang dikemas menjadi **aplikasi Android (APK)** dengan Trusted Web Activity (PWABuilder). APK memuat aplikasi yang ter-deploy di https://lestari-pangan.vercel.app dalam mesin Chrome, layar penuh tanpa bilah alamat, sehingga isinya selalu sama dengan versi terbaru. Cara ini dipilih karena WebView biasa (Capacitor/Cordova) tidak mendukung pengenalan suara untuk Asisten Dapur AI. Rincian dan cara memasang: [docs/ANDROID.md](docs/ANDROID.md).
+
+Status: MVP berjalan di produksi (aplikasi pengguna, konsol staf, backend Supabase, Asisten Dapur AI). Status per area ada di [docs/PROGRESS.md](docs/PROGRESS.md).
 
 ## Tujuan aplikasi
 
@@ -240,4 +244,4 @@ Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf ope
 
 Dokumen sumber use case: **PRESENTASI USE CASE HTML (1).docx**. Rujukan misi: [target resmi SDG 12](https://sdgs.un.org/goals/goal12).
 
-Terakhir diperbarui: **12 Oktober 2026**.
+Terakhir diperbarui: **14 November 2026**.
