@@ -21,7 +21,7 @@ Folder `android-release/` di akar repo diabaikan git (`.gitignore`):
 
 | Berkas | Fungsi | Boleh dibagikan? |
 | --- | --- | --- |
-| `paket/Lestari Pangan.apk` | Dipasang langsung di HP (sideload) atau dibagikan ke juri | Ya |
+| `paket/Lestari Pangan.apk` | Dipasang langsung di HP (sideload) atau dibagikan untuk testing | Ya |
 | `paket/Lestari Pangan.aab` | Diunggah ke Google Play Console bila kelak terbit di Play Store | Ya, hanya ke Play Console |
 | `paket/signing.keystore` + `paket/signing-key-info.txt` | Kunci tanda tangan + kata sandinya | **Tidak.** Simpan cadangan di tempat aman (mis. pengelola kata sandi). Tanpa kunci ini, pembaruan aplikasi tidak bisa ditandatangani dengan identitas yang sama |
 

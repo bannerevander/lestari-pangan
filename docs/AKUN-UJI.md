@@ -1,4 +1,4 @@
-# Akun uji untuk juri
+# Akun demo untuk testing
 
 Satu akun per peran, dibuat 12 Nov 2026 (akun `kurir@example.com` masih ada di database tetapi tidak bisa masuk sejak peran kurir dihentikan 13 Nov 2026) di proyek Supabase produksi. Halaman masuk punya dua metode untuk semua pengguna: **Kode verifikasi** dan **Kata sandi**. Akun uji bisa memakai keduanya.
 
@@ -15,7 +15,7 @@ Cara masuk (pilih salah satu):
 - **Kode verifikasi**: isi email akun uji, ketuk **Kirim kode**. Akun uji langsung masuk tanpa kode, karena alamatnya tidak bisa menerima email (Edge Function `demo-login`).
 - **Kata sandi**: pilih tab **Kata sandi**, isi email dan kata sandi di atas.
 
-Kata sandi akun uji tidak bisa diubah dari aplikasi agar tetap sama untuk semua juri.
+Kata sandi akun uji tidak bisa diubah dari aplikasi agar tetap sama untuk semua penguji.
 
 Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima email, jadi tidak ada email yang terkirim ke pihak lain.
 
@@ -31,7 +31,7 @@ Domain `example.com` adalah domain cadangan resmi (RFC 2606) yang tidak menerima
 
 ## Catatan keamanan
 
-- Akun dan kata sandi ini akan publik di repo. Akun admin melihat data seluruh pengguna di produksi; setelah penjurian selesai, hapus Edge Function `demo-login` (Dashboard → Edge Functions) lalu ganti kata sandinya atau hapus akun-akun ini (SQL di bawah).
+- Akun dan kata sandi ini akan publik di repo. Akun admin melihat data seluruh pengguna di produksi; setelah masa pengujian selesai, hapus Edge Function `demo-login` (Dashboard → Edge Functions) lalu ganti kata sandinya atau hapus akun-akun ini (SQL di bawah).
 - Membuat ulang atau menghapus: akun dibuat lewat SQL Editor (insert `auth.users` + `auth.identities` dengan kata sandi bcrypt, lalu `identity_complete_onboarding`). Untuk menonaktifkan kata sandi tanpa menghapus data:
 
 ```sql

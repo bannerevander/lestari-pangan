@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/bannerevander/lestari-pangan/releases/latest/download/lestari-pangan.apk"><b>⬇ Unduh APK Android</b></a> ·
   <a href="https://lestari-pangan.vercel.app"><b>Buka aplikasi web</b></a> ·
-  <a href="#akun-demo-untuk-juri"><b>Akun demo</b></a> ·
+  <a href="#akun-demo-untuk-testing"><b>Akun demo</b></a> ·
   <a href="#video-demo"><b>Video demo</b></a>
 </p>
 
@@ -79,7 +79,7 @@ Memberi dan menerima donasi **gratis**. Pembayaran, poin, dan reward tidak membe
 
 ## Fitur yang sudah berjalan
 
-Semua fitur di bawah tersambung ke backend Supabase produksi dan bisa dicoba dengan [akun demo](#akun-demo-untuk-juri).
+Semua fitur di bawah tersambung ke backend Supabase produksi dan bisa dicoba dengan [akun demo](#akun-demo-untuk-testing).
 
 | Fitur | Yang bisa dilakukan |
 | --- | --- |
@@ -117,7 +117,7 @@ APK adalah Trusted Web Activity: membuka aplikasi yang sama dengan versi web dal
 
 Di iPhone, buka versi web di Safari lalu **Bagikan → Tambahkan ke Layar Utama**.
 
-### Akun demo untuk juri
+### Akun demo untuk testing
 
 Kata sandi semua akun: `test123`
 
@@ -127,7 +127,7 @@ Kata sandi semua akun: `test123`
 | Penerima (Dapur Komunitas Harapan, Kota Bandung) | `penerima@example.com` | Aplikasi / APK |
 | Admin (semua lingkup) | `admin@example.com` | `/admin/masuk`, atau tautan **Masuk sebagai staf operasional** di bawah halaman masuk |
 
-Cara masuk: pilih tab **Kata sandi** lalu isi email dan kata sandi, **atau** pilih **Kode verifikasi**, isi email akun demo, ketuk **Kirim kode** (akun demo langsung masuk tanpa email). Juri tidak perlu membayar apa pun. Skenario uji langkah demi langkah: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+Cara masuk: pilih tab **Kata sandi** lalu isi email dan kata sandi, **atau** pilih **Kode verifikasi**, isi email akun demo, ketuk **Kirim kode** (akun demo langsung masuk tanpa email). Tidak perlu membayar apa pun untuk mencoba. Skenario uji langkah demi langkah: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
 
 ### Video demo
 
@@ -271,7 +271,7 @@ Batasan yang dijaga: riwayat obrolan hanya disimpan di perangkat pengguna; serve
 - **Row Level Security di semua tabel**, klien tidak punya hak `INSERT/UPDATE/DELETE` langsung; perubahan lewat RPC yang memeriksa peran, status, dan stok. Kolom privat profil, alamat rinci, dan kontak hanya terbuka untuk pihak yang sedang berkegiatan.
 - **Berkas privat**: bukti verifikasi dan foto kendala di bucket privat; foto penawaran diperkecil di perangkat dan metadata EXIF (termasuk lokasi GPS) dibuang sebelum diunggah.
 - **Header keamanan** CSP, HSTS, X-Frame-Options, Referrer-Policy di Vercel.
-- **Kuota AI per akun** mencegah penyalahgunaan dan menjaga kuota tetap hidup selama penjurian.
+- **Kuota AI per akun** mencegah penyalahgunaan dan menjaga kuota tetap hidup selama masa pengujian.
 - **Hak pengguna**: permintaan hapus data lewat Pusat bantuan; persetujuan mitra sebelum nama/logo dipublikasikan di Paket Apresiasi.
 - **Jujur soal data**: penawaran tidak dihitung sebagai donasi berhasil; laporan sisa, penolakan, dan kendala tetap bisa dicatat.
 

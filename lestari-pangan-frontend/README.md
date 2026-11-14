@@ -40,7 +40,7 @@ npx vercel@latest deploy --prod      # build di server Vercel lalu terbit
 
 ## Yang sudah bisa dicoba
 
-Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat mendaftar; untuk menguji dua peran, pakai dua akun. Akun admin dibuat lewat SQL; caranya di [supabase/README.md](../supabase/README.md); akun demo juri ada di [docs/AKUN-UJI.md](../docs/AKUN-UJI.md).
+Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat mendaftar; untuk menguji dua peran, pakai dua akun. Akun admin dibuat lewat SQL; caranya di [supabase/README.md](../supabase/README.md); akun demo testing ada di [docs/AKUN-UJI.md](../docs/AKUN-UJI.md).
 
 | Kode | Layar | Rute |
 | --- | --- | --- |

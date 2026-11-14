@@ -43,7 +43,7 @@ Tanpa Supabase CLI: buka **SQL Editor**, tempel seluruh isi satu berkas dari `te
 
 | Fungsi | Isi |
 | --- | --- |
-| `functions/demo-login` | Masuk instan akun uji juri (4 alamat `@example.com` tetap) saat memilih metode Kode verifikasi: membuat token sekali pakai dengan `auth.admin.generateLink`, klien menukarnya lewat `verifyOtp`. Tidak mengirim email. Hapus setelah penjurian. |
+| `functions/demo-login` | Masuk instan akun demo testing (4 alamat `@example.com` tetap) saat memilih metode Kode verifikasi: membuat token sekali pakai dengan `auth.admin.generateLink`, klien menukarnya lewat `verifyOtp`. Tidak mengirim email. Hapus setelah masa pengujian. |
 | `functions/ai-chat` | Asisten Dapur AI (AR-21): validasi input, kuota lewat `ai_take_quota` atas nama pengguna, panggil Gemini dan alirkan jawaban (SSE: `{d}` potongan, `{reset}`, `{status:'padat'}`, `{done,onTopic,remaining}`, `{error}`) bila body berisi `stream: true`, hanya topik makanan. `verify_jwt` mati karena fungsi memeriksa sesi sendiri lewat RPC. |
 
 | `functions/ai-tts` | Suara Asisten Dapur (AR-24): teks ≤ 600 huruf → WAV lewat Gemini TTS, kuota `ai_take_tts_quota`, `fast: true` untuk kalimat pertama. Secret opsional: `GEMINI_TTS_MODEL`, `GEMINI_TTS_FAST_MODEL`, `GEMINI_TTS_VOICE` (bawaan Sulafat). |
