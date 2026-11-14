@@ -1,247 +1,321 @@
 # Lestari Pangan
 
-**Lestari Pangan** adalah aplikasi mobile yang mempertemukan restoran, UMKM, dan rumah tangga yang memiliki surplus pangan layak konsumsi dengan panti serta komunitas yang membutuhkan. Aplikasi membantu kegiatan dari penawaran makanan hingga penerimaan dan pencatatan hasil distribusi, dengan dukungan pengambilan mandiri atau mitra pengiriman.
+<p align="center">
+  <img src="assets/logo-lestari-pangan.png" alt="Logo Lestari Pangan" width="120">
+</p>
 
-Tagline: **Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.**
+<p align="center"><b>Bijak Konsumsi, Kurangi Sisa, Jaga Bumi.</b></p>
 
-**Kategori:** Mobile Apps · Subtema Green Environment & Sustainability (SDG 12).
+<p align="center">
+  <a href="https://github.com/bannerevander/lestari-pangan/releases/latest/download/lestari-pangan.apk"><b>⬇ Unduh APK Android</b></a> ·
+  <a href="https://lestari-pangan.vercel.app"><b>Buka aplikasi web</b></a> ·
+  <a href="#akun-demo-untuk-juri"><b>Akun demo</b></a> ·
+  <a href="#video-demo"><b>Video demo</b></a>
+</p>
 
-**Bentuk aplikasi:** Progressive Web App mobile-first yang dikemas menjadi **aplikasi Android (APK)** dengan Trusted Web Activity (PWABuilder). APK memuat aplikasi yang ter-deploy di https://lestari-pangan.vercel.app dalam mesin Chrome, layar penuh tanpa bilah alamat, sehingga isinya selalu sama dengan versi terbaru. Cara ini dipilih karena WebView biasa (Capacitor/Cordova) tidak mendukung pengenalan suara untuk Asisten Dapur AI. Rincian dan cara memasang: [docs/ANDROID.md](docs/ANDROID.md).
+Aplikasi mobile yang mempertemukan restoran, UMKM, dan rumah tangga yang punya **surplus pangan layak konsumsi** dengan panti dan komunitas yang membutuhkan, lengkap dari penawaran, permintaan, pengantaran, konfirmasi penerimaan, sampai laporan distribusi. Dilengkapi **Asisten Dapur AI** yang bisa diajak ngobrol pakai suara untuk mengolah sisa bahan.
 
-Status: MVP berjalan di produksi (aplikasi pengguna, konsol staf, backend Supabase, Asisten Dapur AI). Status per area ada di [docs/PROGRESS.md](docs/PROGRESS.md).
+## Daftar isi
 
-## Tujuan aplikasi
+1. [Tim](#tim)
+2. [Ringkasan solusi](#ringkasan-solusi)
+3. [Fitur yang sudah berjalan](#fitur-yang-sudah-berjalan)
+4. [Unduh dan coba](#unduh-dan-coba)
+5. [Teknologi](#teknologi)
+6. [Arsitektur dan alur data](#arsitektur-dan-alur-data)
+7. [Instalasi dan menjalankan di localhost](#instalasi-dan-menjalankan-di-localhost)
+8. [Penggunaan AI](#penggunaan-ai)
+9. [Keamanan, privasi, dan etika](#keamanan-privasi-dan-etika)
+10. [Atribusi](#atribusi)
+11. [Struktur repo dan dokumentasi](#struktur-repo-dan-dokumentasi)
 
-1. Mengurangi pangan layak konsumsi yang akhirnya terbuang dengan menghubungkan pemberi dan penerima donasi.
-2. Memudahkan restoran, UMKM, dan rumah tangga menawarkan serta menyalurkan kelebihan pangan.
-3. Membantu panti dan komunitas menemukan pangan yang sesuai kebutuhan, kapasitas, dan kemampuan penyalurannya.
-4. Membuat penyaluran dapat ditelusuri melalui jadwal, status, konfirmasi penerimaan, serta laporan distribusi.
-5. Membantu pengguna memahami penyebab surplus dan membangun kebiasaan yang mengurangi food waste.
-6. Menjaga operasional platform melalui pendanaan sosial yang transparan dan mengembalikan surplus dana untuk misi sosial.
+## Tim
 
-Fokus SDG utama adalah **SDG 12 tentang konsumsi dan produksi yang bertanggung jawab**, terutama pengurangan food waste pada target 12.3. Pencegahan limbah dan edukasi juga berkaitan dengan tujuan 12.5 dan 12.8. Data aplikasi menunjukkan hasil kegiatan program; tidak otomatis menjadi pengukuran indikator SDG resmi.
+**Nama tim: NightOwl**
 
-## Manfaat bagi para pihak
-
-| Pihak | Manfaat yang dituju |
+| Peran | Nama |
 | --- | --- |
-| Restoran dan UMKM | Menemukan penerima yang sesuai, mempermudah koordinasi, menyimpan riwayat penyaluran, serta mengevaluasi pola surplus. |
-| Rumah tangga | Menyalurkan kelebihan pangan dan memperoleh ide penggunaan bahan yang tersedia. |
-| Panti dan komunitas | Menemukan donasi yang sesuai kebutuhan, mengatur penerimaan, dan mencatat hasil distribusi. |
-| Ojek online (GoSend/GrabExpress) | Mengantar pangan yang dipesan sendiri oleh pemberi atau penerima; aplikasi menyiapkan alamat jemput, tujuan, kontak, dan catatan driver untuk disalin. |
-| Sponsor dan pendukung | Membantu operasional atau penyaluran serta melihat penggunaan dukungan dan hasil program yang dapat ditelusuri. |
+| Ketua tim | Banner Evander Salim |
+| Anggota 1 | Joshua |
+| Anggota 2 | Nicholas Zender Wang |
 
-Manfaat promosi dari reward apresiasi bergantung pada jangkauan dan kredibilitas program; kenaikan penjualan atau reputasi restoran tidak dijanjikan.
+## Ringkasan solusi
 
-## Pengguna dan pihak pendukung
-
-Aplikasi memiliki **dua peran pengguna utama**:
-
-- **Pemberi donasi:** restoran, UMKM, dan rumah tangga.
-- **Penerima donasi:** pengelola panti asuhan, panti jompo, dan komunitas penyaluran makanan gratis.
-
-**Admin** membantu verifikasi, pengelolaan konten, penanganan kendala, reward, dan laporan pendanaan. Pengantaran memakai **ojek online** (GoSend/GrabExpress) yang dipesan pihak yang menanggung ongkir, tanpa kurir khusus aplikasi. Keduanya merupakan fungsi pendukung operasional, bukan kelompok peserta Eco Challenge tambahan.
-
-## Prinsip produk
-
-- Memberi dan menerima donasi pangan tetap gratis; langganan wajib tidak menjadi model utama.
-- Jika pengiriman berbiaya digunakan, biaya dan sumber pembayarannya harus jelas sebelum disetujui.
-- Pembayaran, poin, dan reward tidak memberikan prioritas mendapatkan pangan.
-- Penyaluran menyesuaikan kebutuhan, kapasitas, jenis pangan, waktu, dan kemampuan pengambilan penerima.
-- Istilah surplus pangan merujuk kelebihan yang ditawarkan; informasi tanggal atau foto tidak otomatis membuktikan keamanan konsumsi.
-- Penawaran belum dianggap sebagai donasi berhasil. Penerimaan dan distribusi harus dibedakan serta dicatat berdasarkan hasil aktual.
-- Catatan donor dan penerima untuk kegiatan yang sama tidak dihitung sebagai dua kontribusi platform.
-- Reward tidak mendorong produksi surplus atau pengambilan makanan melebihi kebutuhan.
-- Pelaporan jujur mengenai sisa, penolakan, dan kendala harus tetap dimungkinkan.
-- Alamat rinci, kontak, bukti verifikasi, dan data kegiatan diberikan sesuai hak akses.
-
-## Fitur utama
-
-### 1 Catat Pangan
-
-Pengembangan dari use case **Catat Sisa Makanan**. Pengguna mencatat pangan yang masih tersedia maupun yang akhirnya terbuang.
-
-- Nama, kategori, jumlah, satuan, tanggal, dan informasi penyimpanan.
-- Kategori makanan matang, bahan pangan, dan produk kemasan.
-- Status masih tersedia, digunakan, ditawarkan untuk donasi, disalurkan, atau terbuang.
-- Alasan pembuangan atau kegagalan penyaluran.
-- Pengubahan catatan menjadi penawaran donasi tanpa mengetik ulang informasi.
-- Penawaran langsung tetap tersedia tanpa kewajiban mengelola stok terlebih dahulu.
-- Penerima dapat mencatat penggunaan, distribusi, sisa, atau pembuangan dari pangan yang diterima.
-
-Jumlah estimasi harus ditandai. Porsi, unit, dan kilogram tidak boleh dijumlahkan tanpa dasar konversi.
-
-### 2 Pantau Food Waste dan dampak
-
-Dashboard menampilkan informasi sesuai peran dan periode.
-
-| Pemberi | Penerima |
+| | |
 | --- | --- |
-| Surplus tercatat dan penawaran belum tersalurkan | Jumlah pangan diterima |
-| Jumlah yang berhasil diserahkan | Jumlah digunakan atau didistribusikan |
-| Pangan terbuang dan penyebabnya | Pangan masih tersedia, ditolak, atau terbuang |
-| Tren dan riwayat kegiatan | Riwayat penerimaan dan distribusi |
+| **Kompetisi** | LOGICODIX Hackathon 2026 |
+| **Kategori** | Mobile Apps |
+| **Subtema** | Green Environment & Sustainability (SDG 12: konsumsi dan produksi yang bertanggung jawab, target 12.3) |
+| **Nama aplikasi** | Lestari Pangan |
+| **Bentuk** | Progressive Web App mobile-first, dikemas sebagai **APK Android** (Trusted Web Activity) |
 
-Data memisahkan laporan pribadi, konfirmasi serah terima, dan laporan distribusi. Hari tanpa catatan tidak dianggap sebagai hari tanpa food waste. Estimasi emisi menunggu metode yang dapat dipertanggungjawabkan.
+### Masalah
 
-### 3 Donasi Makanan
+- Indonesia kehilangan dan membuang **23–48 juta ton pangan per tahun** (115–184 kg per orang per tahun, periode 2000–2019) menurut kajian *Food Loss and Waste di Indonesia* (Bappenas, 2021). [UNEP Food Waste Index Report 2024](https://www.unep.org/resources/publication/food-waste-index-report-2024) juga menempatkan sampah makanan rumah tangga Indonesia di antara yang terbesar di Asia Tenggara.
+- Di sisi lain, panti asuhan, panti jompo, dan dapur komunitas masih kekurangan pasokan pangan.
+- Restoran, UMKM, dan rumah tangga yang punya kelebihan makanan tidak tahu harus menghubungi siapa, dan penyaluran lewat grup chat tidak tercatat: tidak jelas berapa yang benar-benar diterima, dipakai, atau akhirnya terbuang.
 
-Fitur pusat aplikasi mencakup kebutuhan pemberi dan penerima.
+### Solusi
 
-**Pemberi:** membuat atau memperbarui penawaran, menentukan jumlah serta waktu, melihat permintaan, mengatur kesepakatan, menyiapkan makanan, dan mencatat penyerahan.
+Lestari Pangan menjadi tempat **menawarkan, meminta, dan menelusuri** surplus pangan:
 
-**Penerima:** mencari penawaran, menilai kesesuaian, mengajukan jumlah, menyepakati jadwal, mengatur pengambilan, mengonfirmasi penerimaan aktual, dan mencatat distribusi.
+1. Pemberi mencatat atau langsung menawarkan surplus (jenis, jumlah, waktu dimasak, alergen, batas ambil, foto).
+2. Penerima mencari penawaran terdekat sesuai kebutuhan dan kapasitas, lalu mengajukan jumlah.
+3. Pemberi menyetujui; kedua pihak menyepakati jadwal dan cara penyaluran (ambil sendiri atau ojek online GoSend/GrabExpress, aplikasi menyiapkan alamat dan catatan driver untuk disalin).
+4. Serah terima dicatat, penerima mengonfirmasi **jumlah aktual** yang diterima, lalu melaporkan penggunaan/distribusi dan sisa.
+5. Dashboard dampak, Eco Challenge, dan reward diperbarui dari kegiatan yang benar-benar selesai, bukan dari penawaran saja.
 
-Informasi penawaran meliputi jenis pangan, jumlah, foto opsional, waktu persiapan atau pembukaan jika relevan, tanggal pada label, penyimpanan, bahan/alergen yang diketahui, area, dan batas pengambilan. Profil penerima memuat kebutuhan, kapasitas, penyimpanan, jadwal, dan kemampuan mengambil.
+Asisten Dapur AI membantu mencegah sisa sejak dari dapur: pengguna menyebut bahan yang ada, AI menyarankan resep dan cara menyimpan, lalu membacakan jawabannya.
 
-Sistem perlu menyediakan reservasi jumlah, penyaluran sebagian, pembatalan, penolakan, dan laporan masalah. Detail permintaan dengan persetujuan versus klaim langsung masih akan diputuskan.
+### Target pengguna
 
-### 4 Resep dari Sisa dan Asisten Dapur AI (suara + chat)
+| Peran | Siapa | Manfaat |
+| --- | --- | --- |
+| **Pemberi donasi** | Restoran, UMKM kuliner, rumah tangga | Menemukan penerima yang cocok, koordinasi lebih mudah, riwayat penyaluran dan pola surplus tercatat |
+| **Penerima donasi** | Panti asuhan, panti jompo, dapur/komunitas makanan gratis | Menemukan pangan sesuai kebutuhan dan kapasitas, mengatur penerimaan, mencatat distribusi |
+| **Admin (staf operasional)** | Pengelola platform | Verifikasi akun, tangani kendala, kelola konten/challenge/reward/promosi, buku kas dan laporan pendanaan |
 
-**Asisten Dapur AI** (tombol "Tanya AI" di setiap tab) adalah chat khusus seputar makanan yang bisa dipakai dengan mengetik atau **ngobrol pakai suara**: aplikasi mendengarkan, AI menjawab, jawaban dibacakan, lalu aplikasi mendengarkan lagi. Jawaban memakai bahan di Catat Pangan dan katalog resep terkurasi sebagai konteks. Pertanyaan di luar topik makanan dijawab dengan penolakan baku. Detail teknis: [docs/architecture.md](docs/architecture.md) AR-21.
+Memberi dan menerima donasi **gratis**. Pembayaran, poin, dan reward tidak memberi prioritas mendapatkan pangan.
 
+## Fitur yang sudah berjalan
 
-Rekomendasi resep mendukung **percakapan suara dua arah melalui API**. Pengguna menyebut bahan yang tersedia, menerima jawaban suara, lalu dapat bertanya kembali mengenai pilihan atau langkah memasak.
+Semua fitur di bawah tersambung ke backend Supabase produksi dan bisa dicoba dengan [akun demo](#akun-demo-untuk-juri).
 
-- Pencarian berdasarkan bahan, porsi, alat masak, dan preferensi.
-- Penjelasan bahan tambahan yang dibutuhkan.
-- Resep tertulis yang dapat dibaca dan disimpan.
-- Pencatatan penggunaan bahan setelah pengguna mengonfirmasi.
-
-Pendukung percakapan yang diusulkan: Bahasa Indonesia, klarifikasi ucapan yang kurang jelas, kendali mikrofon, berhenti atau ulangi jawaban, dan alternatif teks ketika audio tidak tersedia. Katalog terkurasi diusulkan sebagai dasar rekomendasi; batas adaptasi AI masih perlu dirinci.
-
-Penyedia API dan cara implementasi dibahas pada tahap arsitektur. Asisten resep tidak mengesahkan bahwa pangan aman dikonsumsi hanya berdasarkan foto, tanggal, atau percakapan.
-
-### 5 Tips Anti Food Waste
-
-Kategori, pencarian, artikel singkat, tips tersimpan, dan panduan yang muncul pada langkah relevan.
-
-- Pemberi: perencanaan produksi atau belanja, penyimpanan, penandaan bahan, informasi donasi, dan pengemasan.
-- Penerima: kecocokan kebutuhan, pemeriksaan serah terima, penyimpanan, distribusi, dan pencatatan sisa.
-
-Admin mengelola konten. Panduan penanganan pangan perlu mempunyai proses peninjauan sebelum digunakan dalam operasi.
-
-### 6 Eco Challenge dan reward
-
-Challenge menyesuaikan **pemberi dan penerima**. Fitur mencakup tujuan, periode, aturan, progres, bukti penyelesaian, pemeriksaan, reward tersedia, klaim, dan riwayat penyerahan.
-
-Contoh kegiatan yang masih perlu dirinci: pencatatan surplus, penyaluran terkonfirmasi, perbaikan kebiasaan, atau pencatatan hasil distribusi. Nama challenge, jumlah kegiatan, periode, dan mekanisme poin versus klaim langsung belum final.
-
-#### Paket Apresiasi Mitra
-
-Reward pengakuan publik dan materi komunikasi, terutama untuk restoran dan UMKM:
-
-- Honorable mention di kanal Lestari Pangan.
-- Sorotan profil mitra pada aplikasi selama periode tertentu.
-- Materi gambar dan caption siap dibagikan kembali.
-- Sertifikat apresiasi digital dengan periode dan kontribusi terverifikasi.
-
-Materi menekankan kolaborasi penyelamatan pangan, tetap jujur mengenai surplus, dan tidak membingkai restoran sebagai usaha yang tidak laku. Mitra menyetujui penggunaan nama, logo, foto, dan teks sebelum publikasi. Apresiasi bukan sertifikasi keamanan pangan atau penilaian seluruh praktik lingkungan restoran.
-
-#### Paket Dukungan Penyaluran
-
-Reward praktis berupa pilihan voucher perlengkapan pangan, wadah guna ulang, tas berinsulasi, atau perlengkapan informasi donasi. Pengguna memilih satu reward yang tersedia; seluruh isi tidak otomatis diberikan.
-
-Nilai, stok, sponsor, cara memperoleh, dan biaya penyerahan harus diketahui sebelum hadiah dijanjikan. Bantuan ongkir dasar tetap menjadi program pendanaan penyaluran berdasarkan kebutuhan.
-
-Pembagian awal yang diusulkan: restoran/UMKM dapat memilih salah satu paket; rumah tangga dan penerima memperoleh pilihan Dukungan Penyaluran. Kelayakan akhir, kuota, durasi apresiasi, dan sponsor masih perlu ditetapkan. Foto wajah penerima bukan syarat wajib challenge.
-
-## Fitur pendukung
-
-| Fitur | Cakupan |
+| Fitur | Yang bisa dilakukan |
 | --- | --- |
-| Akun dan profil | Registrasi, login, pemulihan akses, identitas pemberi/penerima, serta kebutuhan dan lokasi. |
-| Verifikasi | Pemeriksaan identitas dan pengelola, status tinjauan, serta pembatasan akses bukti. |
-| Pengambilan dan pengiriman | Cara penyaluran, mitra, jadwal, biaya, pembayar atau sponsor, status, dan serah terima. |
-| Komunikasi dan notifikasi | Permintaan, persetujuan, koordinasi, pengingat, perubahan, dan hasil kegiatan. |
-| Laporan masalah | Tidak datang, keterlambatan, jumlah berbeda, penolakan, dan kendala penyaluran. |
-| Dukungan pendanaan | Donasi operasional, sponsor pengiriman, program, serta bantuan barang/jasa dan laporan. |
-| Panel admin | Verifikasi, pemantauan operasi, konten, challenge, reward, persetujuan publikasi, dan pendanaan. |
-| Privasi dan hak akses | Pembatasan alamat rinci, kontak, dokumen, rekaman, dan data penyaluran. |
+| **Akun dan verifikasi** | Daftar/masuk dengan kode OTP email atau kata sandi, pilih peran, profil organisasi, kebutuhan dan kapasitas penerima, lokasi (514 kab/kota + peta), unggah bukti verifikasi (privat) |
+| **Donasi Makanan** | Pemberi menerbitkan, mengubah, dan menutup penawaran (data wajib per kategori, batas per penerima, foto diperkecil dan EXIF dibuang). Penerima mencari dan memfilter penawaran (sekota tampil lebih dulu), mengajukan permintaan; pemberi menyetujui/menolak/mengusulkan penyesuaian; permintaan batal otomatis bila tidak ditanggapi 2 jam |
+| **Penyaluran** | Jadwal, cara penyaluran, kartu **Pesan pengiriman** ojek online, koordinasi Telepon/WhatsApp, catat penyerahan, konfirmasi penerimaan penuh/sebagian/tolak (sebagian diverifikasi admin), ajukan ongkir ditanggung pemberi, laporan distribusi, lapor kendala dengan foto |
+| **Catat Pangan** | Catat stok dan pangan terbuang beserta alasannya, ubah catatan menjadi penawaran tanpa mengetik ulang, penerimaan otomatis jadi catatan |
+| **Dashboard dampak** | Pangan diserahkan, diterima, didistribusikan, dan terbuang per peran dan periode, dihitung dari penyaluran nyata per satuan |
+| **Asisten Dapur AI (chat + suara)** | Tombol "Tanya AI" di semua tab; ketik atau ngobrol pakai suara (dengar → AI menjawab mengalir → dibacakan → dengar lagi), memakai bahan di Catat Pangan dan katalog resep terkurasi; menolak pertanyaan di luar topik makanan |
+| **Resep dari Sisa dan Tips** | Katalog resep dan artikel tips dari database, simpan favorit, catat bahan terpakai |
+| **Eco Challenge dan reward** | Ikut challenge, progres dari server, ajukan pemeriksaan, poin, tukar poin dengan Paket Dukungan Penyaluran atau Paket Apresiasi Mitra (persetujuan materi publikasi) |
+| **Dukungan pendanaan** | Donasi operasional/sponsor pengiriman lewat transfer manual + kode referensi, divalidasi admin; halaman transparansi dana |
+| **Notifikasi** | Notifikasi in-app real-time (Supabase Realtime) untuk permintaan, persetujuan, penyaluran, dan balasan tiket |
+| **Pusat bantuan** | Tiket bantuan dan permintaan hapus data; admin membalas |
+| **Konsol admin** (`/admin`) | Verifikasi, kendala, verifikasi penerimaan sebagian, konten + sampul, challenge, reward, klaim, apresiasi, promosi banner per wilayah, tiket, buku kas, program, laporan, jejak audit. Responsif: tabel di laptop, kartu di HP |
 
-## Model pendanaan yang disepakati
+Rincian status per layar: [docs/PROGRESS.md](docs/PROGRESS.md).
 
-Lestari Pangan bertujuan menutup biaya operasional serta menjaga misi sosial. Sumber dukungan yang direncanakan:
+## Unduh dan coba
 
-1. Donasi operasional sukarela, sekali atau rutin.
-2. Sponsor pengiriman dari individu atau perusahaan.
-3. Kemitraan program untuk wilayah atau periode tertentu dengan biaya pengelolaan transparan.
-4. Dukungan barang dan jasa, seperti pengiriman, kemasan, penyimpanan, hosting, atau tenaga.
+### Aplikasi Android (APK)
 
-Dukungan rutin tidak menjadi langganan wajib. Dana digunakan untuk menjalankan aplikasi dan penyaluran; surplus digunakan kembali untuk distribusi serta bantuan komunitas. Besar cadangan operasional dan aturan alokasi masih perlu ditetapkan.
+**[⬇ Unduh lestari-pangan.apk](https://github.com/bannerevander/lestari-pangan/releases/latest/download/lestari-pangan.apk)** (±1,6 MB, Android 7.0+), atau lihat halaman [Releases](https://github.com/bannerevander/lestari-pangan/releases).
 
-Laporan membedakan dana operasional, pengiriman, bantuan langsung, barang/jasa, pengeluaran, dan saldo. Dana dengan tujuan khusus digunakan sesuai tujuan. Nilai pangan yang didonasikan dibedakan dari uang tunai untuk operasional.
+1. Buka tautan di atas **dari browser HP Android**; berkas langsung terunduh.
+2. Ketuk berkas yang terunduh. Bila diminta, izinkan **Instal aplikasi tidak dikenal** untuk browser/pengelola berkas (APK tidak berasal dari Play Store).
+3. Buka **Lestari Pangan** dari laci aplikasi. Google Chrome harus terpasang.
 
-## Gambaran alur utama
+APK adalah Trusted Web Activity: membuka aplikasi yang sama dengan versi web dalam mesin Chrome, layar penuh tanpa bilah alamat, termasuk mikrofon untuk Asisten Dapur. WebView biasa (Capacitor/Cordova) tidak dipakai karena tidak mendukung pengenalan suara. Data paket dan sidik jari kunci: [docs/ANDROID.md](docs/ANDROID.md).
 
-1. Pemberi dan penerima membuat profil serta mengikuti pemeriksaan yang dipersyaratkan.
-2. Pemberi mencatat atau langsung menawarkan surplus.
-3. Penerima melihat kecocokan dan mengajukan jumlah.
-4. Kedua pihak menyepakati jumlah, waktu, cara penyaluran, serta pendanaan pengiriman jika diperlukan.
-5. Pangan diserahkan dan jumlah aktual diterima dikonfirmasi.
-6. Penerima mencatat penggunaan/distribusi dan sisa.
-7. Riwayat, dashboard, dan progres challenge diperbarui dari kegiatan yang relevan.
-8. Reward dapat diklaim setelah syarat serta pemeriksaan terpenuhi.
+### Versi web
 
-Alur permintaan di atas merupakan dasar pembahasan; persetujuan versus klaim langsung dan rincian pembatalan belum final.
+| Bagian | Alamat |
+| --- | --- |
+| Aplikasi pengguna (pemberi, penerima) | https://lestari-pangan.vercel.app (di laptop tampil sebagai kolom HP di tengah layar) |
+| Konsol admin | https://lestari-pangan.vercel.app/admin/masuk |
 
-## Hal yang masih perlu ditetapkan
+Di iPhone, buka versi web di Safari lalu **Bagikan → Tambahkan ke Layar Utama**.
 
-- Jenis pangan yang boleh ditawarkan, informasi wajib, serta prosedur penanganan dan penolakan.
-- Aturan verifikasi, reservasi, pembagian jumlah, persetujuan, dan pembatalan.
-- Mitra pengiriman, wilayah layanan, sumber pembayar, dan pengembalian biaya.
-- Challenge, bukti, poin atau klaim langsung, nilai reward, kuota, sponsor, dan durasi publikasi.
-- Anggaran operasional, cadangan, penggunaan surplus, dan jadwal laporan.
-- Target perangkat/platform, batas layanan suara, retensi data, serta target kualitas dan performa.
+### Akun demo untuk juri
+
+Kata sandi semua akun: `test123`
+
+| Peran | Email | Tempat masuk |
+| --- | --- | --- |
+| Pemberi (Warung Makan Bu Sari, Kota Bandung) | `pemberi@example.com` | Aplikasi / APK |
+| Penerima (Dapur Komunitas Harapan, Kota Bandung) | `penerima@example.com` | Aplikasi / APK |
+| Admin (semua lingkup) | `admin@example.com` | `/admin/masuk`, atau tautan **Masuk sebagai staf operasional** di bawah halaman masuk |
+
+Cara masuk: pilih tab **Kata sandi** lalu isi email dan kata sandi, **atau** pilih **Kode verifikasi**, isi email akun demo, ketuk **Kirim kode** (akun demo langsung masuk tanpa email). Juri tidak perlu membayar apa pun. Skenario uji langkah demi langkah: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+
+### Video demo
+
+Video demo YouTube (3–5 menit): **https://youtu.be/ISI-TAUTAN-VIDEO**
+
+## Teknologi
+
+| Lapisan | Teknologi |
+| --- | --- |
+| Front end | React 18, TypeScript 5, Vite 5, Tailwind CSS 3, React Router 6, Phosphor Icons, font Inter (dibundel lokal), Leaflet + OpenStreetMap |
+| Aplikasi mobile | PWA (manifest + ikon) dikemas Trusted Web Activity lewat PWABuilder → APK Android |
+| Backend | Supabase (free tier): PostgreSQL 17, Row Level Security, RPC PL/pgSQL, Auth (OTP email + kata sandi), Storage, Realtime, pg_cron |
+| Serverless | Supabase Edge Functions (Deno/TypeScript): `ai-chat`, `ai-tts`, `demo-login` |
+| AI | Google Gemini API (chat + text-to-speech), Web Speech API browser (speech-to-text) |
+| Hosting | Vercel (deploy otomatis dari branch `main`), header keamanan CSP/HSTS |
+| Pengujian | pgTAP (95 asersi untuk RLS, RPC, kuota), `node --test` untuk pengaman env, ESLint, `tsc` |
+
+## Arsitektur dan alur data
+
+Modular monolith tanpa server sendiri: semua logika bisnis ada di Supabase. Klien **membaca** tabel/view yang dibatasi RLS dan **mengubah data hanya lewat RPC** (satu fungsi = satu transaksi + jejak audit + notifikasi). Kunci rahasia hanya ada di Edge Functions. Rincian keputusan: [docs/architecture.md](docs/architecture.md).
+
+```mermaid
+flowchart LR
+  subgraph Klien
+    APK["APK Android (TWA, mesin Chrome)"]
+    WEB["Aplikasi web React (PWA)"]
+    ADM["Konsol admin /admin"]
+  end
+  APK --> WEB
+  VERCEL["Vercel (hosting statis + CSP)"] -. melayani .-> WEB
+  VERCEL -. melayani .-> ADM
+
+  subgraph Supabase
+    AUTH["Auth: OTP / kata sandi"]
+    DB[("PostgreSQL + RLS")]
+    RPC["RPC PL/pgSQL<br/>(transaksi + audit + notifikasi)"]
+    RT["Realtime"]
+    ST["Storage: foto publik,<br/>bukti verifikasi privat"]
+    CRON["pg_cron: batal otomatis 2 jam,<br/>kedaluwarsa"]
+    EF["Edge Functions<br/>ai-chat · ai-tts · demo-login"]
+  end
+
+  WEB & ADM -- "JWT" --> AUTH
+  WEB & ADM -- "baca (RLS)" --> DB
+  WEB & ADM -- "ubah" --> RPC --> DB
+  DB --> RT -- "notifikasi" --> WEB
+  WEB -- "unggah" --> ST
+  CRON --> DB
+  WEB -- "chat / teks" --> EF
+  EF -- "kuota" --> RPC
+  EF -- "API key (secret server)" --> GEM["Google Gemini API"]
+  WEB -- "suara → teks" --> WSA["Web Speech API browser"]
+  WEB -- "cari lokasi" --> OSM["OpenStreetMap / Nominatim"]
+```
+
+Alur data utama (donasi sampai distribusi):
+
+```mermaid
+sequenceDiagram
+  actor P as Pemberi
+  actor R as Penerima
+  participant DB as Supabase (RPC + RLS)
+  actor A as Admin
+  P->>DB: donation_publish_offer (jenis, jumlah, batas ambil, foto)
+  R->>DB: cari penawaran (baca view, sekota dulu)
+  R->>DB: donation_submit_request (jumlah)
+  DB-->>P: notifikasi Realtime
+  P->>DB: donation_decide_request (setuju) → penyaluran dibuat, stok direservasi
+  Note over DB: pg_cron membatalkan permintaan<br/>yang tidak ditanggapi 2 jam
+  P->>DB: fulfillment_handover (serah terima)
+  R->>DB: fulfillment_receive (jumlah aktual)
+  alt diterima sebagian
+    DB-->>A: antrean verifikasi
+    A->>DB: admin_verify_receipt
+  end
+  R->>DB: fulfillment_report_distribution (dipakai / dibagikan / sisa)
+  DB-->>P: dashboard dampak + progres challenge diperbarui
+```
+
+Alur Asisten Dapur AI: ucapan → teks oleh Web Speech API (`id-ID`) → Edge Function `ai-chat` memeriksa sesi dan kuota (40 pesan/jam), menambahkan daftar bahan Catat Pangan + judul resep terkurasi, memanggil Gemini, dan mengalirkan jawaban (SSE) → kalimat jawaban dikirim ke `ai-tts` (Gemini TTS) → audio diputar → aplikasi mendengarkan lagi.
+
+## Instalasi dan menjalankan di localhost
+
+Kebutuhan: **Node.js 18+** (disarankan 20 LTS), npm, dan proyek Supabase (gratis).
+
+### 1. Front end
+
+```bash
+git clone https://github.com/bannerevander/lestari-pangan.git
+cd lestari-pangan/lestari-pangan-frontend
+npm install
+cp .env.example .env.local
+```
+
+Isi `.env.local` (lihat [`.env.example`](lestari-pangan-frontend/.env.example)):
+
+| Variabel | Isi |
+| --- | --- |
+| `VITE_SUPABASE_URL` | URL proyek Supabase (Dashboard → Project Settings → API) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Publishable key (`sb_publishable_...`). **Jangan** isi service role/secret key: build sengaja gagal bila ada |
+
+```bash
+npm run dev       # http://localhost:5173 (konsol admin: http://localhost:5173/admin/masuk)
+npm run build     # type-check + build produksi
+npm run preview   # melayani hasil build dengan header keamanan yang sama seperti Vercel
+```
+
+Untuk mencoba cepat memakai backend produksi, isi kedua variabel dengan URL dan publishable key proyek Lestari Pangan (keduanya memang publik dan sudah tertanam di bundle web); akun demo di atas langsung bisa dipakai di localhost.
+
+### 2. Backend Supabase (bila memakai proyek sendiri)
+
+1. Buat proyek di [supabase.com](https://supabase.com), lalu jalankan berkas di [`supabase/migrations/`](supabase/migrations) **berurutan menurut nama** lewat SQL Editor (atau `supabase db push` dengan Supabase CLI).
+2. Deploy Edge Functions:
+
+   ```bash
+   supabase functions deploy ai-chat --no-verify-jwt
+   supabase functions deploy ai-tts --no-verify-jwt
+   supabase functions deploy demo-login --no-verify-jwt
+   ```
+
+3. Isi secret Edge Functions (Dashboard → Edge Functions → Secrets), contoh di [`supabase/functions/.env.example`](supabase/functions/.env.example). Wajib: `GEMINI_API_KEY` dari [Google AI Studio](https://aistudio.google.com/apikey) (tier gratis).
+4. (Opsional) Jalankan tes pgTAP di [`supabase/tests/`](supabase/tests) lewat SQL Editor; semua baris harus `ok`.
+
+Panduan lengkap backend, akun admin, dan langkah manual dashboard: [supabase/README.md](supabase/README.md), [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Penggunaan AI
 
-| Layanan / model | Dipakai untuk | Data yang dikirim |
+| Layanan / model | Dipakai untuk fitur | Data yang dikirim |
 | --- | --- | --- |
-| Google Gemini API tier gratis: `gemini-3.5-flash-lite`, cadangan `gemini-3.1-flash-lite` dan `gemini-3.8-flash` | Asisten Dapur AI: ide resep dari bahan, cara menyimpan, mengolah sisa makanan | 12 pesan terakhir, daftar bahan Catat Pangan pengguna, judul resep terkurasi. Lewat Edge Function `ai-chat`; kunci API hanya di secret server. Data tier gratis dapat dipakai Google untuk pengembangan produk, dan ini disampaikan di layar. |
-| ChatGPT (OpenAI), pembuatan gambar | Foto penawaran demo, sampul resep/tips, dan banner promosi awal (folder `assets/`) | Hanya prompt deskripsi gambar; tidak ada data pengguna. Gambar demo, bukan foto makanan nyata dari pengguna. |
-| OpenStreetMap + Nominatim, peta Leaflet | Memilih titik lokasi usaha/titik temu (GPS, cari tempat, geser pin), mengisi kab/kota dan alamat otomatis; tautan "Buka di Google Maps" dari titik itu | Koordinat titik dan teks pencarian dikirim ke Nominatim (OpenStreetMap Foundation). Data peta © kontributor OpenStreetMap, lisensi ODbL. |
-| Google Gemini TTS: `gemini-3.8-flash-lite-tts` (kalimat pertama), `gemini-3.8-flash-tts` (sisanya), suara Sulafat | Membacakan jawaban Asisten Dapur dengan suara perempuan yang hangat dan ekspresif | Teks jawaban per potongan ±280 huruf, lewat Edge Function `ai-tts` (kuota 120 potongan/jam/akun). Bila gagal atau penuh, aplikasi memakai suara browser. |
-| Web Speech API bawaan browser | Mengubah ucapan jadi teks (`id-ID`); cadangan pembaca jawaban bila suara Gemini tidak tersedia | Audio diproses layanan suara browser (Google pada Chrome), tidak dikirim ke server Lestari Pangan. |
+| Google Gemini API tier gratis: `gemini-3.5-flash-lite`, cadangan `gemini-3.1-flash-lite` dan `gemini-3.8-flash` | **Asisten Dapur AI**: ide resep dari bahan, cara menyimpan, mengolah sisa makanan; menolak topik di luar makanan (jawaban terstruktur `on_topic`) | 12 pesan terakhir, daftar bahan Catat Pangan pengguna, judul resep terkurasi. Lewat Edge Function `ai-chat`; kunci API hanya di secret server. Data tier gratis dapat dipakai Google untuk pengembangan produk, dan ini disampaikan di layar |
+| Google Gemini TTS: `gemini-3.8-flash-lite-tts` (kalimat pertama), `gemini-3.8-flash-tts` (sisanya), suara Sulafat | **Suara Asisten Dapur**: membacakan jawaban dalam Bahasa Indonesia | Teks jawaban per potongan ±280 huruf lewat Edge Function `ai-tts` (kuota 120 potongan/jam/akun). Bila gagal, aplikasi memakai suara browser |
+| Web Speech API bawaan browser | **Mode suara**: ucapan → teks (`id-ID`); cadangan pembaca jawaban | Audio diproses layanan suara browser (Google pada Chrome), tidak dikirim ke server Lestari Pangan |
+| ChatGPT (OpenAI), pembuatan gambar | Foto penawaran contoh, sampul resep/tips, banner promosi awal ([`assets/`](assets)) | Hanya prompt deskripsi gambar, tanpa data pengguna. Gambar ini ilustrasi, bukan foto makanan nyata pengguna |
+| Claude Code (Anthropic) | Asisten pemrograman selama pengembangan (penulisan kode, dokumentasi, pengujian) | Kode sumber repo ini; tidak ada data pengguna |
 
-Riwayat obrolan hanya disimpan di perangkat pengguna. Server hanya mencatat waktu permintaan untuk kuota 40 pesan per jam per akun. Asisten tidak menyatakan makanan aman hanya dari deskripsi, tanggal, atau foto. Alat bantu pengembangan: kode ditulis dengan bantuan asisten AI (Claude Code).
+Batasan yang dijaga: riwayat obrolan hanya disimpan di perangkat pengguna; server hanya mencatat waktu permintaan untuk kuota. Asisten **tidak menyatakan makanan aman** hanya dari deskripsi, tanggal, atau foto, dan layar chat menjelaskan bahwa jawaban dibuat AI.
 
-## Akun demo untuk juri
+## Keamanan, privasi, dan etika
 
-Satu akun per peran (pemberi, penerima, admin). Pilih metode **Kode verifikasi** lalu ketuk Kirim kode (akun uji langsung masuk), atau metode **Kata sandi**. Email, kata sandi, dan skenario uji: [docs/AKUN-UJI.md](docs/AKUN-UJI.md).
+- **Tanpa rahasia di kode atau front end.** Hanya URL Supabase dan publishable key di env browser; build gagal bila ada secret key ([`config/publicEnvGuard.ts`](lestari-pangan-frontend/config/publicEnvGuard.ts)). Kunci Gemini hanya di secret Edge Function. `.env` diabaikan git; contoh ada di `.env.example`.
+- **Row Level Security di semua tabel**, klien tidak punya hak `INSERT/UPDATE/DELETE` langsung; perubahan lewat RPC yang memeriksa peran, status, dan stok. Kolom privat profil, alamat rinci, dan kontak hanya terbuka untuk pihak yang sedang berkegiatan.
+- **Berkas privat**: bukti verifikasi dan foto kendala di bucket privat; foto penawaran diperkecil di perangkat dan metadata EXIF (termasuk lokasi GPS) dibuang sebelum diunggah.
+- **Header keamanan** CSP, HSTS, X-Frame-Options, Referrer-Policy di Vercel.
+- **Kuota AI per akun** mencegah penyalahgunaan dan menjaga kuota tetap hidup selama penjurian.
+- **Hak pengguna**: permintaan hapus data lewat Pusat bantuan; persetujuan mitra sebelum nama/logo dipublikasikan di Paket Apresiasi.
+- **Jujur soal data**: penawaran tidak dihitung sebagai donasi berhasil; laporan sisa, penolakan, dan kendala tetap bisa dicatat.
 
-| Bagian | Alamat | Perangkat |
+Rincian pemeriksaan: [docs/SECURITY.md](docs/SECURITY.md).
+
+## Atribusi
+
+| Sumber | Dipakai untuk | Lisensi / keterangan |
 | --- | --- | --- |
-| Aplikasi pengguna (pemberi, penerima) | https://lestari-pangan.vercel.app | Dirancang untuk HP. Di laptop tampil sebagai kolom HP di tengah layar. |
-| Konsol staf (admin) | https://lestari-pangan.vercel.app/admin/masuk | **Menyesuaikan perangkat yang dipakai.** Di laptop: menu di samping kiri dan data dalam tabel. Di HP: menu lewat tombol ☰ dan setiap baris tabel tampil sebagai kartu. Fungsinya sama di keduanya. |
+| [React](https://react.dev), [Vite](https://vitejs.dev), [React Router](https://reactrouter.com), [Tailwind CSS](https://tailwindcss.com), [TypeScript](https://www.typescriptlang.org) | Kerangka front end | MIT / Apache-2.0 |
+| [supabase-js](https://github.com/supabase/supabase-js) | Klien backend | MIT |
+| [Phosphor Icons](https://phosphoricons.com) | Ikon antarmuka | MIT |
+| [Inter](https://rsms.me/inter/) via `@fontsource/inter` | Huruf | SIL Open Font License 1.1 |
+| [Leaflet](https://leafletjs.com) | Peta pilih lokasi | BSD-2-Clause |
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) + Nominatim | Ubin peta dan pencarian alamat | Data © kontributor OpenStreetMap, ODbL |
+| Kepmendagri No. 300.2.2-2138 Tahun 2025 (kode dan data wilayah) | Daftar 514 kab/kota dan 38 provinsi ([`data/kota.json`](lestari-pangan-frontend/src/data)) | Data pemerintah, publik |
+| [PWABuilder](https://www.pwabuilder.com) | Membuat paket APK Trusted Web Activity | Layanan gratis Microsoft, kode MIT |
+| Google Stitch | Eksplorasi desain layar awal (wireframe), lalu diimplementasikan ulang sebagai kode React | Ilustrasi SVG dan beberapa foto contoh dari ekspor Stitch ada di `public/illustrations` dan `public/img` |
+| ChatGPT (OpenAI) | Gambar contoh di [`assets/`](assets) dan konten awal | Gambar buatan AI, lihat [Penggunaan AI](#penggunaan-ai) |
+| Bappenas (2021), UNEP Food Waste Index Report 2024, [SDG 12](https://sdgs.un.org/goals/goal12) | Data latar masalah | Dikutip sebagai rujukan |
 
-Konsol staf bisa juga dibuka dari aplikasi lewat tautan **Masuk sebagai staf operasional** di bawah halaman masuk.
+Daftar lengkap dependensi: [`lestari-pangan-frontend/package.json`](lestari-pangan-frontend/package.json).
 
-**Aplikasi Android (APK):** Lestari Pangan juga tersedia sebagai APK (Trusted Web Activity) yang membuka aplikasi web yang sama dalam mode layar penuh, termasuk chat dan suara Asisten Dapur AI. Cara memasang dan data paket: [docs/ANDROID.md](docs/ANDROID.md).
-
-## Struktur folder
+## Struktur repo dan dokumentasi
 
 | Folder | Isi |
 | --- | --- |
-| `docs/` | Dokumen produk dan desain: requirement, catatan keputusan, riset warna, `design.md`, gaya home terkunci. |
-| `assets/` | Logo sumber (`logo-lestari-pangan.png`) dan pilihan palet (`pilihan-palet.svg`). |
-| `lestari-pangan-frontend/` | Kode front end (React + Vite + Tailwind), di-hosting di Vercel; lihat README di dalamnya. |
-| `supabase/` | Backend: migrasi database (skema, RLS, RPC) dan tes pgTAP; lihat [supabase/README.md](supabase/README.md). |
-| `output/` | Hasil kerja pendukung, bukan kode aplikasi; lihat [output/README.md](output/README.md). |
-| `.playwright-cli/` | Log dan snapshot otomatis dari alat browser; aman diabaikan. |
+| [`lestari-pangan-frontend/`](lestari-pangan-frontend) | Kode aplikasi (React + Vite), di-hosting di Vercel; [README](lestari-pangan-frontend/README.md) |
+| [`supabase/`](supabase) | Backend: migrasi (skema, RLS, RPC, job), Edge Functions, tes pgTAP; [README](supabase/README.md) |
+| [`docs/`](docs) | Requirement, arsitektur, desain, keamanan, progres, akun uji, Android |
+| [`assets/`](assets) | Logo, foto contoh, sampul konten |
+| [`prototype/`](prototype) | Prototipe klik (data lokal, tanpa backend) untuk uji alur desain |
 
-## Dokumentasi proyek
-
-- [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md): kebutuhan pengembangan, requirement fungsional/nonfungsional, dan kriteria penerimaan awal.
-- [docs/CATATAN-KEPUTUSAN-PRODUK.md](docs/CATATAN-KEPUTUSAN-PRODUK.md): riwayat pembahasan dan keputusan.
-- [docs/design.md](docs/design.md): acuan UI baru untuk seluruh halaman, navigasi, komponen, warna, aksesibilitas, dan motion. UI dirancang dari awal; prototipe UI.html tidak lagi digunakan sebagai acuan.
-- [docs/RISET-UX-WARNA.md](docs/RISET-UX-WARNA.md): dasar riset peran warna dan kontras yang mendukung palet pilihan.
-- [docs/PROGRESS.md](docs/PROGRESS.md): **papan pelacakan** — status per area dan per kelompok layar, utang teknis, log pekerjaan. Mulai dari sini.
-- [docs/architecture.md](docs/architecture.md): keputusan arsitektur yang sudah disetujui (Supabase, modular monolith, PWA, Vercel), skema database, RPC, dan keputusan terbuka.
-- [docs/SECURITY.md](docs/SECURITY.md): lapisan keamanan, hasil pemeriksaan, dan **langkah manual dashboard** yang wajib dilakukan.
-- [docs/CONVENTIONS.md](docs/CONVENTIONS.md): aturan pembagian berkas kode, service, migrasi, dan bahasa.
-- [docs/ANDROID.md](docs/ANDROID.md): APK Android (TWA), sidik jari kunci, cara memasang dan membuat versi baru.
-
-Dokumen sumber use case: **PRESENTASI USE CASE HTML (1).docx**. Rujukan misi: [target resmi SDG 12](https://sdgs.un.org/goals/goal12).
+| Dokumen | Isi |
+| --- | --- |
+| [docs/PROGRESS.md](docs/PROGRESS.md) | Status per area dan per layar, utang teknis, log pekerjaan |
+| [docs/architecture.md](docs/architecture.md) | Keputusan arsitektur, skema database, daftar RPC |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Requirement fungsional/nonfungsional dan kriteria penerimaan |
+| [docs/design.md](docs/design.md) | Panduan UI: navigasi, komponen, warna, aksesibilitas, motion |
+| [docs/SECURITY.md](docs/SECURITY.md) | Lapisan keamanan dan hasil pemeriksaan |
+| [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Aturan pembagian berkas kode, service, migrasi |
+| [docs/AKUN-UJI.md](docs/AKUN-UJI.md) | Akun demo dan skenario uji |
+| [docs/ANDROID.md](docs/ANDROID.md) | APK Android (TWA): data paket, cara memasang, membuat versi baru |
 
 Terakhir diperbarui: **14 November 2026**.

@@ -25,9 +25,18 @@ Folder `android-release/` di akar repo diabaikan git (`.gitignore`):
 | `paket/Lestari Pangan.aab` | Diunggah ke Google Play Console bila kelak terbit di Play Store | Ya, hanya ke Play Console |
 | `paket/signing.keystore` + `paket/signing-key-info.txt` | Kunci tanda tangan + kata sandinya | **Tidak.** Simpan cadangan di tempat aman (mis. pengelola kata sandi). Tanpa kunci ini, pembaruan aplikasi tidak bisa ditandatangani dengan identitas yang sama |
 
+## Unduhan publik
+
+APK dibagikan lewat **GitHub Releases** (bukan di-commit ke git):
+
+- Tautan tetap versi terbaru: https://github.com/bannerevander/lestari-pangan/releases/latest/download/lestari-pangan.apk
+- Halaman rilis: https://github.com/bannerevander/lestari-pangan/releases
+
+Tautan hanya bisa dibuka orang lain setelah repo **public**. Untuk versi baru, unggah APK dengan nama berkas yang sama (`lestari-pangan.apk`) ke rilis baru agar tautan `latest` tetap berlaku.
+
 ## Memasang di HP
 
-1. Kirim `Lestari Pangan.apk` ke HP (kabel, Google Drive, dll.).
+1. Buka tautan unduhan di atas dari browser HP Android (atau kirim berkas `.apk` ke HP lewat kabel/Google Drive).
 2. Buka berkasnya, izinkan "Instal aplikasi tidak dikenal" untuk aplikasi pembuka berkas bila diminta.
 3. Buka **Lestari Pangan** dari laci aplikasi. Chrome (atau browser lain yang mendukung TWA) harus terpasang dan terbarui.
 

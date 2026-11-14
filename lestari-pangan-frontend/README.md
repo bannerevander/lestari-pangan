@@ -40,11 +40,11 @@ npx vercel@latest deploy --prod      # build di server Vercel lalu terbit
 
 ## Yang sudah bisa dicoba
 
-Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat mendaftar; untuk menguji dua peran, pakai dua akun. Akun admin dan kurir dibuat lewat SQL ([supabase/README.md](../supabase/README.md)).
+Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat mendaftar; untuk menguji dua peran, pakai dua akun. Akun admin dibuat lewat SQL; caranya di [supabase/README.md](../supabase/README.md); akun demo juri ada di [docs/AKUN-UJI.md](../docs/AKUN-UJI.md).
 
 | Kode | Layar | Rute |
 | --- | --- | --- |
-| U02, U03, U07 | Pengenalan, Masuk (simulasi), Pilih peran | `/pengenalan`, `/masuk`, `/peran` |
+| U02, U03, U07 | Pengenalan, Masuk (OTP / kata sandi), Pilih peran | `/pengenalan`, `/masuk`, `/peran` |
 | H01 / H02 | Beranda pemberi / penerima | `/` |
 | H03 | Semua fitur | `/fitur` |
 | D01 | Penawaran saya (pemberi) | `/donasi` |
@@ -63,18 +63,17 @@ Masuk dengan email + kode OTP. Peran (Pemberi atau Penerima) dipilih sekali saat
 | C01, C02 | Catat Pangan, tambah catatan | `/pangan`, `/pangan/baru` |
 | I01 | Dashboard dampak | `/dampak` |
 | T01, T02 | Tips, artikel + simpan | `/tips`, `/tips/:id` |
-| R01 | Resep dari Sisa (teks; suara belum) | `/resep` |
+| R01 | Resep dari Sisa | `/resep` |
+| AI | Asisten Dapur AI (chat + suara) | `/asisten` |
 | E01 | Eco Challenge (tampilan) | `/tantangan` |
 | A01 / A01R | Akun | `/akun` |
 
 Alur lengkap yang sudah teruji otomatis: pemberi menerbitkan penawaran → penerima meminta → pemberi menyetujui → pemberi mencatat penyerahan → penerima menerima sebagian → penerima melaporkan distribusi.
 
-## Batas prototipe
+## Batas yang diketahui
 
 - Semua layar memakai Supabase. Status per kelompok layar: [docs/PROGRESS.md](../docs/PROGRESS.md) §2.
-- Pembayaran memakai transfer bank manual (QRIS menyusul). Resep suara, push notification, dan peta belum ada.
-- Keputusan terbuka (OD-01 s.d. OD-10 di design.md) tidak ditetapkan oleh kode ini. Contoh: alur penyesuaian permintaan (Q05) dan bentuk koordinasi (L08) masih berupa placeholder berlabel.
-- Layar yang belum dibangun (reward, pendanaan F01–F09, profil/verifikasi A02–A12/U08–U11, admin AD01–AD22, mitra K01–K04) menampilkan halaman "Layar ini belum dibangun".
+- Pembayaran memakai transfer bank manual yang divalidasi admin (QRIS tidak dikerjakan untuk lomba). Push notification di luar aplikasi belum ada; notifikasi in-app memakai Realtime.
 
 ## Struktur
 
