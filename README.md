@@ -131,7 +131,7 @@ Cara masuk: pilih tab **Kata sandi** lalu isi email dan kata sandi, **atau** pil
 
 ### Video demo
 
-Video demo YouTube (3–5 menit): **https://youtu.be/ISI-TAUTAN-VIDEO**
+Video demo YouTube: **[https://youtu.be/MaQD1_PeQ3w](https://youtu.be/MaQD1_PeQ3w)**
 
 ## Teknologi
 
